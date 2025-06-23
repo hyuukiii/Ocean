@@ -1,0 +1,40 @@
+<div th:fragment="rnbFragment" class="rnb" id="rnbPanel">
+    <button class="rnb-toggle-btn" onclick="toggleRnb()">
+        <img id="toggleArrow" src="/images/arrow-right.png" alt="토글">
+    </button>
+
+    <div class="user-box">
+        <img class="user-img" src="/images/user.png" alt="user">
+        <div class="user-info">
+            <div class="name">김봉석</div>
+            <div class="role">회원</div>
+        </div>
+        <div class="notification">
+            <img src="/images/bell.png" alt="알림">
+            <img class="noti-dot" src="/images/exclamation.png" alt="!" th:if="${hasNotification}">
+        </div>
+    </div>
+
+    <div class="progress-box">
+        <label>전체 진도율</label>
+        <div class="bar">
+            <span style="width:33%"></span>
+        </div>
+        <div class="percent">33%</div>
+    </div>
+
+    <div class="member-section">
+        <div class="title">워크스페이스 멤버 (4)</div>
+
+        <div class="member"><img src="/images/user1.png"><div class="info"><span class="m-name">윤현기</span><span class="m-role">개설자</span></div></div>
+        <div class="member"><img src="/images/user2.png"><div class="info"><span class="m-name">임형택</span><span class="m-role">회원</span></div></div>
+        <div class="member"><img src="/images/user3.png"><div class="info"><span class="m-name">권지언</span><span class="m-role">회원</span></div></div>
+        <div class="member"><img src="/images/user4.png"><div class="info"><span class="m-name">이수민</span><span class="m-role">회원</span></div></div>
+
+        <div class="member invite-member" onclick="openInvite()">
+            <img src="/images/invite_plus.png">
+            <div class="info"><span class="m-name">멤버 초대</span></div>
+        </div>
+
+    </div>
+</div>

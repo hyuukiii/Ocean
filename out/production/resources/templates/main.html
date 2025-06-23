@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ocean</title>
+
+    <!-- 스타일 분리 -->
+    <link rel="stylesheet" th:href="@{/css/lnb.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/rnb.css}">
+
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 왼쪽 사이드바 (LNB) -->
+<div th:replace="fragments/lnb :: lnbFragment"></div>
+
+<!-- 메인 콘텐츠 -->
+<div class="main">
+
+    <!-- 상단 배너 -->
+    <div class="top-banner">
+        <div class="title">프로젝트 마감까지</div>
+        <div class="d-day">D-21</div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="date">6월 10일 화요일</div>
+    </div>
+
+    <!-- 일정 및 활동 -->
+    <div class="main-section">
+        <div class="schedule">
+            <h2>오늘의 일정</h2>
+            <div class="event"><span class="dot blue"></span> 10:00 개발 스프린트 회의</div>
+            <div class="event"><span class="dot purple"></span> 12:00 디자인 리뷰</div>
+            <div class="event"><span class="dot green"></span> 14:00 신입사원 온보딩</div>
+        </div>
+
+        <div class="activity">
+            <h2>최근활동</h2>
+            <div class="log"><span class="badge">윤</span> 윤현기님이 새로운 미팅룸을 잡았어요</div>
+            <div class="log"><span class="badge">권</span> 권지언님이 일정을 수정했어요</div>
+            <div class="log"><span class="badge">임</span> 임형택님이 문서를 업로드했어요</div>
+        </div>
+    </div>
+
+    <!-- 통계 및 명언 -->
+    <div class="bottom-section">
+        <div class="stats">
+            <div class="stat-box"><div class="big">24</div><div>새로운 일정</div></div>
+            <div class="stat-box"><div class="big">8</div><div>완료된 일정</div></div>
+            <div class="stat-box"><div class="big">78</div><div>총 활동 시간</div></div>
+        </div>
+        <div class="quote">
+            대부분의 프로젝트는 기술이 아니라<br>인적 자원과 프로젝트 관리의 문제로 실패한다.<br>
+            <b>- R. Thomsett</b>
+        </div>
+    </div>
+
+</div>
+
+<!-- 오른쪽 사이드바 (RNB) -->
+<div th:replace="fragments/rnb :: rnbFragment"></div>
+
+<!-- RNB 토글 버튼용 스크립트 -->
+<script th:src="@{/js/rnb-toggle.js}"></script>
+
+<!-- 초대 모달창 -->
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<div class="invite-modal" id="inviteModal">
+    <h2><b>Ocean(으)로 초대하기</b></h2>
+    <p>초대받을 사람:</p>
+    <input type="email" value="gudxor8251@naver.com" />
+    <button>보내기</button>
+    <p>초대 코드: <b>123456</b></p>
+    <button>초대 코드 복사하기</button>
+    <button onclick="closeInvite()">닫기</button>
+</div>
+
+
+</body>
+</html>
