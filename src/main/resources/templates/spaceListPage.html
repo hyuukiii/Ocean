@@ -1,0 +1,60 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+    <link rel="stylesheet" href="/src/main/resources/static/css/spaceListPage.css">
+ </head>
+ <body>
+        <!-- 헤더  onclick="gomain" 추가할 것-->
+        <header class="header">
+        <div class="logo" onclick="location.href='main/index.html'">
+            <div class="logo-icon">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            Ocean WorkSpace
+        </div>
+    </header>
+    <div class="middle">
+      <div class="space-container">
+        <h2 class="middle-text">WorkSpace List</h2>
+        <div class="space-list">
+          <!-- 수정된 구조: 이미지와 텍스트를 하나의 space-item으로 묶음 -->
+          <div class="space-item">
+            <div class="space-profile">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#4facfe"/>
+                <text x="50" y="70" text-anchor="middle" fill="white" font-size="40">1</text>
+              </svg>
+            </div>
+            <span class="space-text">워크 스페이스 이름</span>
+          </div>
+          
+          <div class="space-item">
+            <div class="space-profile">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#00f2fe"/>
+                <text x="50" y="70" text-anchor="middle" fill="white" font-size="50">2</text>
+              </svg>
+            </div>
+            <span class="space-text">또 다른 워크 스페이스 이름</span>
+          </div>
+          <!-- DB 연동 시 반복문으로 추가 -->
+        </div>
+      </div>
+    </div>
+
+        <!-- 하단 버튼 그룹 -->
+        <div class="button-group">
+            <button class="btn-create" onclick="location.href='createWorkSpace.html'">Create Space</button>
+            <button class="btn-join" onclick="location.href='joinWorkSpace.html'">Join Space</button>
+        </div>
+      </div>
+    </div>
+ </body>
+ </html>
