@@ -877,8 +877,8 @@ function checkAuthStatus() {
         if (userMenu) userMenu.style.display = 'flex';
         if (loginButton) loginButton.style.display = 'none';
 
-        // 사용자 정보 가져오기
-        fetchUserInfo(accessToken);
+        // 사용자 정보 가져오기 (파라미터 없이 호출)
+        fetchUserInfo();
     } else {
         // 로그아웃 상태
         if (userMenu) userMenu.style.display = 'none';
@@ -886,21 +886,15 @@ function checkAuthStatus() {
     }
 }
         
-        // 사용자 정보 가져오기 함수 수정
-function fetchUserInfo(token) {
-    fetchWithAuth('/api/auth/me')  // fetchWithAuth 사용
+function fetchUserInfo() {  // token 파라미터 제거
+    fetchWithAuth('/api/auth/me')
     .then(response => {
         if (!response.ok) {
             throw new Error('인증 실패');
         }
         return response.json();
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('인증 실패');
-        }
-        return response.json();
-    })
+    // 중복 제거
     .then(data => {
         // 사용자 이름 표시
         const displayName = data.userName || data.email || '사용자';
@@ -932,7 +926,8 @@ function fetchUserInfo(token) {
         logout();
     });
 }
-        // 쿠키에서 값 가져오기
+
+// 쿠키에서 값 가져오기
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -941,90 +936,100 @@ function getCookie(name) {
 
 // 토큰 갱신 함수
 async function refreshAccessToken() {
-    const refreshToken = getCookie('refreshToken');
-    if (!refreshToken) {
-        console.error('리프레시 토큰이 없습니다.');
-        logout();
-        return null;
-    }
-
     try {
+        // 쿠키의 리프레시 토큰은 자동으로 전송됨
         const response = await fetch('/api/auth/refresh', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ refreshToken })
+            credentials: 'include'  // 쿠키 포함해서 전송
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('accessToken', data.accessToken);
-            return data.accessToken;
-        } else {
-            logout();
-            return null;
+        if (!response.ok) {
+            throw new Error('토큰 갱신 실패');
         }
+
+        const data = await response.json();
+
+        // 새 액세스 토큰 저장
+        localStorage.setItem('accessToken', data.accessToken);
+
+        console.log('토큰 갱신 성공');
+        return data.accessToken;
+
     } catch (error) {
         console.error('토큰 갱신 실패:', error);
+        // 갱신 실패 시 로그아웃 처리
         logout();
         return null;
     }
 }
 
-// fetch 래퍼 함수 (자동 토큰 갱신)
+
+// API 호출 시 자동 토큰 갱신
 async function fetchWithAuth(url, options = {}) {
-    const accessToken = localStorage.getItem('accessToken');
+    let accessToken = localStorage.getItem('accessToken');
 
-    const defaultOptions = {
+    // 첫 번째 시도
+    let response = await fetch(url, {
+        ...options,
         headers: {
+            ...options.headers,
             'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    };
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'  // 쿠키 포함
+    });
 
-    const mergedOptions = { ...options, ...defaultOptions };
-
-    let response = await fetch(url, mergedOptions);
-
-    // 401 에러 시 토큰 갱신 시도
+    // 401 에러면 토큰 갱신 시도
     if (response.status === 401) {
+        console.log('액세스 토큰 만료, 갱신 시도...');
         const newToken = await refreshAccessToken();
+
         if (newToken) {
-            mergedOptions.headers.Authorization = `Bearer ${newToken}`;
-            response = await fetch(url, mergedOptions);
+            // 새 토큰으로 재시도
+            response = await fetch(url, {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    'Authorization': `Bearer ${newToken}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
         }
     }
 
     return response;
 }
 
-        function logout() {
+function logout() {
     const accessToken = localStorage.getItem('accessToken');
+
+    // 로컬 스토리지 정리 (먼저 실행)
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('isAuthenticated');
 
     // 서버에 로그아웃 요청
     if (accessToken) {
         fetch('/api/auth/logout', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + accessToken,
+                'Authorization': 'Bearer ' + accessToken,  // JWT 인증
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'  // 쿠키도 함께 전송
+        }).finally(() => {
+            // 성공/실패 관계없이 로그인 페이지로
+            window.location.href = '/login';
         });
+    } else {
+        // 토큰이 없어도 로그인 페이지로
+        window.location.href = '/login';
     }
-
-    // 로컬 스토리지 정리
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('isAuthenticated');
-
-    // 쿠키 삭제 (리프레시 토큰)
-    document.cookie = 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
-    // 페이지 새로고침
-    window.location.reload();
 }
-        
+
         // 로그아웃 버튼 이벤트 리스너
         document.getElementById('logoutButton').addEventListener('click', logout);
 

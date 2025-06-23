@@ -41,8 +41,27 @@ jobs:
           
           # 애플리케이션 재시작
           ssh -o StrictHostKeyChecking=no -i ocean-key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            # 기존 프로세스 종료
             sudo pkill -f ocean-app.jar || true
+          
+            # MySQL 연결 정보 환경변수 설정
+            export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/ocean_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
+            export SPRING_DATASOURCE_USERNAME="ocean_user"
+            export SPRING_DATASOURCE_PASSWORD="ocean_pass"
+          
+            # 애플리케이션 시작
             nohup java -jar -Xmx512m /home/ubuntu/ocean-app.jar > /home/ubuntu/app.log 2>&1 &
-            sleep 5
-            echo "✅ 배포 완료!"
+          
+            # 시작 확인
+            sleep 10
+            if ps aux | grep -v grep | grep ocean-app.jar > /dev/null; then
+              echo "✅ 애플리케이션이 성공적으로 시작되었습니다!"
+              echo "📋 실행 중인 프로세스:"
+              ps aux | grep -v grep | grep ocean-app.jar
+            else
+              echo "❌ 애플리케이션 시작 실패!"
+              echo "📋 최근 로그:"
+              tail -n 20 /home/ubuntu/app.log
+              exit 1
+            fi
           EOF

@@ -57,12 +57,30 @@ public class AuthController {
     }
 
     /**
-     * 리프레시 토큰으로 새 액세스 토큰을 발급합니다.
+     * 쿠키에서 리프레시 토큰을 읽어 새 액세스 토큰을 발급
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         try {
-            String refreshToken = request.getRefreshToken();
+            // 쿠키에서 리프레시 토큰 읽기
+            String refreshToken = null;
+            Cookie[] cookies = request.getCookies();
+
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("refreshToken".equals(cookie.getName())) {
+                        refreshToken = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("리프레시 토큰이 없습니다."));
+            }
+
+            // 토큰 갱신
             TokenResponse tokenResponse = tokenService.refreshTokens(refreshToken);
 
             return ResponseEntity.ok(tokenResponse);
@@ -74,7 +92,7 @@ public class AuthController {
     }
 
     /**
-     * 리프레시 토큰을 HttpOnly 쿠키로 설정합니다.
+     * 리프레시 토큰을 HttpOnly 쿠키로 설정
      */
     @PostMapping("/refresh-token-cookie")
     public ResponseEntity<?> setRefreshTokenCookie(
