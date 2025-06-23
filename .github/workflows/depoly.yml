@@ -28,17 +28,21 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_KEY: ${{ secrets.EC2_KEY }}
         run: |
-          echo "$EC2_KEY" | tr -d '\r' > ocean-key.pem
+          # Base64로 인코딩된 키를 디코딩
+          echo "$EC2_KEY" | base64 -d > ocean-key.pem
           chmod 600 ocean-key.pem
           
-          echo "Connecting to $EC2_USER@$EC2_HOST"
+          # 키 파일 확인 (디버깅용)
+          echo "Key file created, checking format..."
+          head -n 1 ocean-key.pem
           
-          scp -o StrictHostKeyChecking=no -i ocean-key.pem build/libs/*.jar ${EC2_USER}@${EC2_HOST}:/home/ubuntu/ocean-app.jar
+          # JAR 파일 전송
+          scp -o StrictHostKeyChecking=no -i ocean-key.pem build/libs/*.jar $EC2_USER@$EC2_HOST:/home/ubuntu/ocean-app.jar
           
-          ssh -o StrictHostKeyChecking=no -i ocean-key.pem ${EC2_USER}@${EC2_HOST} << 'EOF'
+          # 애플리케이션 재시작
+          ssh -o StrictHostKeyChecking=no -i ocean-key.pem $EC2_USER@$EC2_HOST << 'EOF'
             sudo pkill -f ocean-app.jar || true
             nohup java -jar -Xmx512m /home/ubuntu/ocean-app.jar > /home/ubuntu/app.log 2>&1 &
             sleep 5
-            echo "배포 완료!"
-            ps aux | grep ocean-app.jar
+            echo "✅ 배포 완료!"
           EOF
