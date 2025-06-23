@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+    <title>Document</title>
+</head>
+    <style>
+        .sub-title{
+            text-align: center;
+            color: white;
+            padding-bottom: 30px;
+        }
+        .middle{
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #2d2d2d;
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        .image-upload{
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto;
+            display: block;
+            border: 3px rgba(79, 172, 254, 0.5);
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        .upload-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto;
+            display: block;
+            border: 3px rgba(79, 172, 254, 0.5);
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        #upload {
+            display: none;
+        }
+        
+         /* 사용자 정보 입력 칸 */
+        .inputSpace{
+            color: white;
+            position: relative;
+            /* border: 1px solid white; */
+            margin: 20px;
+            height: 200px;
+        }
+        .input-Name{
+            position: absolute;
+            /* border: 1px solid white; */
+            width: 25%;
+            height: 25%;
+        }
+        .input-Num{
+            position: absolute;
+            right: 0px;
+            /* border: 1px solid white; */
+            width: 65%;
+            height: 25%;
+        }
+
+        .input-Email{
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 10%;
+            /* border: 1px solid white; */
+            width: 100%;
+            height: 25%;
+        }
+        input {
+            color: #777777;
+            width: 100%; /* 부모 크기 100% */
+            height: 80%;
+            padding: 8px; /* 적당한 여백 추가 */
+            box-sizing: border-box; /* 패딩이 width에 포함 */
+        }
+        input::placeholder{
+              text-align: center;
+        }
+
+        
+        /* 버튼 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .button-group button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-nextStep {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #1d1d1d;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-backList{
+            background-color: #777777;
+            color: white;
+        }
+
+        .button-group button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+<body>
+    <!-- 헤더 -->
+        <header class="header">
+        <div class="logo" onclick="location.href='main/index.html'">
+            <div class="logo-icon">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            Ocean WorkSpace
+        </div>
+    </header>
+    <div class="middle">
+        <p class="sub-title">해당 Space에서 사용하실 정보를 입력 해 주세요</p>
+        <div class="image-upload">
+            <label for="upload">
+                <img id="preview" class="upload-preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0icmdiYSg3OSwgMTcyLCAyNTQsIDAuMSkiLz48dGV4dCB4PSI1MCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiPlVwbG9hZDwvdGV4dD48L3N2Zz4=" alt="Space Image">
+                <input type="file" id="upload" accept="image/*">
+            </label>
+        </div>
+        <div class="inputSpace">  
+            <div class="input-NameNum">
+                <div class="input-Name">사용자 이름
+                    <input type="text" placeholder="사용자 이름">
+                </div>
+                <div class="input-Num">연락처
+                    <input type="text" placeholder="010-1234-5678">
+                </div>
+            </div>
+            <div class="input-Email">이메일
+                <input type="text" placeholder="UserEmail@gamil.com">
+            </div>
+        </div>
+        <div class="button-group">
+            <button class="btn-backList">Back SpaceList</button>
+            <button class="btn-nextStep">Next Step</button>
+        </div>
+    </div>
+</body>
+</html>
