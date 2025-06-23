@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create WorkSpace | Ocean</title>
+    <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+    <link rel="stylesheet" href="/src/main/resources/static/css/CreateWorkSpace.css">
+
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+        <header class="header">
+        <div class="logo" onclick="location.href='main/index.html'">
+            <div class="logo-icon">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            Ocean WorkSpace
+        </div>
+    </header>
+
+    <!-- 생성 폼 -->
+    <div class="create-container">
+        <h1>Create Space</h1>
+        
+        <div class="image-upload">
+            <label for="upload">
+                <img id="preview" class="upload-preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0icmdiYSg3OSwgMTcyLCAyNTQsIDAuMSkiLz48dGV4dCB4PSI1MCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiPlVwbG9hZDwvdGV4dD48L3N2Zz4=" alt="Space Image">
+            </label>
+            <input type="file" id="upload" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="space-name">WorkSpace 이름</label>
+            <input type="text" id="space-name" placeholder="예: 디자인 팀 프로젝트">
+        </div>
+        
+        <div class="form-group">
+            <label for="end-date">프로젝트 종료일</label>
+            <input type="date" id="end-date">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">스페이스 설명</label>
+            <textarea id="description" rows="3" placeholder="프로젝트 목표 또는 간단한 설명"></textarea>
+        </div>
+        
+        <button class="btn-create" onclick="location.href=''">Next Step</button>
+        <button class="btn-backList" onclick="location.href='spaceListPage.html'">Back to List</button>
+    </div>
+
+    <script>
+        // 이미지 미리보기
+        document.getElementById('upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('preview').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 폼 제출
+        document.querySelector('.btn-create').addEventListener('click', function() {
+            const spaceName = document.getElementById('space-name').value;
+            if (!spaceName) {
+                alert('워크스페이스 이름을 입력해주세요!');
+                return;
+            }
+            alert(`"${spaceName}" 워크스페이스가 생성되었습니다!`);
+            // 실제 구현시 API 호출 코드 추가
+        });
+        // 날짜 유효성 검사 (오늘 이후만 선택 가능)
+        document.getElementById('end-date').min = new Date().toISOString().split('T')[0];
+
+        // 드래그 앤 드롭 업로드
+        uploadPreview.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.target.style.borderColor = '#4facfe';
+        });
+    </script>
+</body>
+</html>

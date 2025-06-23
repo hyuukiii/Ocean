@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,7 +61,7 @@
             width: 25%;
             height: 25%;
         }
-        .input-Num{
+        .input-Tel{
             position: absolute;
             right: 0px;
             /* border: 1px solid white; */
@@ -144,16 +144,16 @@
             </label>
         </div>
         <div class="inputSpace">  
-            <div class="input-NameNum">
+            <div class="input-NameTel">
                 <div class="input-Name">사용자 이름
-                    <input type="text" placeholder="사용자 이름">
+                    <input type="text" id="spaceName" placeholder="사용자 이름">
                 </div>
-                <div class="input-Num">연락처
-                    <input type="text" placeholder="010-1234-5678">
+                <div class="input-Tel">연락처
+                    <input type="text" id="spaceTel" placeholder="010-1234-5678">
                 </div>
             </div>
             <div class="input-Email">이메일
-                <input type="text" placeholder="UserEmail@gamil.com">
+                <input type="text" id="spaceEmail" placeholder="UserEmail@gamil.com">
             </div>
         </div>
         <div class="button-group">
@@ -162,4 +162,33 @@
         </div>
     </div>
 </body>
+    <script>
+        function saveUserInfo(){
+            const name = document.getElementById('spaceName');
+            const tel = document.getElementById('spaceTel');
+            const email = document.getElementById('spaceEmail');
+
+            console.log('이름 : ',name);
+            console.log('연락처 : ',tel);
+            console.log('이메일 : ',email);
+
+            // 서버로 데이터 전송
+            fetch('/saveUserInfo',{
+                method : 'POST',
+                headers: {
+                    'Content-Type' :'application/json'
+                },
+                body : JSON.stringify({
+                    name: name,
+                    tel: tel,
+                    email: email
+                })
+            })
+            .then(reponse => reponse.json())
+            .then(date =>{
+                alert('저장 성공');
+                location.href = 'space'
+            })
+        }
+    </script>
 </html>

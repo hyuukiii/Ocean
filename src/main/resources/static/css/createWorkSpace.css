@@ -80,3 +80,21 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
         }
+        .btn-backList {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-backList:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(136, 136, 136, 0.4);
+        }
