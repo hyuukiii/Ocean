@@ -1,0 +1,140 @@
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f5f5f5;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #2e8b57;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin: 0;
+      font-weight: 500;
+    }
+    .map-container {
+      width: 100%;
+      height: 500px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    .place-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .place-count {
+      font-size: 16px;
+      color: #666;
+    }
+    .place-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .place-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border-top: 3px solid #2e8b57;
+      display: flex;
+      flex-direction: column;
+    }
+    .place-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .place-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .place-id {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 5px;
+      font-family: monospace;
+    }
+    .place-address {
+      color: #666;
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+    .place-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #888;
+      font-size: 13px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .place-coords {
+      font-family: monospace;
+    }
+    .place-date {
+      font-style: italic;
+    }
+    .no-places {
+      text-align: center;
+      padding: 50px;
+      color: #888;
+      font-size: 16px;
+      grid-column: 1 / -1;
+      background-color: white;
+      border-radius: 8px;
+    }
+    .info-window {
+      padding: 12px;
+      min-width: 200px;
+    }
+    .info-window-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #2e8b57;
+      font-size: 16px;
+    }
+    .info-window-id {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 5px;
+      font-family: monospace;
+    }
+    .info-window-address {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    .info-window-coords {
+      font-size: 12px;
+      color: #777;
+      font-family: monospace;
+    }

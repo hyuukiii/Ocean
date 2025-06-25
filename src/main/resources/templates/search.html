@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>장소 선택</title>
+  <link rel="stylesheet" th:href="@{/css/placeSearch.css}">
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="map_wrap">
+  <div id="map"></div>
+
+  <div id="menu_wrap" class="bg_white">
+    <div class="option">
+      <div>
+        <form onsubmit="searchPlaces(); return false;">
+          키워드 : <input type="text" value="" id="keyword" size="10" placeholder="장소 검색">
+          <button type="submit">검색하기</button>
+        </form>
+      </div>
+    </div>
+    <hr>
+    <ul id="placesList"></ul>
+    <div id="pagination"></div>
+  </div>
+</div>
+<div class="foot_bar">
+  <input type="text" id="place_name" placeholder="장소 이름을 입력하세요">
+  <button onclick="submitLocation()">서버로 전송</button>
+  <button onclick="deleteUserMarker()">마커 삭제</button>
+</div>
+<script>
+  // 1. 지도 초기화
+  var mapContainer = document.getElementById('map'),
+      mapOption = {
+          center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 좌표
+          level: 2
+      };
+
+  var map = new kakao.maps.Map(mapContainer, mapOption);
+  var ps = new kakao.maps.services.Places();
+  var geocoder = new kakao.maps.services.Geocoder();
+  var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+  var markers = [];
+
+  var usermarker = null;
+  var userSelectedLatLng = null;
+  var userSelectedPlaceId = null;
+  var userSelectAddressName = null;
+
+  // 1-1. 사용자 위치 가져오기
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+          var userLocation = new kakao.maps.LatLng(lat, lng);
+          map.setCenter(userLocation);
+      }, function(error) {
+          console.warn('위치 정보 받아오기 실패', error);
+      });
+  }
+
+  // 2. 마커 찍기 기능 - 수정된 부분
+  kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+      var latlng = mouseEvent.latLng;
+      userSelectedLatLng = latlng;
+      userSelectedPlaceId = null;
+
+      if (usermarker) {
+          usermarker.setMap(null);
+      }
+
+      usermarker = new kakao.maps.Marker({
+          position: latlng,
+          map: map
+      });
+
+      map.setCenter(latlng);
+
+      // 주소 조회 함수
+      geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+          if (status === kakao.maps.services.Status.OK) {
+              var address = result[0].address.address_name;
+              userSelectAddressName = address;
+              document.getElementById("place_name").value = address;
+          } else {
+              console.warn('주소 조회 실패');
+              userSelectAddressName = "주소 정보 없음";
+              document.getElementById("place_name").value = "선택한 위치";
+          }
+      });
+  });
+
+  // 3. 장소 검색 기능
+  function searchPlaces() {
+      var keyword = document.getElementById('keyword').value;
+
+      if (!keyword.trim()) {
+          alert('키워드를 입력해주세요!');
+          return;
+      }
+
+      ps.keywordSearch(keyword, placesSearchCB);
+  }
+
+  function placesSearchCB(data, status, pagination) {
+      if (status === kakao.maps.services.Status.OK) {
+          displayPlaces(data);
+          displayPagination(pagination);
+      } else {
+          alert('검색 결과가 없습니다.');
+      }
+  }
+
+  function displayPlaces(places) {
+      var listEl = document.getElementById('placesList');
+      listEl.innerHTML = "";
+
+      removeMarker();
+
+      var bounds = new kakao.maps.LatLngBounds();
+
+      for (var i = 0; i < places.length; i++) {
+          var placePosition = new kakao.maps.LatLng(places[i].y, places[i].x),
+              marker = addMarker(placePosition),
+              itemEl = getListItem(i, places[i]);
+
+          bounds.extend(placePosition);
+
+          (function(marker, place) {
+              kakao.maps.event.addListener(marker, 'click', function() {
+                  map.setCenter(placePosition);
+
+                  if (usermarker) {
+                      usermarker.setMap(null);
+                  }
+
+                  usermarker = marker;
+                  userSelectedLatLng = placePosition;
+                  userSelectedPlaceId = place.id;
+                  userSelectAddressName = place.address_name || "주소 정보 없음";
+                  document.getElementById("place_name").value = place.place_name;
+              });
+
+              itemEl.onclick = function() {
+                  map.setCenter(placePosition);
+                  map.setLevel(2);
+                  if (usermarker) {
+                      usermarker.setMap(null);
+                  }
+
+                  usermarker = marker;
+                  userSelectedLatLng = placePosition;
+                  userSelectedPlaceId = place.id;
+                  userSelectAddressName = place.address_name || "주소 정보 없음";
+                  document.getElementById("place_name").value = place.place_name;
+              };
+          })(marker, places[i]);
+
+          listEl.appendChild(itemEl);
+      }
+
+      map.setBounds(bounds);
+  }
+
+  function getListItem(index, place) {
+      var el = document.createElement('li'),
+          itemStr = '<span>' + place.place_name + '</span>';
+
+      el.innerHTML = itemStr;
+      el.className = 'item';
+
+      return el;
+  }
+
+  function addMarker(position) {
+      var marker = new kakao.maps.Marker({
+          map: map,
+          position: position
+      });
+
+      markers.push(marker);
+      return marker;
+  }
+
+  function removeMarker() {
+      for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+      }
+      markers = [];
+  }
+
+  function deleteUserMarker() {
+      if (usermarker) {
+          usermarker.setMap(null);
+          usermarker = null;
+          userSelectedLatLng = null;
+          userSelectedPlaceId = null;
+          userSelectAddressName = null;
+          document.getElementById("place_name").value = "";
+          alert("마커가 삭제되었습니다.");
+      }
+  }
+
+  function submitLocation() {
+      if (!userSelectedLatLng) {
+          alert("먼저 마커를 지도 위에 클릭해서 찍어주세요!");
+          return;
+      }
+
+      var place_name = document.getElementById("place_name").value;
+
+      if (!place_name) {
+          alert("장소 이름을 입력해주세요!");
+          return;
+      }
+
+      if (!userSelectAddressName) {
+          alert("주소 정보를 불러오는 중입니다. 잠시만 기다려주세요.");
+          return;
+      }
+
+      var data = {
+          place_name: place_name,
+          place_id: userSelectedPlaceId,
+          address_name: userSelectAddressName,
+          lat: userSelectedLatLng.getLat(),
+          lng: userSelectedLatLng.getLng()
+      };
+
+      fetch('http://localhost:8080/save', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.text();
+      })
+      .then(result => {
+          alert("장소가 성공적으로 저장되었습니다!");
+          console.log("서버 응답:", result);
+      })
+      .catch(error => {
+          console.error('저장 중 오류 발생:', error);
+          alert("장소 저장에 실패했습니다. 다시 시도해 주세요.");
+      });
+  }
+
+  function displayPagination(pagination) {
+      var paginationEl = document.getElementById('pagination');
+      var fragment = document.createDocumentFragment();
+
+      paginationEl.innerHTML = '';
+
+      for (var i = 1; i <= pagination.last; i++) {
+          var el = document.createElement('a');
+          el.href = "#";
+          el.innerHTML = i;
+
+          if (i === pagination.current) {
+              el.className = 'on';
+          } else {
+              el.onclick = (function(i) {
+                  return function() {
+                      pagination.gotoPage(i);
+                  }
+              })(i);
+          }
+
+          fragment.appendChild(el);
+      }
+
+      paginationEl.appendChild(fragment);
+  }
+</script>
+</body>
+</html>

@@ -37,6 +37,9 @@ public class WorkspaceMember {
     @Column(name = "DEPT_CD", length = 10)
     private String deptCd;
 
+    @Column(name= "DEPT_NM", length = 10)
+    private String deptNm;
+
     @Column(name = "POSITION", length = 30)
     private String position;
 

@@ -43,43 +43,73 @@
         }
         
         /* 이미지 업로드 */
-        .image-upload {
-            text-align: center;
-            margin: 20px 0;
+         .image-upload-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-bottom: 30px;
+                }
+                .upload-preview {
+                    width: 150px;
+                    height: 150px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    cursor: pointer;
+                    border: 2px dashed #ddd;
+                    transition: all 0.3s ease;
+                }
+                .upload-preview:hover {
+                    border-color: #4facfe;
+                    transform: scale(1.05);
+                }
+                #upload {
+                    display: none;
+                }
+                .upload-label {
+                    margin-top: 10px;
+                    color: #4facfe;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+
+        /* 부서 입력 관련 스타일 */
+        .department-input-group {
+            position: relative;
+            margin-bottom: 15px;
         }
-        .upload-preview {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto;
-            display: block;
-            border: 3px dashed rgba(79, 172, 254, 0.5);
-            background: rgba(0, 0, 0, 0.2);
+        .btn-remove-department {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 20px;
             cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        #upload {
-            display: none;
+        .btn-add-department {
+            background: none;
+            border: none;
+            color: #4facfe;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 10px 0 20px;
         }
         
         /* 생성 버튼 */
-        .btn-create {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .btn {
+            color : white;
         }
-        .btn-create:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
-        }
+
         .btn-backList {
             display: block;
             width: 100%;
@@ -94,7 +124,69 @@
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
         }
+
         .btn-backList:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(136, 136, 136, 0.4);
+        }
+
+        .btn-back{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(136, 136, 136, 0.4);
+        }
+        .btn-next{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 7px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-prev{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-create {
+            display: block;
+            width: 30%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(270deg, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-create:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
         }

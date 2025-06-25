@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>저장된 장소 확인</title>
+  <link rel="stylesheet" th:href="@{/css/placeList.css}">
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20"></script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>저장된 장소 목록</h1>
+  </div>
+
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
+
+  <div class="place-list-header">
+    <h2>장소 목록</h2>
+    <div class="place-count" th:text="'총 ' + ${#lists.size(places)} + '개 장소'"></div>
+  </div>
+
+  <div class="place-list" id="placeList">
+    <div class="no-places" th:if="${#lists.isEmpty(places)}">
+      <p>저장된 장소가 없습니다.</p>
+      <p>첫 번째 장소를 추가해주세요!</p>
+    </div>
+
+    <div class="place-card" th:each="place : ${places}"
+         th:attr="data-lat=${place.lat}, data-lng=${place.lng}, data-id=${place.place_id}">
+      <div class="place-name" th:text="${place.place_name}">장소 이름</div>
+      <div class="place-id" th:text="'ID: ' + ${place.place_id} ?: 'ID 없음'">장소 ID</div>
+      <div class="place-address" th:text="${place.address_name} ?: '주소 정보 없음'">주소</div>
+      <div class="place-meta">
+        <div class="place-created-at" th:text="${place.created_at} ?:'작성 시간 없음'">작성 시간</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  // 지도 초기화
+  var mapContainer = document.getElementById('map');
+  var mapOption = {
+    center: new kakao.maps.LatLng(37.5665, 126.9780),
+    level: 3
+  };
+
+  var map = new kakao.maps.Map(mapContainer, mapOption);
+  var markers = [];
+  var bounds = new kakao.maps.LatLngBounds();
+
+  // Thymeleaf에서 전달된 장소 데이터
+  var places = /*[[${places}]]*/ [];
+
+  // 장소 마커 생성 함수
+  function createMarkers() {
+    // 기존 마커 제거
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    bounds = new kakao.maps.LatLngBounds();
+
+    if (places.length === 0) {
+      // 장소가 없을 경우 기본 위치 설정
+      map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
+      return;
+    }
+
+    places.forEach(function(place) {
+      var markerPosition = new kakao.maps.LatLng(place.lat, place.lng);
+      var marker = new kakao.maps.Marker({
+        position: markerPosition,
+        map: map
+      });
+      markers.push(marker);
+      bounds.extend(markerPosition);
+
+      // 인포윈도우 생성
+      var infoWindow = new kakao.maps.InfoWindow({
+        content: '<div class="info-window">' +
+                 '<div class="info-window-title">' + place.place_name + '</div>' +
+                 '<div class="info-window-id">ID: ' + (place.place_id || '없음') + '</div>' +
+                 '<div class="info-window-address">' + (place.address_name || '주소 정보 없음') + '</div>' +
+                 '<div class="info-window-coords">좌표: ' + place.lat.toFixed(6) + ', ' + place.lng.toFixed(6) + '</div>' +
+                 '</div>'
+      });
+
+      // 마커 클릭 이벤트
+      kakao.maps.event.addListener(marker, 'click', function() {
+        infoWindow.open(map, marker);
+      });
+    });
+
+    // 모든 마커가 보이도록 지도 범위 조정
+    if (markers.length > 0) {
+      map.setBounds(bounds);
+    }
+  }
+
+  // 카드 클릭 이벤트 처리
+  document.addEventListener('click', function(e) {
+    var card = e.target.closest('.place-card');
+    if (card) {
+      var lat = parseFloat(card.getAttribute('data-lat'));
+      var lng = parseFloat(card.getAttribute('data-lng'));
+      var position = new kakao.maps.LatLng(lat, lng);
+
+      map.setCenter(position);
+      map.setLevel(3);
+
+      // 해당 마커 찾아서 인포윈도우 열기
+      markers.forEach(function(marker) {
+        if (marker.getPosition().equals(position)) {
+          kakao.maps.event.trigger(marker, 'click');
+        }
+      });
+    }
+  });
+
+  // 페이지 로드 시 마커 생성
+  document.addEventListener('DOMContentLoaded', function() {
+    createMarkers();
+  });
+  /*]]>*/
+</script>
+</body>
+</html>
