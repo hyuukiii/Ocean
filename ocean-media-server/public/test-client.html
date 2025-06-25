@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ocean Video Chat Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="mediasoup-client.bundle.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .video-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        video {
+          width: 300px;
+          height: 200px;
+          background: #000;
+          border: 1px solid #ccc;
+        }
+        .controls {
+          margin: 10px 0;
+        }
+        button {
+          margin: 5px;
+          padding: 10px;
+          cursor: pointer;
+        }
+        button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        #status {
+          background: #f0f0f0;
+          padding: 10px;
+          margin: 10px 0;
+          border-radius: 5px;
+        }
+        .error {
+          color: red;
+          font-weight: bold;
+          background: #ffe0e0;
+        }
+        .success {
+          color: green;
+          font-weight: bold;
+          background: #e0ffe0;
+        }
+    </style>
+</head>
+<body>
+<h1>Ocean Video Chat Test</h1>
+
+<div class="controls">
+    <button onclick="connect()">1. Connect</button>
+    <button onclick="joinRoom()" disabled id="joinBtn">2. Join Room</button>
+    <button onclick="startVideo()" disabled id="videoBtn">3. Start Video</button>
+    <button onclick="startAudio()" disabled id="audioBtn">4. Start Audio</button>
+</div>
+
+<div id="status">Not connected</div>
+
+<div class="video-container">
+    <div>
+        <h3>My Video</h3>
+        <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+    <div id="remoteVideos"></div>
+</div>
+
+<script>
+    // 전역 변수
+    let socket;
+    let device;
+    let producerTransport;
+    let consumerTransport;
+    let videoProducer;
+    let audioProducer;
+    const consumers = new Map();
+
+    //const roomId = 'test-room-' + Math.floor(Math.random() * 1000);
+    const roomId = 'test-room-123';
+    const peerId = 'peer-' + Date.now();
+
+    // mediasoup-client 확인
+    console.log('mediasoup-client loaded:', typeof mediasoupClient !== 'undefined');
+    if (typeof mediasoupClient !== 'undefined') {
+        console.log('mediasoup-client version:', mediasoupClient.version);
+    }
+
+    function updateStatus(message, type = '') {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = type;
+      console.log(`[${type || 'info'}]`, message);
+    }
+
+    async function connect() {
+      try {
+        updateStatus('Connecting to server...');
+
+        //socket = io('http://localhost:3001', {
+            //transports: ['websocket'],
+            //reconnection: true
+        //});
+
+        socket = io('https://172.30.1.49:3001', {
+            transports: ['websocket'],
+            reconnection: true,
+            rejectUnauthorized: false  // 자체 서명 인증서 허용
+        });
+
+        socket.on('connect', () => {
+          updateStatus('Connected to server!', 'success');
+          document.getElementById('joinBtn').disabled = false;
+          console.log('Socket connected:', socket.id);
+        });
+
+        socket.on('connect_error', (error) => {
+          updateStatus(`Connection error: ${error.message}`, 'error');
+          console.error('Socket connection error:', error);
+        });
+
+        socket.on('disconnect', (reason) => {
+          updateStatus(`Disconnected: ${reason}`, 'error');
+          document.getElementById('joinBtn').disabled = true;
+          document.getElementById('videoBtn').disabled = true;
+          document.getElementById('audioBtn').disabled = true;
+        });
+
+        socket.on('error', (error) => {
+          updateStatus(`Server error: ${error.message}`, 'error');
+          console.error('Server error:', error);
+        });
+
+        socket.on('new-producer', async ({ producerId, peerId: remotePeerId, kind }) => {
+          console.log('New producer detected:', { producerId, remotePeerId, kind });
+          try {
+            await consume(producerId, kind, remotePeerId);
+          } catch (error) {
+            console.error('Failed to consume:', error);
+          }
+        });
+
+        socket.on('peer-left', ({ peerId: remotePeerId }) => {
+          console.log('Peer left:', remotePeerId);
+          const container = document.getElementById(`container-${remotePeerId}`);
+          if (container) {
+            container.remove();
+          }
+        });
+
+      } catch (error) {
+        updateStatus(`Connection failed: ${error.message}`, 'error');
+        console.error('Connect error:', error);
+      }
+    }
+
+    async function joinRoom() {
+      try {
+        updateStatus('Joining room...');
+
+        // 룸 참가 요청
+        socket.emit('join-room', {
+          roomId,
+          workspaceId: 'workspace-123',
+          peerId,
+          displayName: 'User ' + peerId.substring(peerId.length - 4)
+        });
+
+        // 룸 참가 응답 대기
+        socket.once('room-joined', async (data) => {
+          try {
+            updateStatus(`Joined room: ${roomId}`, 'success');
+            console.log('Room joined successfully:', data);
+
+            // Device 초기화
+            await initDevice();
+
+            // Transport 생성
+            await createTransports();
+
+            // 버튼 활성화
+            document.getElementById('videoBtn').disabled = false;
+            document.getElementById('audioBtn').disabled = false;
+
+            // 기존 피어들의 producer 확인
+            if (data.peers && data.peers.length > 0) {
+              console.log('Existing peers in room:', data.peers);
+            }
+          } catch (error) {
+            updateStatus(`Setup failed: ${error.message}`, 'error');
+            console.error('Room join setup error:', error);
+          }
+        });
+
+      } catch (error) {
+        updateStatus(`Join room failed: ${error.message}`, 'error');
+        console.error('Join room error:', error);
+      }
+    }
+
+    async function initDevice() {
+      try {
+        console.log('Initializing device...');
+
+        // Router RTP Capabilities 가져오기
+        const rtpCapabilities = await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Get RTP capabilities timeout'));
+          }, 5000);
+
+          socket.emit('get-router-rtp-capabilities', (response) => {
+            clearTimeout(timeout);
+            if (response && response.error) {
+              reject(new Error(response.error));
+            } else {
+              resolve(response);
+            }
+          });
+        });
+
+        console.log('Received RTP Capabilities:', rtpCapabilities);
+
+        // mediasoupClient 확인
+        if (typeof mediasoupClient === 'undefined') {
+          throw new Error('mediasoup-client library not loaded');
+        }
+
+        // Device 생성
+        device = new mediasoupClient.Device();
+
+        // Device 로드
+        await device.load({ routerRtpCapabilities: rtpCapabilities });
+
+        console.log('Device initialized successfully');
+        console.log('Device can produce video:', device.canProduce('video'));
+        console.log('Device can produce audio:', device.canProduce('audio'));
+
+        updateStatus('Device initialized');
+      } catch (error) {
+        console.error('Device initialization failed:', error);
+        throw error;
+      }
+    }
+
+    async function createTransports() {
+      try {
+        console.log('Creating transports...');
+
+        // Producer Transport 생성
+        producerTransport = await createTransport(true);
+        console.log('Producer transport created:', producerTransport.id);
+
+        // Consumer Transport 생성
+        consumerTransport = await createTransport(false);
+        console.log('Consumer transport created:', consumerTransport.id);
+
+        updateStatus('Transports created');
+      } catch (error) {
+        console.error('Transport creation failed:', error);
+        throw error;
+      }
+    }
+
+    async function createTransport(producing) {
+      console.log(`Creating ${producing ? 'producer' : 'consumer'} transport...`);
+
+      const transportData = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Create transport timeout'));
+        }, 5000);
+
+        socket.emit('create-transport', {
+          producing,
+          consuming: !producing
+        }, (response) => {
+          clearTimeout(timeout);
+          if (response && response.error) {
+            reject(new Error(response.error));
+          } else {
+            resolve(response);
+          }
+        });
+      });
+
+      console.log('Transport data received:', transportData);
+
+      // Transport 생성
+      const transport = producing
+        ? device.createSendTransport(transportData)
+        : device.createRecvTransport(transportData);
+
+      // connect 이벤트 핸들러
+      transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
+        console.log(`${producing ? 'Producer' : 'Consumer'} transport connecting...`);
+        try {
+          await new Promise((resolve, reject) => {
+            socket.emit('connect-transport', {
+              transportId: transport.id,
+              dtlsParameters
+            }, (response) => {
+              if (response && response.error) {
+                reject(new Error(response.error));
+              } else {
+                resolve(response);
+              }
+            });
+          });
+          console.log(`${producing ? 'Producer' : 'Consumer'} transport connected`);
+          callback();
+        } catch (error) {
+          console.error('Transport connect error:', error);
+          errback(error);
+        }
+      });
+
+      // Producer transport의 produce 이벤트
+      if (producing) {
+        transport.on('produce', async (parameters, callback, errback) => {
+          console.log('Transport producing...', parameters.kind);
+          try {
+            const response = await new Promise((resolve, reject) => {
+              socket.emit('produce', {
+                transportId: transport.id,
+                kind: parameters.kind,
+                rtpParameters: parameters.rtpParameters
+              }, (response) => {
+                if (response && response.error) {
+                  reject(new Error(response.error));
+                } else {
+                  resolve(response);
+                }
+              });
+            });
+            console.log('Produce response:', response);
+            callback({ id: response.producerId });
+          } catch (error) {
+            console.error('Produce error:', error);
+            errback(error);
+          }
+        });
+      }
+
+      // 상태 변경 이벤트
+      transport.on('connectionstatechange', (state) => {
+        console.log(`${producing ? 'Producer' : 'Consumer'} transport state changed to:`, state);
+        if (state === 'failed') {
+          transport.close();
+        }
+      });
+
+      return transport;
+    }
+
+    async function startVideo() {
+      try {
+        updateStatus('Starting video...');
+        console.log('Requesting camera access...');
+
+        // 카메라 권한 요청
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: 'user'
+          }
+        });
+
+        console.log('Camera access granted');
+
+        // 로컬 비디오 표시
+        const localVideo = document.getElementById('localVideo');
+        localVideo.srcObject = stream;
+
+        // 비디오 트랙 가져오기
+        const videoTrack = stream.getVideoTracks()[0];
+        console.log('Video track:', videoTrack.label);
+
+        // Producer 생성
+        videoProducer = await producerTransport.produce({
+          track: videoTrack,
+          codecOptions: {
+            videoGoogleStartBitrate: 100
+          }
+        });
+
+        console.log('Video producer created:', videoProducer.id);
+
+        videoProducer.on('transportclose', () => {
+          console.log('Video producer transport closed');
+          videoProducer = null;
+        });
+
+        updateStatus('Video started', 'success');
+        document.getElementById('videoBtn').textContent = 'Stop Video';
+        document.getElementById('videoBtn').onclick = stopVideo;
+
+      } catch (error) {
+        updateStatus(`Video error: ${error.message}`, 'error');
+        console.error('Start video error:', error);
+      }
+    }
+
+    function stopVideo() {
+      if (videoProducer) {
+        videoProducer.close();
+        videoProducer = null;
+
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo.srcObject) {
+          localVideo.srcObject.getTracks().forEach(track => track.stop());
+          localVideo.srcObject = null;
+        }
+
+        updateStatus('Video stopped');
+        document.getElementById('videoBtn').textContent = 'Start Video';
+        document.getElementById('videoBtn').onclick = startVideo;
+      }
+    }
+
+    async function startAudio() {
+      try {
+        updateStatus('Starting audio...');
+        console.log('Requesting microphone access...');
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+
+        console.log('Microphone access granted');
+
+        const audioTrack = stream.getAudioTracks()[0];
+        console.log('Audio track:', audioTrack.label);
+
+        audioProducer = await producerTransport.produce({ track: audioTrack });
+        console.log('Audio producer created:', audioProducer.id);
+
+        audioProducer.on('transportclose', () => {
+          console.log('Audio producer transport closed');
+          audioProducer = null;
+        });
+
+        updateStatus('Audio started', 'success');
+        document.getElementById('audioBtn').textContent = 'Stop Audio';
+        document.getElementById('audioBtn').onclick = stopAudio;
+
+      } catch (error) {
+        updateStatus(`Audio error: ${error.message}`, 'error');
+        console.error('Start audio error:', error);
+      }
+    }
+
+    function stopAudio() {
+      if (audioProducer) {
+        audioProducer.close();
+        audioProducer = null;
+
+        updateStatus('Audio stopped');
+        document.getElementById('audioBtn').textContent = 'Start Audio';
+        document.getElementById('audioBtn').onclick = startAudio;
+      }
+    }
+
+    async function consume(producerId, kind, remotePeerId) {
+      try {
+        console.log(`Consuming ${kind} from peer ${remotePeerId}...`);
+
+        const response = await new Promise((resolve, reject) => {
+          socket.emit('consume', {
+            producerId,
+            rtpCapabilities: device.rtpCapabilities
+          }, (response) => {
+            if (response && response.error) {
+              reject(new Error(response.error));
+            } else {
+              resolve(response);
+            }
+          });
+        });
+
+        console.log('Consume response:', response);
+
+        const consumer = await consumerTransport.consume({
+          id: response.consumerId,
+          producerId: response.producerId,
+          kind: response.kind,
+          rtpParameters: response.rtpParameters
+        });
+
+        consumers.set(consumer.id, consumer);
+        console.log(`Consumer created: ${consumer.id} (${kind})`);
+
+        // 미디어 표시
+        if (kind === 'video') {
+          let container = document.getElementById(`container-${remotePeerId}`);
+          if (!container) {
+            container = document.createElement('div');
+            container.id = `container-${remotePeerId}`;
+            container.innerHTML = `<h3>Peer: ${remotePeerId.substring(remotePeerId.length - 4)}</h3>`;
+            document.getElementById('remoteVideos').appendChild(container);
+          }
+
+          const videoElement = document.createElement('video');
+          videoElement.id = `video-${producerId}`;
+          videoElement.autoplay = true;
+          videoElement.playsinline = true;
+          videoElement.muted = false;
+          
+          // MediaStream 설정 및 비디오 요소에 할당
+          const stream = new MediaStream([consumer.track]);
+          videoElement.srcObject = stream;
+          
+          container.appendChild(videoElement);
+          
+          // 자동 재생 보장 및 디버깅
+          videoElement.play()
+            .then(() => {
+              console.log('Video playback started successfully');
+            })
+            .catch(e => {
+              console.error('Video play error:', e);
+              // 자동 재생 정책 문제 해결을 위한 추가 시도
+              videoElement.muted = true;
+              videoElement.play().then(() => {
+                console.log('Video playing muted');
+                // 사용자 상호작용 후 음소거 해제 안내
+                alert('비디오 재생을 위해 화면을 클릭하세요');
+                document.addEventListener('click', () => {
+                  videoElement.muted = false;
+                  console.log('Video unmuted after user interaction');
+                }, { once: true });
+              });
+            });
+            
+          // 트랙 상태 확인 및 로깅
+          console.log('Video track readyState:', consumer.track.readyState);
+          console.log('Video track enabled:', consumer.track.enabled);
+          console.log('Video track muted:', consumer.track.muted);
+          
+          // 트랙 상태 변경 모니터링
+          consumer.track.onended = () => console.log('Video track ended');
+          consumer.track.onmute = () => console.log('Video track muted');
+          consumer.track.onunmute = () => console.log('Video track unmuted');
+        }
+
+        // Consumer 재개
+        await new Promise((resolve, reject) => {
+          socket.emit('resume-consumer', {
+            consumerId: consumer.id
+          }, (response) => {
+            if (response && response.error) {
+              reject(new Error(response.error));
+            } else {
+              resolve(response);
+            }
+          });
+        });
+
+        console.log('Consumer resumed');
+        console.log('Track readyState:', consumer.track.readyState);
+        console.log('Track enabled:', consumer.track.enabled);
+        console.log('Track muted:', consumer.track.muted);
+
+      } catch (error) {
+        console.error('Consume error:', error);
+        throw error;
+      }
+    }
+
+    // 페이지 언로드 시 정리
+    window.addEventListener('beforeunload', () => {
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+    });
+</script>
+</body>
+</html>

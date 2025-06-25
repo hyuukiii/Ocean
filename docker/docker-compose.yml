@@ -12,9 +12,9 @@ services:
       MYSQL_PASSWORD: ocean_pass
       TZ: Asia/Seoul
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      # 데이터 영속성만 유지 (init 스크립트는 필요시 추가)
+      # 데이터 영속성만 유지 (init 스크립트는 필요시 추가) , 나중에 3307 <-- 3306으로 바꿔주기
       - ocean_mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
@@ -25,29 +25,29 @@ services:
       retries: 10
       interval: 10s
 
-  # Spring Boot 애플리케이션
-  ocean-app:
-    image: ocean-app:latest
-    container_name: ocean-app
-    restart: unless-stopped
-    depends_on:
-      ocean-mysql:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://ocean-mysql:3306/ocean_db
-      SPRING_DATASOURCE_USERNAME: ocean_user
-      SPRING_DATASOURCE_PASSWORD: ocean_pass
-      SPRING_PROFILES_ACTIVE: prod
-      TZ: Asia/Seoul
-    networks:
-      - ocean-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # Spring Boot 애플리케이션 - 로컬 개발 시 주석 처리
+  # ocean-app:
+  #   image: ocean-app:latest
+  #   container_name: ocean-app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     ocean-mysql:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://ocean-mysql:3306/ocean_db
+  #     SPRING_DATASOURCE_USERNAME: ocean_user
+  #     SPRING_DATASOURCE_PASSWORD: ocean_pass
+  #     SPRING_PROFILES_ACTIVE: prod
+  #     TZ: Asia/Seoul
+  #   networks:
+  #     - ocean-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # phpMyAdmin (일반 이미지로 변경)
   ocean-phpmyadmin:
