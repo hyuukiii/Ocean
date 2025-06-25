@@ -45,6 +45,27 @@ module.exports = (io, worker, router) => {
           displayName
         });
 
+        // ⭐ 타이밍 문제 해결: 1초 후 기존 참가자들의 producer 정보 전송
+            setTimeout(() => {
+              console.log(`Sending existing producers to new peer ${peerId}...`);
+
+              for (const [_, existingPeer] of room.peers) {
+                if (existingPeer.id !== peerId) {
+                  console.log(`Peer ${existingPeer.id} has ${existingPeer.producers.size} producers`);
+
+                  for (const [producerId, producer] of existingPeer.producers) {
+                    console.log(`Sending producer ${producerId} (${producer.kind})`);
+
+                    socket.emit('new-producer', {
+                      producerId: producer.id,
+                      peerId: existingPeer.id,
+                      kind: producer.kind
+                    });
+                  }
+                }
+              }
+            }, 1000); // 1초 대기
+
       } catch (error) {
         console.error('Join room error:', error);
         socket.emit('error', { message: error.message });
@@ -269,6 +290,86 @@ module.exports = (io, worker, router) => {
       // 피어 정리
       peer.close();
       peers.delete(socket.id);
+    });
+
+    // 화면 공유 상태 변경 처리
+    socket.on('screen-share-status', (data) => {
+      try {
+        const { roomId, peerId, isSharing, producerId } = data;
+        console.log(`Screen share status change: ${peerId}, sharing: ${isSharing}`);
+
+        // 다른 참가자들에게 화면 공유 상태 알림
+        socket.to(roomId).emit('screen-share-update', {
+          peerId,
+          isSharing,
+          producerId
+        });
+
+      } catch (error) {
+        console.error('Screen share status error:', error);
+      }
+    });
+
+    // 피어 ID로 비디오 producer 찾기
+    socket.on('get-producer-by-peer', (data, callback) => {
+      try {
+        const { peerId, kind } = data;
+        const peer = peers.get(socket.id);
+        
+        if (!peer) {
+          return callback({ error: 'Peer not found' });
+        }
+        
+        const room = roomManager.getRoom(peer.roomId);
+        if (!room) {
+          return callback({ error: 'Room not found' });
+        }
+        
+        // 요청된 피어 찾기
+        const targetPeer = room.peers.get(peerId);
+        if (!targetPeer) {
+          return callback({ error: 'Target peer not found' });
+        }
+        
+        // 해당 피어의 일반 비디오 producer 찾기 (화면 공유가 아닌)
+        const videoProducer = targetPeer.getProducerByKind(kind, false);
+        
+        if (!videoProducer) {
+          return callback({ error: 'Video producer not found' });
+        }
+        
+        callback({ producerId: videoProducer.id });
+        
+      } catch (error) {
+        console.error('Get producer by peer error:', error);
+        callback({ error: error.message });
+      }
+    });
+
+    // 채팅 메시지 처리
+    socket.on('chat-message', async (data) => {
+      try {
+        const { roomId, message, timestamp } = data;
+        const peer = peers.get(socket.id);
+        
+        if (!peer) {
+          console.error('Chat message error: Peer not found');
+          return;
+        }
+        
+        // 모든 참가자에게 메시지 전달 (발신자 포함)
+        io.to(roomId).emit('chat-message', {
+          peerId: peer.id,
+          displayName: peer.displayName,
+          message,
+          timestamp
+        });
+        
+        console.log(`Chat message from ${peer.displayName} in room ${roomId}: ${message}`);
+        
+      } catch (error) {
+        console.error('Chat message error:', error);
+      }
     });
   });
 };

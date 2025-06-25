@@ -127,7 +127,8 @@ app.get('/api/workspaces/:workspaceId/rooms', (req, res) => {
 
 //서버 테스트
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, async () => {
+server.listen(PORT, '0.0.0.0', async () => {
   await init();
-  console.log(`mediasoup 서버가 http://localhost:${PORT} 에서 실행 중`);
+  console.log(`mediasoup 서버가 http://0.0.0.0:${PORT} 에서 실행 중`);
+  console.log(`접속 주소: http://172.30.1.49:${PORT}`);
 });

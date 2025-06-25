@@ -27,6 +27,20 @@ class Peer {
     return this.producers.get(producerId);
   }
 
+  // 특정 종류(kind)의 producer 찾기
+  getProducerByKind(kind, isScreen = false) {
+    for (const [id, producer] of this.producers.entries()) {
+      // 화면 공유가 아닌 일반 비디오 producer 찾기
+      if (producer.kind === kind) {
+        const isScreenShare = producer.appData && producer.appData.mediaType === 'screen';
+        if ((isScreen && isScreenShare) || (!isScreen && !isScreenShare)) {
+          return producer;
+        }
+      }
+    }
+    return null;
+  }
+
   addConsumer(consumer) {
     this.consumers.set(consumer.id, consumer);
   }
