@@ -2,6 +2,10 @@
 :root {
   --bg-main: #1F1F1F;
   --bg-content: #2D2D2D;
+<<<<<<< HEAD
+=======
+  --bg-sidebar: #121212;
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
   --bg-list-header: #3C3C3C;
   --border-color: #4A4A4A;
   --text-primary: #FFFFFF;
@@ -27,6 +31,49 @@ body {
   height: 100%;
 }
 
+<<<<<<< HEAD
+=======
+/* --- 2. 좌측 사이드바 스타일 --- */
+.sidebar {
+  width: 80px;
+  background-color: var(--bg-sidebar);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+.sidebar-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+.sidebar-menu .menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.sidebar-menu .menu-item:hover, .sidebar-menu .menu-item.active {
+  color: var(--text-primary);
+}
+.sidebar-menu .menu-item .material-symbols-outlined {
+  font-size: 28px;
+}
+.sidebar-menu .menu-item span {
+  font-size: 12px;
+  margin-top: 5px;
+}
+.sidebar-footer {
+    margin-top: auto;
+    padding-bottom: 20px;
+}
+
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
 /* --- 3. 중앙 컨텐츠 (장소 목록) 스타일 --- */
 .main-content {
   width:45%;

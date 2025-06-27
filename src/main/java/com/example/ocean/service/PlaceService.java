@@ -22,4 +22,9 @@ public class PlaceService {
     public List<Place> findAll(){
         return repository.findAll();
     }
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266

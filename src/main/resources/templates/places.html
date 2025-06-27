@@ -5,17 +5,25 @@
   <title>저장된 장소 확인</title>
 
   <link rel="stylesheet" th:href="@{/css/placeList.css}">
+<<<<<<< HEAD
   <link rel="stylesheet" th:href="@{/css/lnb.css}">
+=======
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<<<<<<< HEAD
   <link href="https://fonts.googleapis.com/css2?family=Noto+SansKR:wght@300;400;500;700&display=swap" rel="stylesheet">
+=======
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
 </head>
 <body>
 
 <div class="app-container">
   <nav class="sidebar">
+<<<<<<< HEAD
     <div th:replace="lnb :: lnbFragment"></div>
   </nav>
   <main class="main-content">
@@ -36,6 +44,54 @@
         </div>
       </div>
     </div>
+=======
+    <div class="sidebar-menu">
+      <div class="menu-item">
+        <span class="material-symbols-outlined">home</span>
+        <span>홈</span>
+      </div>
+      <div class="menu-item">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span>팀 캘린더</span>
+      </div>
+      <div class="menu-item">
+        <span class="material-symbols-outlined">person_pin</span>
+        <span>개인 캘린더</span>
+      </div>
+      <div class="menu-item active">
+        <span class="material-symbols-outlined">pin_drop</span>
+        <span>모임 장소</span>
+      </div>
+      <div class="menu-item">
+        <span class="material-symbols-outlined">chat</span>
+        <span>스케치 회의</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="menu-item">
+        <span class="material-symbols-outlined">menu</span>
+      </div>
+    </div>
+  </nav>
+  <main class="main-content">
+    <div class="place-list-container">
+      <div class="place-list-header">
+        <div>일자/시간</div>
+        <div>작성자</div>
+        <div>제목</div>
+        <div>장소 명</div>
+      </div>
+      <div class="place-list" id="placeList">
+        <div class="place-item" th:each="place, iterStat : ${places}"
+             th:data-place-json="${placesJson[iterStat.index]}">
+          <div th:text="${place.created_at != null ? #temporals.format(place.created_at, 'yy.MM.dd HH:mm') : ''}">25.06.10 16:30</div>
+          <div th:text="${place.created_by}">윤현기</div>
+          <div th:text="${place.place_name}">조금 긴 제목일 경우 타이핑 되는 방식</div>
+          <div th:text="${place.address_name}">조금 긴 장소명일 경우 타이핑 되는 방식</div>
+        </div>
+      </div>
+    </div>
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
     <button class="add-schedule-btn" id="addScheduleBtn">+ 일정 추가하기</button>
   </main>
 
@@ -107,7 +163,11 @@
         <textarea placeholder="내용 입력 공간"></textarea>
       </div>
       <div class="add-bottom-bar">
+<<<<<<< HEAD
         <input type="text" id="add_place_nm" placeholder="선택된 장소 이름" readonly>
+=======
+        <input type="text" id="add_place_name" placeholder="선택된 장소 이름">
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
         <button id="deleteMarkerBtn">마커 삭제</button>
       </div>
     </div>
@@ -119,6 +179,10 @@
   document.addEventListener('DOMContentLoaded', function() {
 
     // --- 1. 공통 변수 및 뷰 제어 ---
+<<<<<<< HEAD
+=======
+    // [수정] id가 부여된 버튼 요소들을 가져옵니다.
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
     const emptyView = document.getElementById('emptyView');
     const detailView = document.getElementById('detailView');
     const addScheduleView = document.getElementById('addScheduleView');
@@ -136,6 +200,10 @@
     });
     cancelAddBtn.addEventListener('click', function() { showView('empty'); });
 
+<<<<<<< HEAD
+=======
+    // [수정] 가져온 요소에 이벤트 리스너를 등록합니다.
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
     saveScheduleBtn.addEventListener('click', submitLocation);
     placeSearchBtn.addEventListener('click', searchPlaces);
     deleteMarkerBtn.addEventListener('click', deleteUserMarker);
@@ -193,6 +261,10 @@
     }
 
     placeItems.forEach(item => {
+<<<<<<< HEAD
+=======
+      // [개선] 여기도 addEventListener로 변경하여 일관성을 맞춥니다.
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
       item.addEventListener('click', function() {
         placeItems.forEach(i => i.classList.remove('selected'));
         this.classList.add('selected');
@@ -211,8 +283,12 @@
     let addUserMarker = null;
     let userSelectedLatLng = null;
     let userSelectedPlaceId = null;
+<<<<<<< HEAD
     let userSelectedPlaceName = null;
     let userSelectedAddressName = null;
+=======
+    let userSelectAddressName = null;
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
 
     function initAddMap() {
         const mapContainer = document.getElementById('add_map');
@@ -233,22 +309,37 @@
             const latlng = mouseEvent.latLng;
             userSelectedLatLng = latlng;
             userSelectedPlaceId = null;
+<<<<<<< HEAD
             userSelectedPlaceName = null;
+=======
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
             if (addUserMarker) { addUserMarker.setMap(null); }
             addUserMarker = new kakao.maps.Marker({ position: latlng, map: addMap });
             addMap.setCenter(latlng);
             addGeocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
                 if (status === kakao.maps.services.Status.OK) {
+<<<<<<< HEAD
                     userSelectedAddressName = result[0].address.address_name;
                     document.getElementById("add_place_nm").value = userSelectedAddressName;
                 } else {
                     userSelectedAddressName = "주소 정보 없음";
                     document.getElementById("add_place_nm").value = "선택한 위치";
+=======
+                    userSelectAddressName = result[0].address.address_name;
+                    document.getElementById("add_place_name").value = userSelectAddressName;
+                } else {
+                    userSelectAddressName = "주소 정보 없음";
+                    document.getElementById("add_place_name").value = "선택한 위치";
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
                 }
             });
         });
     }
 
+<<<<<<< HEAD
+=======
+    // [수정] window.searchPlaces 대신 지역(local) 함수로 변경
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
     function searchPlaces() {
       const keyword = document.getElementById('add_keyword').value;
       if (!keyword.trim()) return alert('키워드를 입력해주세요!');
@@ -276,6 +367,10 @@
         const itemEl = getListItem(place);
         bounds.extend(placePosition);
 
+<<<<<<< HEAD
+=======
+        // [개선] IIFE 없이, 그리고 .onclick 대신 addEventListener 사용
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
         kakao.maps.event.addListener(marker, 'click', () => handlePlaceSelect(marker, place, placePosition));
         itemEl.addEventListener('click', () => handlePlaceSelect(marker, place, placePosition));
 
@@ -289,6 +384,7 @@
       addMap.setLevel(3);
 
        if (addUserMarker) {
+<<<<<<< HEAD
         addUserMarker.setPosition(position);
         addUserMarker.setMap(addMap);
       } else {
@@ -307,6 +403,25 @@
     function getListItem(place) {
       const el = document.createElement('li');
       el.innerHTML = `<span>${place.place_name}</span><p>${place.address_name || place.address}</p>`;
+=======
+    addUserMarker.setPosition(position);
+    addUserMarker.setMap(addMap); // 혹시 삭제되었을 경우를 대비해 다시 지도에 표시
+  } else {
+    addUserMarker = new kakao.maps.Marker({
+        position: position,
+        map: addMap
+    });
+  }
+  userSelectedLatLng = position;
+  userSelectedPlaceId = place.id;
+  userSelectAddressName = place.address_name || "주소 정보 없음";
+  document.getElementById("add_place_name").value = place.place_name;
+}
+
+    function getListItem(place) {
+      const el = document.createElement('li');
+      el.innerHTML = `<span>${place.place_name}</span><p>${place.address_name}</p>`;
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
       return el;
     }
 
@@ -321,19 +436,29 @@
       addMarkers = [];
     }
 
+<<<<<<< HEAD
+=======
+    // [수정] window.deleteUserMarker 대신 지역 함수로 변경
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
     function deleteUserMarker() {
       if (addUserMarker) {
         addUserMarker.setMap(null);
         addUserMarker = null;
         userSelectedLatLng = null;
         userSelectedPlaceId = null;
+<<<<<<< HEAD
         userSelectedPlaceName = null;
         userSelectedAddressName = null;
         document.getElementById("add_place_nm").value = "";
+=======
+        userSelectAddressName = null;
+        document.getElementById("add_place_name").value = "";
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
         alert("마커가 삭제되었습니다.");
       }
     }
 
+<<<<<<< HEAD
     function displayPagination(pagination) {
       const paginationEl = document.getElementById('add_pagination');
       paginationEl.innerHTML = '';
@@ -421,6 +546,64 @@
     // --- 페이지 로드 시 초기 실행 ---
     initDetailMap();
 
+=======
+function displayPagination(pagination) {
+  const paginationEl = document.getElementById('add_pagination');
+  paginationEl.innerHTML = ''; // 이전 페이지네이션 삭제
+
+  const fragment = document.createDocumentFragment();
+
+  // '처음' 버튼 (옵션)
+  // '이전' 버튼 생성
+  const prevBtn = document.createElement('a');
+  prevBtn.innerHTML = '&lt;'; // < 아이콘
+  if (pagination.current === 1) {
+    prevBtn.classList.add('disabled');
+  } else {
+    prevBtn.addEventListener('click', () => pagination.gotoPage(pagination.current - 1));
+  }
+  fragment.appendChild(prevBtn);
+
+  // 페이지 번호 버튼 생성
+  for (let i = 1; i <= pagination.last; i++) {
+    const el = document.createElement('a');
+    el.href = "#";
+    el.innerHTML = i;
+    if (i === pagination.current) {
+      el.className = 'on';
+    } else {
+      el.addEventListener('click', function(e) {
+        e.preventDefault(); // a 태그의 기본 동작 방지
+        pagination.gotoPage(i);
+      });
+    }
+    fragment.appendChild(el);
+  }
+
+  // '다음' 버튼 생성
+  const nextBtn = document.createElement('a');
+  nextBtn.innerHTML = '&gt;'; // > 아이콘
+  if (pagination.current === pagination.last) {
+    nextBtn.classList.add('disabled');
+  } else {
+    nextBtn.addEventListener('click', () => pagination.gotoPage(pagination.current + 1));
+  }
+  fragment.appendChild(nextBtn);
+
+  // '마지막' 버튼 (옵션)
+
+  paginationEl.appendChild(fragment);
+}
+
+    // [수정] window.submitLocation 대신 지역 함수로 변경
+    function submitLocation() {
+      alert("저장 기능이 호출되었습니다.");
+    }
+
+    // --- 페이지 로드 시 초기 실행 ---
+    initDetailMap();
+
+>>>>>>> 3486243e39938697a9bb8284c1e950dd43a9d266
   });
   /*]]>*/
 </script>
