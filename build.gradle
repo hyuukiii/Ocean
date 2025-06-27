@@ -71,6 +71,12 @@ dependencies {
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 }
 
+tasks.named('bootRun') {
+	// 이 라인을 추가하여 'local' 프로파일을 활성화.
+	// ./gradlew bootRun 만 입력해도 127.0.0.1:3307로 로컬 MySQL 연결시도
+	systemProperty 'spring.profiles.active', 'local'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }

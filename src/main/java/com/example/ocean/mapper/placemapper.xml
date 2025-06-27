@@ -4,12 +4,29 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.KakaoMapTest.PlaceRepository">
+
     <insert id="insertPlace" parameterType="com.example.KakaoMapTest.Place">
-        INSERT INTO meeting_place(place_name, place_id,address_name, lat, lng)
-        VALUES(#{place_name}, #{place_id} ,#{address_name}, #{lat}, #{lng})
+        -- PLACE_CD는 AUTO_INCREMENT이므로 INSERT 문에서 제외합니다.
+        INSERT INTO PLACE(PLACE_NAME, PLACE_ID, ADDRESS_NAME, LAT, LNG, CREATED_BY)
+        VALUES(#{place_name}, #{place_id}, #{address_name}, #{lat}, #{lng}, #{created_by})
     </insert>
 
     <select id="findAll" resultType="com.example.KakaoMapTest.Place">
-        SELECT * FROM meeting_place
+        SELECT
+        p.PLACE_CD AS place_cd,
+        p.PLACE_NAME AS place_name,
+        p.PLACE_ID AS place_id,
+        p.ADDRESS_NAME AS address_name,
+        p.LAT AS lat,
+        p.LNG AS lng,
+        p.CREATED_AT AS created_at,
+        wm.USER_NICKNAME AS created_by
+        FROM
+        PLACE p
+        LEFT JOIN
+        WORKSPACE_MEMBERS wm ON p.CREATED_BY = wm.USER_ID
+        ORDER BY
+        p.CREATED_AT DESC
     </select>
+
 </mapper>

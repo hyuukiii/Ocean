@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Data
 public class Place {
-    private int placeCd;
+    private int place_cd;
     private String place_name;
     private String place_id;
     private String address_name;
@@ -20,6 +20,5 @@ public class Place {
     private double lng;
     private LocalDateTime created_at;
     private String created_by;
-
 
 }

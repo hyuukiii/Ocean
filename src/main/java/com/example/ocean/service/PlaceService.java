@@ -9,7 +9,6 @@ import java.util.List;
 @Service
 public class PlaceService {
 
-
     private final PlaceRepository repository;
 
     public PlaceService(PlaceRepository repository){
@@ -23,5 +22,4 @@ public class PlaceService {
     public List<Place> findAll(){
         return repository.findAll();
     }
-
 }
