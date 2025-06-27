@@ -10,5 +10,6 @@ public interface PlaceRepository {
 
     int insertPlace(Place place);
 
+
     List<Place> findAll();
 }

@@ -45,8 +45,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// Database
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-	runtimeOnly 'com.mysql:mysql-connector-j'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3' // 기존 3.0.3 유지
+	runtimeOnly 'com.mysql:mysql-connector-j' // 기존 connector-j 유지
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -58,9 +58,17 @@ dependencies {
 
 	// Spring Boot Actuator (health check용)
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	
+
 	// Spring Session
 	implementation 'org.springframework.session:spring-session-core'
+
+	// --- 두 번째 파일에서 추가된 의존성 ---
+
+	// 개발 편의성 도구
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// Mybatis 테스트 의존성
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 }
 
 tasks.named('test') {
