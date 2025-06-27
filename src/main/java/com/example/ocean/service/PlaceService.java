@@ -20,6 +20,8 @@ public class PlaceService {
         return repository.insertPlace(place);
     }
 
-    public List<Place> findAll(){return repository.findAll(); }
+    public List<Place> findAll(){
+        return repository.findAll();
+    }
 
 }

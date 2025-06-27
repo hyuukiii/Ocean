@@ -1,28 +1,25 @@
 package com.example.ocean.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "PLACE")
-@Getter
-@Setter
-@Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Place {
-
+    private int placeCd;
     private String place_name;
     private String place_id;
     private String address_name;
     private double lat;
     private double lng;
-    private Timestamp created_at;
+    private LocalDateTime created_at;
+    private String created_by;
 
 
 }
