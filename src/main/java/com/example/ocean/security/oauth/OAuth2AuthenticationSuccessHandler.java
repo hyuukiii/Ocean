@@ -116,9 +116,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     .build().toUriString();
 
 
-            // 워크스페이스 페이지로 리다이렉트
-            //String redirectUrl = "/workspace";
-
             log.info("리다이렉트 URL: {}", redirectUrl);
 
             return redirectUrl;

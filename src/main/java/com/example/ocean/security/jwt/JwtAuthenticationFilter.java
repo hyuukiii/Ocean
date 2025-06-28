@@ -34,8 +34,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+
+
         // OAuth2 관련 경로는 JWT 검증을 건너뛰기
         String requestUri = request.getRequestURI();
+
+        // 정적 리소스는 JWT 검증 건너뛰기
+        if (requestUri.startsWith("/css/") ||
+                requestUri.startsWith("/js/") ||
+                requestUri.startsWith("/images/") ||
+                requestUri.endsWith(".css") ||
+                requestUri.endsWith(".js") ||
+                requestUri.endsWith(".png") ||
+                requestUri.endsWith(".jpg") ||
+                requestUri.endsWith(".ico")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (requestUri.startsWith("/oauth2/") ||
                 requestUri.startsWith("/login/oauth2/") ||
                 requestUri.equals("/login")) {

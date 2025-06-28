@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -75,22 +76,30 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico")
+                .requestMatchers("/error");
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session
                         // OAuth2 인증을 위해 ALWAYS로 설정
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().migrateSession()
                         .invalidSessionUrl("/login")
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        // 정적 리소스
+                        // 정적 리소스 "/favicon-svg.svg"
+                        .requestMatchers("/css/**", "/js/**", "/images/**" ,"/favicon.ico", "/favicon.svg", "/favicon-*.png", "/apple-touch-icon.png").permitAll()
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/favicon.ico", "/favicon.svg", "/favicon-*.png", "/apple-touch-icon.png").permitAll()
+
 
                         // 워크스페이스 관련 경로 추가
                         .requestMatchers("/workspace", "/workspace/**").authenticated()

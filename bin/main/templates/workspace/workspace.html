@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkSpace List</title>
     <!-- 브라우저용 -->
+    <!--
     <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
     <link rel="stylesheet" href="/src/main/resources/static/css/spaceListPage.css">
+    -->
+
     <!-- 서버용 -->
     <link rel="stylesheet" th:href="@{/css/Header.css}">
     <link rel="stylesheet" th:href="@{/css/spaceListPage.css}">
@@ -71,7 +74,11 @@
 </div>
 </body>
 
+<!--토큰 JS -->
+
+<script th:src="@{/js/token.js}"></script>
 <script>
+
     function goToDetail(elem) {
         const workspaceCd = elem.getAttribute('data-id');
         location.href = `/workspace/enter/${workspaceCd}`;
