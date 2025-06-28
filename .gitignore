@@ -1,0 +1,15 @@
+# SSL/TLS certificates
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+
+# 테스트 인증서 폴더들
+ocean-media-server/certs/
+ocean-media-server/ssl/
+ocean-media-server/test-certificates/
+
+# Build artifacts
+build/
+*.jar
