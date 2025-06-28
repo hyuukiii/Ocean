@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>프로필 설정 | Ocean WorkSpace</title>
+  <link rel="stylesheet" th:href="@{/css/Header.css}">
+  <link rel="stylesheet" th:href="@{/css/setProfile.css}">
+  <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+  <link rel="stylesheet" href="/src/main/resources/static/css/setProfile.css">
+  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+  <style>
+    .swiper-container {
+     width: 100%;
+     height: 70vh;
+     overflow: hidden;
+ }
+ .swiper-wrapper {
+     width: 100%;
+     height: 100%;
+ }
+ .swiper-slide {
+     width: 100%;
+     height: 100%;
+     padding: 20px;
+     top: 0;
+     left: 0;
+     transition: opacity 0.3s ease, visibility 0.3s ease;
+ }
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="logo" th:onclick="'location.href=\'' + @{/} + '\''">
+    <div class="logo-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    Ocean WorkSpace
+  </div>
+</header>
+<div class="container">
+
+  <form th:action="@{'/workspace/' + ${workspaceCd} + '/set-profile'}" method="post" enctype="multipart/form-data">
+    <div class="swiper-container">
+      <div class="swiper-wrapper">
+        <!-- 슬라이드 1: 기본 정보 -->
+        <div class="swiper-slide">
+          <div class="profile-image">
+            <img id="profilePreview" class="profile-image-preview"
+                 src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0icmdiYSg3OSwgMTcyLCAyNTQsIDAuMSkiLz48dGV4dCB4PSI1MCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiPlVwbG9hZDwvdGV4dD48L3N2Zz4="
+                 onclick="document.getElementById('profileImage').click()">
+            <input type="file" id="profileImage" name="userImg" accept="image/*">
+          </div>
+
+          <div class="form-group">
+            <label for="userNickname">닉네임</label>
+            <input type="text" id="userNickname" name="userNickname" placeholder="사용하실 닉네임을 입력해주세요" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">이메일</label>
+            <input type="email" id="email" name="email" placeholder="SmapleEmail@gmail.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNum">전화번호</label>
+            <input type="text" id="phoneNum" name="phoneNum" placeholder="010-1234-5678">
+          </div>
+
+          <div class="form-group">
+            <label for="statusMsg">상태 메시지</label>
+            <input type="text" id="statusMsg" name="statusMsg" placeholder="상태 메시지를 입력하세요">
+          </div>
+
+          <div class="navigation">
+            <button type="button" class="btn btn-back" onclick="location.href='/workspace'">목록으로</button>
+            <button type="button" class="btn btn-next" onclick="validateFirstSlide()">다음</button>
+          </div>
+        </div>
+
+        <!-- 슬라이드 2: 부서 및 직급 정보 -->
+        <div class="swiper-slide">
+          <h2>사용 하시려는 부서 / 기관을 선택 해 주세요</h2>
+
+          <div class="form-group">
+            <label for="deptCd">부서/기관</label>
+            <select id="deptCd" name="deptCd" required>
+              <option value="">-- 부서를 선택하세요 --</option>
+              <option th:each="dept : ${departments}"
+                      th:value="${dept.deptCd}"
+                      th:text="${dept.deptNm}">
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="position">현재 직급을 입력 해주세요</label>
+            <input type="text" id="position" name="position" placeholder="예: 대리" required>
+          </div>
+
+
+          <div class="navigation">
+            <button type="button" class="btn btn-prev">이전으로</button>
+            <button type="submit" class="btn btn-submit">참가하기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="swiper-pagination"></div>
+    </div>
+  </form>
+</div>
+
+<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+<script>
+  // 전역 변수로 swiper 선언
+  let swiper;
+
+  document.addEventListener('DOMContentLoaded', function() {
+      // 스와이퍼 초기화 (수정된 부분)
+      swiper = new Swiper('.swiper-container', {
+          allowTouchMove: false,
+          pagination: {
+              el: '.swiper-pagination',
+              clickable: true,
+          },
+          navigation: {
+              nextEl: '.btn-next',
+              prevEl: '.btn-prev',
+          },
+          watchSlidesProgress: true,
+          preventInteractionOnTransition: true,
+          virtualTranslate: false,
+          on: {
+              init: function () {
+                  console.log('Swiper initialized');
+              }
+          }
+      });
+
+      // 이미지 미리보기 (수정된 부분)
+     document.getElementById('profileImage').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            document.getElementById('profilePreview').src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+
+      // 첫 번째 슬라이드 유효성 검사 (수정된 부분)
+      window.validateFirstSlide = function() {
+          const workspaceName = document.getElementById('workspaceNm').value;
+
+          if (!workspaceName) {
+              alert('워크스페이스 이름은 필수 입력 항목입니다.');
+              return;
+          }
+
+          swiper.slideNext();
+      };
+
+      // 다음 버튼 이벤트 (수정된 부분)
+      document.querySelector('.btn-next').addEventListener('click', function() {
+          validateFirstSlide();
+      });
+
+      // 이전 버튼 이벤트 (수정된 부분)
+      document.querySelector('.btn-prev').addEventListener('click', function() {
+          swiper.slidePrev();
+      });
+
+      // 취소 버튼 이벤트
+      document.querySelector('.btn-back').addEventListener('click', function() {
+          location.href='/workspace';
+      });
+
+      // 부서 추가 기능 (수정된 부분)
+      window.addDepartment = function() {
+          const section = document.getElementById('department-section');
+          const div = document.createElement('div');
+          div.className = 'department-input-group';
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.name = 'departments';
+          input.placeholder = '부서명';
+          input.required = true;
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-remove-department';
+          removeBtn.innerHTML = '×';
+          removeBtn.onclick = function() { removeDepartment(this); };
+          removeBtn.style.display = 'inline-block';
+
+          div.appendChild(input);
+          div.appendChild(removeBtn);
+          section.appendChild(div);
+      };
+
+      // 부서 제거 기능 (수정된 부분)
+      window.removeDepartment = function(button) {
+          const inputGroups = document.querySelectorAll('.department-input-group');
+          if (inputGroups.length > 1) {
+              button.parentElement.remove();
+          } else {
+              alert('최소 한 개의 부서는 필요합니다.');
+          }
+      };
+
+      // 날짜 유효성 검사
+      document.getElementById('endDate').min = new Date().toISOString().split('T')[0];
+  });
+</script>
+</body>
+</html>

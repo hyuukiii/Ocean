@@ -1,0 +1,252 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources
+> Task :classes
+> Task :resolveMainClassName
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2025-06-17T11:36:46.180+09:00  INFO 63406 --- [ocean] [           main] com.example.ocean.OceanApplication       : Starting OceanApplication using Java 17.0.14 with PID 63406 (/Users/hyunki/Ocean/build/classes/java/main started by hyunki in /Users/hyunki/Ocean)
+2025-06-17T11:36:46.181+09:00 DEBUG 63406 --- [ocean] [           main] com.example.ocean.OceanApplication       : Running with Spring Boot v3.5.0, Spring v6.2.7
+2025-06-17T11:36:46.181+09:00  INFO 63406 --- [ocean] [           main] com.example.ocean.OceanApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-06-17T11:36:46.575+09:00  INFO 63406 --- [ocean] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-17T11:36:46.596+09:00  INFO 63406 --- [ocean] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 2 JPA repository interfaces.
+2025-06-17T11:36:46.801+09:00  INFO 63406 --- [ocean] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-06-17T11:36:46.807+09:00  INFO 63406 --- [ocean] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-17T11:36:46.807+09:00  INFO 63406 --- [ocean] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-17T11:36:46.826+09:00  INFO 63406 --- [ocean] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-17T11:36:46.827+09:00  INFO 63406 --- [ocean] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 623 ms
+2025-06-17T11:36:46.880+09:00 DEBUG 63406 --- [ocean] [           main] o.s.w.f.ServerHttpObservationFilter      : Filter 'webMvcObservationFilter' configured for use
+2025-06-17T11:36:46.924+09:00  INFO 63406 --- [ocean] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-17T11:36:46.949+09:00  INFO 63406 --- [ocean] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-17T11:36:46.964+09:00  INFO 63406 --- [ocean] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-17T11:36:47.086+09:00  INFO 63406 --- [ocean] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-17T11:36:47.100+09:00  INFO 63406 --- [ocean] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-17T11:36:47.176+09:00  INFO 63406 --- [ocean] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2025-06-17T11:36:47.177+09:00  INFO 63406 --- [ocean] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-17T11:36:47.188+09:00  WARN 63406 --- [ocean] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-17T11:36:47.195+09:00  INFO 63406 --- [ocean] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-17T11:36:47.537+09:00  INFO 63406 --- [ocean] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table user_tokens (
+        user_cd varchar(255) not null,
+        access_token varchar(255),
+        created_at timestamp(6),
+        refresh_token varchar(255),
+        token_expires_at timestamp(6),
+        updated_at timestamp(6),
+        primary key (user_cd)
+    )
+Hibernate: 
+    create table users (
+        user_code varchar(255) not null,
+        created_at timestamp(6),
+        department varchar(255),
+        email varchar(255),
+        is_active boolean,
+        is_profile_complete boolean,
+        last_login_at timestamp(6),
+        nickname varchar(255),
+        phone_number varchar(255),
+        position varchar(255),
+        provider varchar(255),
+        update_at timestamp(6),
+        user_id varchar(255),
+        user_name varchar(255),
+        user_profile_img varchar(255),
+        primary key (user_code)
+    )
+Hibernate: 
+    alter table if exists user_tokens 
+       add constraint FKtc345y25wo01dwajmj1mgaukw 
+       foreign key (user_cd) 
+       references users
+2025-06-17T11:36:47.560+09:00  INFO 63406 --- [ocean] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-17T11:36:47.756+09:00  WARN 63406 --- [ocean] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-17T11:36:47.791+09:00 DEBUG 63406 --- [ocean] [           main] s.w.s.m.m.a.RequestMappingHandlerMapping : 14 mappings in 'requestMappingHandlerMapping'
+2025-06-17T11:36:47.825+09:00 DEBUG 63406 --- [ocean] [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-06-17T11:36:47.869+09:00  INFO 63406 --- [ocean] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2025-06-17T11:36:47.884+09:00 DEBUG 63406 --- [ocean] [           main] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
+2025-06-17T11:36:47.930+09:00 DEBUG 63406 --- [ocean] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2025-06-17T11:36:47.955+09:00 DEBUG 63406 --- [ocean] [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-06-17T11:36:47.987+09:00 DEBUG 63406 --- [ocean] [           main] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-06-17T11:36:48.020+09:00  INFO 63406 --- [ocean] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
+2025-06-17T11:36:48.055+09:00  INFO 63406 --- [ocean] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-06-17T11:36:48.066+09:00  INFO 63406 --- [ocean] [           main] com.example.ocean.OceanApplication       : Started OceanApplication in 2.066 seconds (process running for 2.235)
+2025-06-17T11:46:20.541+09:00  INFO 63406 --- [ocean] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-17T11:46:20.552+09:00  INFO 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-06-17T11:46:20.561+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2025-06-17T11:46:20.562+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
+2025-06-17T11:46:20.562+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
+2025-06-17T11:46:20.660+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@5d28e108
+2025-06-17T11:46:20.661+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@4f5d587c
+2025-06-17T11:46:20.662+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-06-17T11:46:20.662+09:00  INFO 63406 --- [ocean] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 109 ms
+2025-06-17T11:46:20.706+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /login/oauth2/code/kakao?code=test&state=test
+2025-06-17T11:46:20.718+09:00 ERROR 63406 --- [ocean] [nio-8080-exec-1] o.s.o.OAuth2AuthenticationFailureHandler : OAuth2 인증 실패
+2025-06-17T11:46:20.718+09:00 ERROR 63406 --- [ocean] [nio-8080-exec-1] o.s.o.OAuth2AuthenticationFailureHandler : 요청 URI: /login/oauth2/code/kakao
+2025-06-17T11:46:20.719+09:00 ERROR 63406 --- [ocean] [nio-8080-exec-1] o.s.o.OAuth2AuthenticationFailureHandler : 에러 메시지: [authorization_request_not_found] 
+2025-06-17T11:46:20.719+09:00 ERROR 63406 --- [ocean] [nio-8080-exec-1] o.s.o.OAuth2AuthenticationFailureHandler : 에러 타입: org.springframework.security.oauth2.core.OAuth2AuthenticationException
+2025-06-17T11:46:20.719+09:00 ERROR 63406 --- [ocean] [nio-8080-exec-1] o.s.o.OAuth2AuthenticationFailureHandler : 상세 에러:
+
+org.springframework.security.oauth2.core.OAuth2AuthenticationException: [authorization_request_not_found] 
+	at org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter.attemptAuthentication(OAuth2LoginAuthenticationFilter.java:177) ~[spring-security-oauth2-client-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:239) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:229) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.doFilterInternal(OAuth2AuthorizationRequestRedirectFilter.java:198) ~[spring-security-oauth2-client-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:319) ~[spring-security-config-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243) ~[spring-webmvc-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:240) ~[spring-security-config-6.5.0.jar:6.5.0]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.7.jar:6.2.7]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
+
+2025-06-17T11:46:20.733+09:00 DEBUG 63406 --- [ocean] [nio-8080-exec-1] o.s.s.web.DefaultRedirectStrategy        : Redirecting to https://ocean-app.click/oauth2/redirect?error=[authorization_request_not_found] &error_type=OAuth2AuthenticationException
+2025-06-17T13:19:17.435+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=16m22s346ms).
+2025-06-17T13:36:57.130+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m39s643ms).
+2025-06-17T14:48:21.928+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m54s94ms).
+2025-06-17T14:52:54.908+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m2s930ms).
+2025-06-17T15:12:15.696+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3m50s620ms).
+2025-06-17T15:30:15.154+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m29s446ms).
+2025-06-17T15:48:14.993+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m29s825ms).
+2025-06-17T16:00:36.861+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=12m21s868ms).
+2025-06-17T16:16:59.621+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m52s754ms).
+2025-06-17T17:57:16.890+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=54s903ms).
+2025-06-17T17:58:32.549+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=45s112ms).
+2025-06-17T18:02:14.056+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m11s469ms).
+2025-06-17T18:03:30.978+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m16s924ms).
+2025-06-17T18:06:20.507+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m49s527ms).
+2025-06-17T18:12:22.001+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m11s607ms).
+2025-06-17T18:37:11.721+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=24m49s721ms).
+2025-06-17T18:58:06.690+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=20m54s967ms).
+2025-06-17T19:30:38.070+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=32m31s382ms).
+2025-06-17T20:41:30.162+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1h10m52s92ms).
+2025-06-17T21:48:08.984+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1h6m38s821ms).
+2025-06-17T22:18:48.233+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=30m39s247ms).
+2025-06-17T22:54:55.710+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=8m37s105ms).
+2025-06-17T23:52:20.930+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=54s657ms).
+2025-06-17T23:58:20.697+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=47s525ms).
+2025-06-18T00:34:49.556+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=58s526ms).
+2025-06-18T00:51:32.290+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=16m42s740ms).
+2025-06-18T01:03:25.165+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=11m22s848ms).
+2025-06-18T01:16:23.819+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=58s482ms).
+2025-06-18T01:33:37.869+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=16m44s37ms).
+2025-06-18T02:49:15.843+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m37s292ms).
+2025-06-18T03:06:32.004+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=16m46s139ms).
+2025-06-18T03:11:33.632+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m31s575ms).
+2025-06-18T03:29:14.907+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m11s263ms).
+2025-06-18T03:47:19.099+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m34s179ms).
+2025-06-18T04:03:25.978+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m36s884ms).
+2025-06-18T04:12:38.856+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9m12s880ms).
+2025-06-18T04:30:32.287+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m23s422ms).
+2025-06-18T04:46:49.630+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m47s326ms).
+2025-06-18T06:04:22.047+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=17m31s721ms).
+2025-06-18T08:03:47.809+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=14m54s551ms).
+2025-06-18T08:08:19.932+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=4m2s).
+2025-06-18T08:13:50.346+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=5m30s413ms).
+2025-06-18T09:00:07.193+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=46m16s847ms).
+2025-06-18T10:07:15.972+09:00  WARN 63406 --- [ocean] [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m26s924ms).
+Hibernate: 
+    select
+        ut1_0.user_cd,
+        ut1_0.access_token,
+        ut1_0.created_at,
+        ut1_0.refresh_token,
+        ut1_0.token_expires_at,
+        ut1_0.updated_at 
+    from
+        user_tokens ut1_0 
+    where
+        ut1_0.token_expires_at<?
+2025-06-18T10:26:21.581+09:00  INFO 63406 --- [ocean] [   scheduling-1] com.example.ocean.service.TokenService   : 만료된 토큰 0개가 정리 되었습니다.

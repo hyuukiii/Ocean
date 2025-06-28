@@ -1,0 +1,103 @@
+        .middle-text{
+          color: white;
+        }
+        .middle{
+          background-color: #2d2d2d;
+          margin: 0 auto;
+          width: 800px;
+          border-radius: 20px;
+        }
+        /* 중앙 컨테이너 */
+        .space-container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* 초대 코드 입력란 */
+        .space-item {
+          width: 300px;
+          height: 50px;
+          margin: 10px 0;
+          text-align: center;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 15px;
+          color: white;
+          font-weight: bold;
+          font-size: 15px;
+          transition: background 0.3s;
+        }
+
+
+        .space-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 버튼 그룹 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .button-group button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+
+        .btn-join {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #1d1d1d;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-backMain{
+            background: white;
+            color: #1d1d1d;
+        }
+
+        .button-group button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+    /* 중앙 컨테이너 조정 */
+    .middle {
+        width: 95%;
+        border-radius: 15px;
+    }
+    
+    .space-container {
+        max-width: 100%;
+        padding: 20px;
+        margin: 30px auto;
+    }
+
+    /* 입력 필드 크기 조정 */
+    .space-item {
+        width: 100%;
+        height: 45px;
+        font-size: 14px;
+    }
+
+    /* 버튼 그룹 스택 정렬 */
+    .button-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 0 20px;
+    }
+
+    .button-group button {
+        width: 100%;
+        padding: 10px;
+    }
+
+    }

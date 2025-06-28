@@ -1,0 +1,22 @@
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Gradle could not start your build.
+> Could not create service of type BuildLifecycleController using ServicesProvider.createBuildLifecycleController().
+   > Could not create service of type BuildModelController using VintageBuildControllerProvider.createBuildModelController().
+      > Could not create service of type FileHasher using BuildSessionServices.createFileHasher().
+         > Timeout waiting to lock file hash cache (/Users/hyunki/Ocean/.gradle/8.14/fileHashes). It is currently in use by another Gradle instance.
+           Owner PID: unknown
+           Our PID: 62003
+           Owner Operation: unknown
+           Our operation: 
+           Lock file: /Users/hyunki/Ocean/.gradle/8.14/fileHashes/fileHashes.lock
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 2s

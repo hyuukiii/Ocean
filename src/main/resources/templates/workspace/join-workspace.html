@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" th:href="@{/css/Header.css}">
+  <link rel="stylesheet" th:href="@{/css/joinWorkSpace.css}">
+
+  <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+  <link rel="stylesheet" href="/src/main/resources/static/css/joinWorkSpace.css">
+</head>
+<body>
+<!-- 헤더 -->
+<header class="header">
+  <div class="logo" onclick="location.href='main/index.html'">
+    <div class="logo-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    Ocean WorkSpace
+  </div>
+</header>
+
+<form action="/invitations/request" method="post">
+  <div class="middle">
+    <div class="space-container">
+      <div th:if="${message}">
+        <p th:text="${message}" style="color:red;"></p>
+      </div>
+      <h2 class="middle-text">Join Space</h2>
+      <input type="hidden" name="workspaceCd" value="${workspace.workspaceCd}">
+      <input type="text" name="inviteCd" class="space-item" placeholder="초대 코드를 입력 해 주세요" required>
+    </div>
+  </div>
+  <!-- 하단 버튼 그룹 -->
+  <div class="button-group">
+    <button type="submit" class="btn-join" onclick="location.href=''">Join Space</button>
+    <button class="btn-backMain" onclick="location.href='spaceListPage.html'">Back to Page</button>
+  </div>
+</form>
+</body>
+</html>

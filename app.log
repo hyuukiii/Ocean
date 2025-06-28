@@ -1,0 +1,107 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources
+> Task :classes
+> Task :resolveMainClassName
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2025-06-17T11:11:59.315+09:00  INFO 58497 --- [ocean] [           main] com.example.ocean.OceanApplication       : Starting OceanApplication using Java 17.0.14 with PID 58497 (/Users/hyunki/Ocean/build/classes/java/main started by hyunki in /Users/hyunki/Ocean)
+2025-06-17T11:11:59.316+09:00 DEBUG 58497 --- [ocean] [           main] com.example.ocean.OceanApplication       : Running with Spring Boot v3.5.0, Spring v6.2.7
+2025-06-17T11:11:59.316+09:00  INFO 58497 --- [ocean] [           main] com.example.ocean.OceanApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-06-17T11:11:59.807+09:00  INFO 58497 --- [ocean] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-17T11:11:59.833+09:00  INFO 58497 --- [ocean] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 2 JPA repository interfaces.
+2025-06-17T11:12:00.102+09:00  INFO 58497 --- [ocean] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-06-17T11:12:00.117+09:00  INFO 58497 --- [ocean] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-17T11:12:00.118+09:00  INFO 58497 --- [ocean] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-17T11:12:00.141+09:00  INFO 58497 --- [ocean] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-17T11:12:00.141+09:00  INFO 58497 --- [ocean] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 786 ms
+2025-06-17T11:12:00.196+09:00 DEBUG 58497 --- [ocean] [           main] o.s.w.f.ServerHttpObservationFilter      : Filter 'webMvcObservationFilter' configured for use
+2025-06-17T11:12:00.260+09:00  INFO 58497 --- [ocean] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-17T11:12:00.285+09:00  INFO 58497 --- [ocean] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-17T11:12:00.299+09:00  INFO 58497 --- [ocean] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-17T11:12:00.462+09:00  INFO 58497 --- [ocean] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-17T11:12:00.474+09:00  INFO 58497 --- [ocean] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-17T11:12:00.554+09:00  INFO 58497 --- [ocean] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2025-06-17T11:12:00.555+09:00  INFO 58497 --- [ocean] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-17T11:12:00.566+09:00  WARN 58497 --- [ocean] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-17T11:12:00.576+09:00  INFO 58497 --- [ocean] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-17T11:12:00.947+09:00  INFO 58497 --- [ocean] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table user_tokens (
+        user_cd varchar(255) not null,
+        access_token varchar(255),
+        created_at timestamp(6),
+        refresh_token varchar(255),
+        token_expires_at timestamp(6),
+        updated_at timestamp(6),
+        primary key (user_cd)
+    )
+Hibernate: 
+    create table users (
+        user_code varchar(255) not null,
+        created_at timestamp(6),
+        department varchar(255),
+        email varchar(255),
+        is_active boolean,
+        is_profile_complete boolean,
+        last_login_at timestamp(6),
+        nickname varchar(255),
+        phone_number varchar(255),
+        position varchar(255),
+        provider varchar(255),
+        update_at timestamp(6),
+        user_id varchar(255),
+        user_name varchar(255),
+        user_profile_img varchar(255),
+        primary key (user_code)
+    )
+Hibernate: 
+    alter table if exists user_tokens 
+       add constraint FKtc345y25wo01dwajmj1mgaukw 
+       foreign key (user_cd) 
+       references users
+2025-06-17T11:12:00.971+09:00  INFO 58497 --- [ocean] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-17T11:12:01.165+09:00  WARN 58497 --- [ocean] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-17T11:12:01.199+09:00 DEBUG 58497 --- [ocean] [           main] s.w.s.m.m.a.RequestMappingHandlerMapping : 13 mappings in 'requestMappingHandlerMapping'
+2025-06-17T11:12:01.357+09:00 DEBUG 58497 --- [ocean] [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-06-17T11:12:01.470+09:00  INFO 58497 --- [ocean] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2025-06-17T11:12:01.494+09:00 DEBUG 58497 --- [ocean] [           main] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
+2025-06-17T11:12:01.594+09:00 DEBUG 58497 --- [ocean] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, DefaultResourcesFilter, DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2025-06-17T11:12:01.629+09:00 DEBUG 58497 --- [ocean] [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-06-17T11:12:01.737+09:00 DEBUG 58497 --- [ocean] [           main] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-06-17T11:12:01.780+09:00  INFO 58497 --- [ocean] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
+2025-06-17T11:12:01.827+09:00  INFO 58497 --- [ocean] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-06-17T11:12:01.841+09:00  INFO 58497 --- [ocean] [           main] com.example.ocean.OceanApplication       : Started OceanApplication in 2.711 seconds (process running for 2.911)
+
+> Task :bootRun FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bootRun'.
+> Process 'command '/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java'' finished with non-zero exit value 137
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 19m 32s
+4 actionable tasks: 3 executed, 1 up-to-date

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Ocean Favicon</title>
+    <g id="Ocean-Favicon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Background" fill="#2D5A87" cx="16" cy="16" r="16"></circle>
+        <path d="M16,8 C20.418278,8 24,11.581722 24,16 C24,20.418278 20.418278,24 16,24 C11.581722,24 8,20.418278 8,16" id="Wave" stroke="#FFFFFF" stroke-width="2"></path>
+    </g>
+</svg> 
