@@ -1,0 +1,145 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+  display: none;
+}
+
+.invite-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #1e1e1e;
+  color: white;
+  border-radius: 20px;
+  width: 600px;
+  padding: 48px 50px 40px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  z-index: 999;
+  display: none;
+}
+
+.invite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 36px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.invite-body label {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #2a2a2a;
+  border-radius: 24px;
+  padding: 0 18px;
+  height: 50px;
+  margin-bottom: 14px;
+}
+
+.invite-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: white;
+}
+
+.invite-input::placeholder {
+  color: #aaa;
+}
+
+.send-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 36px;
+}
+
+.send-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.send-btn img {
+  width: 38px;
+  height: 38px;
+}
+
+.invite-code-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.invite-code-label {
+  font-size: 16px;
+  color: #ccc;
+  margin-bottom: 12px;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.copy-btn img {
+  width: 42px;
+  height: 42px;
+}
+
+/* 공통 메시지 스타일 */
+.error-message,
+.success-message {
+  font-size: 14px;
+  margin-top: 8px;
+  text-align: center;
+  display: none;
+}
+
+/* 색상만 다르게 */
+.error-message {
+  color: #ff4d4f;
+}
+
+.success-message {
+  color: #4caf50;
+}
+
+/* 초대 코드 복사 메시지는 그대로 유지 */
+#copySuccess {
+  color: #4caf50;
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: center;
+}
+

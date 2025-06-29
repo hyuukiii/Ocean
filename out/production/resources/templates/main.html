@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>Ocean</title>
 
-    <!-- 스타일 분리 -->
     <link rel="stylesheet" th:href="@{/css/lnb.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/rnb.css}">
+    <link rel="stylesheet" th:href="@{/css/invite.css}">
 
     <style>
         body {
@@ -24,7 +24,6 @@
 <!-- 메인 콘텐츠 -->
 <div class="main">
 
-    <!-- 상단 배너 -->
     <div class="top-banner">
         <div class="title">프로젝트 마감까지</div>
         <div class="d-day">D-21</div>
@@ -34,7 +33,6 @@
         <div class="date">6월 10일 화요일</div>
     </div>
 
-    <!-- 일정 및 활동 -->
     <div class="main-section">
         <div class="schedule">
             <h2>오늘의 일정</h2>
@@ -51,7 +49,6 @@
         </div>
     </div>
 
-    <!-- 통계 및 명언 -->
     <div class="bottom-section">
         <div class="stats">
             <div class="stat-box"><div class="big">24</div><div>새로운 일정</div></div>
@@ -69,22 +66,18 @@
 <!-- 오른쪽 사이드바 (RNB) -->
 <div th:replace="fragments/rnb :: rnbFragment"></div>
 
+
+<!-- 초대 모달 -->
+<div th:replace="fragments/invite-modal :: inviteModalFragment"></div>
+
+
+<div th:replace="fragments/miniProfileFragment :: miniProfileFragment"></div>
+
+
+
 <!-- RNB 토글 버튼용 스크립트 -->
-<script th:src="@{/js/rnb-toggle.js}"></script>
-
-<!-- 초대 모달창 -->
-<div class="modal-overlay" id="modalOverlay"></div>
-
-<div class="invite-modal" id="inviteModal">
-    <h2><b>Ocean(으)로 초대하기</b></h2>
-    <p>초대받을 사람:</p>
-    <input type="email" value="gudxor8251@naver.com" />
-    <button>보내기</button>
-    <p>초대 코드: <b>123456</b></p>
-    <button>초대 코드 복사하기</button>
-    <button onclick="closeInvite()">닫기</button>
-</div>
-
+<script th:src="@{/js/rnb-toggle.js}" defer></script>
+<script th:src="@{/js/invite-modal.js}"></script>
 
 </body>
 </html>

@@ -1,0 +1,49 @@
+<div th:fragment="inviteModalFragment">
+
+  <!-- 어두운 배경 -->
+  <div class="modal-overlay" id="inviteOverlay"></div>
+
+  <!-- 초대 모달창 -->
+  <div class="invite-modal" id="inviteModal">
+    <div class="invite-header">
+      <span>Ocean(으)로 초대하기</span>
+      <button class="close-btn">✕</button>
+    </div>
+
+    <div class="invite-body">
+
+      <!-- 이메일 입력 -->
+      <label for="inviteEmail">초대받을 사람:</label>
+      <div class="input-wrapper">
+        <input type="email" id="inviteEmail" class="invite-input" placeholder="ocean@naver.com">
+      </div>
+
+      <!-- 이메일 메시지 (중앙 아래 표시) -->
+      <div class="invite-message-wrapper">
+        <div class="error-message" id="emailError">유효한 이메일 주소를 입력해주세요.</div>
+        <div class="success-message" id="emailSuccess">초대가 정상적으로 발송되었어요!</div>
+      </div>
+
+      <!-- 보내기 버튼 -->
+      <div class="send-container">
+        <button class="send-btn">
+          <span>보내기</span>
+          <img src="/images/send.png" alt="send">
+        </button>
+      </div>
+
+      <!-- 초대 코드 복사 영역 -->
+      <div class="invite-code-center">
+        <div class="invite-code-label">초대 코드: <b id="inviteCode">123456</b></div>
+        <button class="copy-btn">
+          <img src="/images/copy.png" alt="copy">
+          <span>초대 코드 복사하기</span>
+        </button>
+
+        <div class="success-message" id="copySuccess">초대 코드가 복사되었어요.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

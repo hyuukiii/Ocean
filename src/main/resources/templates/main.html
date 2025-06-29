@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/lnb.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/rnb.css}">
+    <link rel="stylesheet" th:href="@{/css/invite.css}">
 
     <style>
         body {
@@ -65,22 +66,18 @@
 <!-- 오른쪽 사이드바 (RNB) -->
 <div th:replace="fragments/rnb :: rnbFragment"></div>
 
+
+<!-- 초대 모달 -->
+<div th:replace="fragments/invite-modal :: inviteModalFragment"></div>
+
+
+<div th:replace="fragments/miniProfileFragment :: miniProfileFragment"></div>
+
+
+
 <!-- RNB 토글 버튼용 스크립트 -->
-<script th:src="@{/js/rnb-toggle.js}"></script>
-
-<!-- 초대 모달창 -->
-<div class="modal-overlay" id="modalOverlay"></div>
-
-<div class="invite-modal" id="inviteModal">
-    <h2><b>Ocean(으)로 초대하기</b></h2>
-    <p>초대받을 사람:</p>
-    <input type="email" value="gudxor8251@naver.com" />
-    <button>보내기</button>
-    <p>초대 코드: <b>123456</b></p>
-    <button>초대 코드 복사하기</button>
-    <button onclick="closeInvite()">닫기</button>
-</div>
-
+<script th:src="@{/js/rnb-toggle.js}" defer></script>
+<script th:src="@{/js/invite-modal.js}"></script>
 
 </body>
 </html>

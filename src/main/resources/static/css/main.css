@@ -143,30 +143,10 @@
   text-align: right;
 }
 
-/* 어두운 배경 오버레이 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);  /* 반투명 블랙 */
-  z-index: 999;
-  display: none;
-}
 
-/* 초대 모달창 */
-.invite-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #1e1e1e;
-  border-radius: 20px;
-  padding: 32px;
-  z-index: 1000;
-  color: white;
-  display: none;
-  width: 500px;
-}
+
+
+
+
+
 

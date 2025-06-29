@@ -85,8 +85,8 @@ body.rnb-closed .rnb-toggle-btn {
 
 .notification {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 50px;
+  height: 50px;
 }
 
 .notification img {
@@ -187,3 +187,50 @@ body.rnb-closed .rnb-toggle-btn {
 .invite-member .m-name {
   font-weight: bold;
 }
+
+.mini-profile-modal {
+  position: absolute;
+  top: 70px;
+  left: -220px;
+  width: 200px;
+  background-color: #1c1c1c;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  padding: 15px;
+  display: none;
+  z-index: 1000;
+}
+
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.profile-options .option {
+  padding: 6px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dot.green {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: limegreen;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.logout {
+  color: #ff4d4d;
+}
+
