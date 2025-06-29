@@ -234,6 +234,21 @@
                 localStorage.setItem('isAuthenticated', 'true');
                 debugLog('새 토큰 저장 시도 완료');
 
+                // ⭐️ 여기에 추가! - 사용자 정보 저장
+                const userName = urlParams.get('userName');
+                const userImg = urlParams.get('userImg');
+
+                if (userName) {
+                    localStorage.setItem('userName', decodeURIComponent(userName));
+                    debugLog('사용자 이름 저장:', userName);
+                }
+                if (userImg) {
+                    localStorage.setItem('userImg', decodeURIComponent(userImg));
+                    debugLog('사용자 이미지 저장:', userImg);
+                }
+
+                debugLog('새 토큰 저장 시도 완료');
+
                 // 저장 확인
                 const savedToken = localStorage.getItem('accessToken');
                 const savedAuth = localStorage.getItem('isAuthenticated');
@@ -251,10 +266,10 @@
                 document.querySelector('.loading-title').textContent = '로그인 성공!';
                 document.querySelector('.loading-message').textContent = '메인 페이지로 이동합니다...';
 
-                // 메인 페이지로 리다이렉트
+                // 워크 스페이스 리스트로 리다이렉트
                 setTimeout(() => {
-                    debugLog('메인 페이지로 리다이렉트...');
-                    window.location.href = '/';
+                    debugLog('워크스페이스리스트로 리다이렉트...');
+                    window.location.href = '/workspace';
                 }, 1500);
 
             } catch (e) {

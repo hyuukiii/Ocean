@@ -1,6 +1,7 @@
 package com.example.ocean.security.oauth;
 
 import com.example.ocean.dto.response.TokenResponse;
+import com.example.ocean.entity.User;
 import com.example.ocean.security.jwt.JwtTokenProvider;
 import com.example.ocean.service.TokenService;
 import jakarta.servlet.ServletException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 @Slf4j
 @Component
@@ -108,11 +110,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             
             log.info("임시 액세스 토큰 쿠키 설정 완료 (SameSite=None, Secure=true)");
 
-
+            /*
              // 토큰을 URL 파라미터로 전달하도록 수정
             String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
                     .path("/oauth2-redirect.html")
                     .queryParam("token", tokenResponse.getAccessToken())
+                    .build().toUriString();
+            */
+
+
+            String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
+                    .path("/oauth2-redirect.html")
+                    .queryParam("token", tokenResponse.getAccessToken())
+                    .queryParam("userName", URLEncoder.encode(userPrincipal.getUsername(), "UTF-8"))
                     .build().toUriString();
 
 

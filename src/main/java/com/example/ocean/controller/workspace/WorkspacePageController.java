@@ -80,6 +80,25 @@ public class WorkspacePageController {
         }
     }
 
+    // create-workspace 페이지 보여주기
+    @GetMapping("/workspace/create")
+    public String createWorkspacePage(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                      Model model) {
+        // 인증 확인
+        if (userPrincipal == null) {
+            log.error("인증되지 않은 사용자 - 로그인 페이지로 리다이렉트");
+            return "redirect:/login";
+        }
+
+        log.info("워크스페이스 생성 페이지 접근 - 사용자: {}", userPrincipal.getName());
+
+        // 필요한 경우 모델에 데이터 추가
+        model.addAttribute("userId", userPrincipal.getId());
+        model.addAttribute("userName", userPrincipal.getName());
+
+        return "workspace/create-workspace";
+    }
+
     @GetMapping("/oauth2-redirect.html")
     public String oauth2RedirectPage() {
         return "oauth2-redirect";  // templates/oauth2-redirect.html
