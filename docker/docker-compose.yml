@@ -14,8 +14,8 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      # 데이터 영속성만 유지 (init 스크립트는 필요시 추가) , 나중에 3307 <-- 3306으로 바꿔주기
       - ocean_mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
       - ocean-network
