@@ -78,8 +78,15 @@
             position: relative;
             margin-bottom: 15px;
         }
+
+        .department-input-group input {
+            padding-right: 40px; /* X 버튼 공간 확보 */
+        }
+
+
         .btn-remove-department {
             position: absolute;
+            right: 10px; /* 오른쪽에서 10px 떨어진 위치 */
             top: 50%;
             transform: translateY(-50%);
             background: none;

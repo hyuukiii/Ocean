@@ -107,7 +107,7 @@
                         <label>부서 추가</label>
                         <div class="department-input-group">
                             <input type="text" name="departments" placeholder="부서명" required>
-                            <button type="button" class="btn-remove-department" onclick="removeDepartment(this)" style="display: none;">×</button>
+                            <button type="button" class="btn-remove-department" onclick="removeDepartment(this)">×</button>
                         </div>
                     </div>
 
@@ -133,100 +133,8 @@
 <!-- ⭐ Ocean Background JavaScript 추가 -->
 <script th:src="@{/js/ocean-background.js}"></script>
 <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        // 스와이퍼 초기화
-        const swiper = new Swiper('.swiper-container', {
-            allowTouchMove: false,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.btn-next',
-                prevEl: '.btn-prev',
-            },
-        });
+<script th:inline="javascript"></script>
+<script th:src="@{/js/CreateWorkspace.js}"></script>
 
-
-        // 다음 버튼 클릭 이벤트
-        document.querySelector('.btn-next').addEventListener('click', function() {
-            validateFirstSlide();
-        });
-
-        function validateFirstSlide() {
-            const nameInput = document.getElementById('workspaceNm');
-            if (!nameInput.value.trim()) {
-                alert('워크스페이스 이름을 입력해주세요!');
-                nameInput.focus();
-                return;
-            }
-            swiper.slideNext();
-        }
-
-        // 이미지 미리보기 기능
-        document.getElementById('upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById('preview');
-                    preview.src = event.target.result;
-                    preview.style.borderStyle = 'solid';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 부서추가
-        window.addDepartment = function() {
-                const section = document.getElementById('department-section');
-                const inputGroups = section.querySelectorAll('.department-input-group');
-
-                // 새로운 입력 그룹 생성
-                const newGroup = document.createElement('div');
-                newGroup.className = 'department-input-group';
-
-                // 입력 필드 생성
-                const newInput = document.createElement('input');
-                newInput.type = 'text';
-                newInput.name = 'departments';
-                newInput.placeholder = '부서명';
-                newInput.required = true;
-
-                // 삭제 버튼 생성 (항상 보이도록)
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn-remove-department';
-                removeBtn.innerHTML = '×';
-                removeBtn.onclick = function() { removeDepartment(this); };
-                removeBtn.style.display = 'inline-block';
-
-                // 요소 결합
-                newGroup.appendChild(newInput);
-                newGroup.appendChild(removeBtn);
-
-                // 마지막 입력 그룹 뒤에 추가
-                const lastGroup = inputGroups[inputGroups.length - 1];
-                lastGroup.parentNode.insertBefore(newGroup, lastGroup.nextSibling);
-
-                // 새로 추가된 입력 필드에 포커스
-                newInput.focus();
-            };
-
-        // 부서 제거 기능
-       window.removeDepartment = function(button) {
-                const inputGroups = document.querySelectorAll('.department-input-group');
-                if (inputGroups.length > 1) {
-                    button.parentElement.remove();
-                } else {
-                    alert('최소 한 개의 부서는 필요합니다.');
-                }
-            };
-
-        // 날짜 유효성 검사
-        document.getElementById('endDate').min = new Date().toISOString().split('T')[0];
-    });
-</script>
 </body>
 </html>
