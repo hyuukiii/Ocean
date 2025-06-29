@@ -4,16 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkSpace List</title>
-
-    <!-- 브라우저용 -->
-    <!--
-    <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
-    <link rel="stylesheet" href="/src/main/resources/static/css/spaceListPage.css">
-    -->
-
     <!-- 서버용 -->
     <link rel="stylesheet" th:href="@{/css/Header.css}">
-    <link rel="stylesheet" th:href="@{/css/spaceListPage.css}">
+    <link rel="stylesheet" th:href="@{/css/SpaceListPage.css}">
 </head>
 <body>
 <header class="header">
@@ -93,91 +86,7 @@
 </body>
 
 <!--토큰 JS -->
-<script th:src="@{/js/token.js}"></script>
-<script>
-    // 페이지 로드 시 즉시 사용자 정보 표시
-    document.addEventListener('DOMContentLoaded', function() {
-        updateAuthUI();
-
-        // 임시로 타임리프에서 받은 사용자 정보 사용
-        const userPrincipal = /*[[${#authentication?.principal}]]*/ null;
-        if (userPrincipal) {
-            displayUserInfo(userPrincipal);
-        }
-    });
-
-    function updateAuthUI() {
-        const accessToken = localStorage.getItem('accessToken');
-        const loginBtn = document.querySelector('.login-btn');
-        const userInfo = document.querySelector('.user-info');
-
-        if (accessToken) {
-            loginBtn.style.display = 'none';
-            userInfo.style.display = 'flex';
-
-            // OAuth2 로그인 후 임시 사용자 정보 표시
-            const tempUserName = localStorage.getItem('userName');
-            const tempUserImg = localStorage.getItem('userImg');
-
-            if (tempUserName || tempUserImg) {
-                document.querySelector('.user-avatar').src = tempUserImg || '/images/default-avatar.png';
-                document.querySelector('.user-name').textContent = tempUserName || '사용자';
-            } else {
-                // API 호출
-                fetchUserInfo();
-            }
-        } else {
-            loginBtn.style.display = 'block';
-            userInfo.style.display = 'none';
-        }
-    }
-
-    async function fetchUserInfo() {
-        const token = localStorage.getItem('accessToken');
-
-        try {
-            const response = await fetch('/api/auth/user', {
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            });
-
-            if (response.ok) {
-                const user = await response.json();
-                displayUserInfo(user);
-            } else {
-                console.error('사용자 정보 조회 실패:', response.status);
-                // 기본값 표시
-                document.querySelector('.user-avatar').src = '/images/default-avatar.png';
-                document.querySelector('.user-name').textContent = '사용자';
-            }
-        } catch (error) {
-            console.error('사용자 정보 조회 실패:', error);
-            // 기본값 표시
-            document.querySelector('.user-avatar').src = '/images/default-avatar.png';
-            document.querySelector('.user-name').textContent = '사용자';
-        }
-    }
-
-    function displayUserInfo(user) {
-        document.querySelector('.user-avatar').src = user.userImg || user.imageUrl || '/images/default-avatar.png';
-        document.querySelector('.user-name').textContent = user.userName || user.name || '사용자';
-    }
-
-    async function logout() {
-        try {
-            // 토큰 삭제
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userImg');
-
-            // 메인 페이지로 이동
-            window.location.href = '/';
-        } catch (error) {
-            console.error('로그아웃 실패:', error);
-        }
-    }
-</script>
-
+<script th:src="@{/js/Token.js}"></script>
+<!--워크 스페이스 리스트 JS -->
+<script th:src="@{/js/Workspace.js}"></script>
 </html>
