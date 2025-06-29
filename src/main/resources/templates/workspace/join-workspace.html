@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Join Workspace | Ocean WorkSpace</title>
   <link rel="stylesheet" th:href="@{/css/Header.css}">
   <link rel="stylesheet" th:href="@{/css/joinWorkSpace.css}">
 
-  <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
-  <link rel="stylesheet" href="/src/main/resources/static/css/joinWorkSpace.css">
+  <!-- ⭐ Ocean Background CSS 추가 -->
+  <link rel="stylesheet" th:href="@{/css/ocean-background.css}">
 </head>
 <body>
 <!-- 헤더 -->
 <header class="header">
-  <div class="logo" onclick="location.href='main/index.html'">
+  <div class="logo" onclick="location.href='/'">
     <div class="logo-icon">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
@@ -24,22 +24,37 @@
   </div>
 </header>
 
-<form action="/invitations/request" method="post">
-  <div class="middle">
-    <div class="space-container">
-      <div th:if="${message}">
-        <p th:text="${message}" style="color:red;"></p>
-      </div>
-      <h2 class="middle-text">Join Space</h2>
-      <input type="hidden" name="workspaceCd" value="${workspace.workspaceCd}">
-      <input type="text" name="inviteCd" class="space-item" placeholder="초대 코드를 입력 해 주세요" required>
+<div class="middle">
+  <div class="space-container">
+    <div th:if="${message}" class="message-container">
+      <p th:text="${message}" th:classappend="${messageType == 'error' ? 'error-message' : 'success-message'}"></p>
+    </div>
+    <h2 class="middle-text">Join Space</h2>
+
+    <div class="invite-form">
+      <input type="text"
+             id="inviteCode"
+             name="inviteCd"
+             class="space-item"
+             placeholder="초대 코드를 입력해주세요"
+             required>
     </div>
   </div>
-  <!-- 하단 버튼 그룹 -->
-  <div class="button-group">
-    <button type="submit" class="btn-join" onclick="location.href=''">Join Space</button>
-    <button class="btn-backMain" onclick="location.href='spaceListPage.html'">Back to Page</button>
-  </div>
-</form>
+</div>
+
+<!-- 하단 버튼 그룹 -->
+<div class="button-group">
+  <button type="button" class="btn-join" onclick="submitInvitation()">Join Space</button>
+  <button type="button" class="btn-backMain" onclick="location.href='/workspace'">Back to Page</button>
+</div>
+
+
+<!-- ⭐ Ocean Background JavaScript 추가 -->
+<script th:src="@{/js/ocean-background.js}"></script>
+<!-- 토큰JS -->
+<script th:src="@{/js/Token.js}"></script>
+
+<script th:src="@{/js/JoinWorkspace.js}"></script>
+
 </body>
 </html>

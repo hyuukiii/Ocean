@@ -1,4 +1,4 @@
-// HTML 페이지 마다 추가 할 토큰 기능 자바스크립트
+// HTML 페이지 마다 추가 할 토큰 기능 자바스크립트 페이지마다 무조건 추가 해주기!!
 // 토큰 갱신 함수
     async function refreshAccessToken() {
         try {

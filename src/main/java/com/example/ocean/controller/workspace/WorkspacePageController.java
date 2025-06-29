@@ -99,11 +99,35 @@ public class WorkspacePageController {
         return "workspace/create-workspace";
     }
 
+    /**
+     * 워크스페이스 참가 페이지
+     *
+     * @param userPrincipal 인증된 사용자 정보
+     * @param model 뷰에 전달할 모델
+     * @return join-workspace 페이지
+     */
+    @GetMapping("/invitations/join")
+    public String joinWorkspacePage(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                    Model model) {
+        // 인증 확인
+        if (userPrincipal == null) {
+            log.error("인증되지 않은 사용자 - 로그인 페이지로 리다이렉트");
+            return "redirect:/login";
+        }
+
+        log.info("워크스페이스 참가 페이지 접근 - 사용자: {}", userPrincipal.getName());
+
+        // 필요한 경우 모델에 데이터 추가
+        model.addAttribute("userId", userPrincipal.getId());
+        model.addAttribute("userName", userPrincipal.getName());
+
+        return "workspace/join-workspace";
+    }
+
     @GetMapping("/oauth2-redirect.html")
     public String oauth2RedirectPage() {
         return "oauth2-redirect";  // templates/oauth2-redirect.html
     }
-
 
 
     /*
