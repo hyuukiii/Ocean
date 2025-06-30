@@ -13,3 +13,6 @@ ocean-media-server/test-certificates/
 # Build artifacts
 build/
 *.jar
+
+application-secrets.properties
+**/application-*secrets*.properties
