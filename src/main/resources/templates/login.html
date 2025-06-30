@@ -118,8 +118,20 @@
         }
 
         .google-button {
-            background-color: white;
+            background-color: #ffffff;
             color: #757575;
+            border: 1px solid #dadce0;
+        }
+
+        .google-button:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .google-button img {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
         }
 
         .return-home {
@@ -179,13 +191,11 @@
             카카오로 시작하기
         </a>
 
-        <!-- 구글 로그인은 현재 설정되지 않음 -->
-        <!--
+        <!-- 구글 로그인은-->
         <a href="/oauth2/authorize/google" class="social-button google-button">
             <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" alt="Google">
             구글로 시작하기
         </a>
-        -->
     </div>
 
     <a href="/" class="return-home">홈으로 돌아가기</a>
