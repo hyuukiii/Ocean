@@ -3,7 +3,7 @@ DOCKER_COMPOSE = cd docker && docker-compose
 PROJECT_NAME = ocean
 
 # 기본 명령어
-.PHONY: help
+.PHONY:
 help:
 	@echo "🌊 Ocean 프로젝트 명령어:"
 	@echo "  make start       - 모든 서비스 시작"

@@ -112,14 +112,39 @@
             margin-right: 10px;
         }
 
+        .social-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
         .kakao-button {
             background-color: #FEE500;
             color: #000000;
         }
 
+        .kakao-button:hover {
+            background-color: #FDD835;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
         .google-button {
-            background-color: white;
+            background-color: #ffffff;
             color: #757575;
+            border: 1px solid #dadce0;
+        }
+
+        .google-button:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .google-button img {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
         }
 
         .return-home {
@@ -174,18 +199,19 @@
     <p class="login-subtitle">소셜 계정으로 간편하게 로그인하세요</p>
 
     <div class="login-buttons">
+        <!-- 카카오 로그인 버튼 -->
         <a href="/oauth2/authorize/kakao" class="social-button kakao-button">
-            <img src="https://k.kakaocdn.net/14/dn/btqCn0WEmI3/nijroPfbpCa4at5EIsjyf0/o.jpg" alt="Kakao">
+            <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3C7.03 3 3 6.48 3 10.75c0 2.74 1.66 5.15 4.17 6.51l-.68 2.47c-.05.19.11.37.3.32.06-.02.12-.05.17-.1l2.9-1.94c.7.13 1.42.2 2.14.2 4.97 0 9-3.48 9-7.75S16.97 3 12 3z" fill="#000000"/>
+            </svg>
             카카오로 시작하기
         </a>
 
-        <!-- 구글 로그인은 현재 설정되지 않음 -->
-        <!--
+        <!-- 구글 로그인 -->
         <a href="/oauth2/authorize/google" class="social-button google-button">
             <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" alt="Google">
             구글로 시작하기
         </a>
-        -->
     </div>
 
     <a href="/" class="return-home">홈으로 돌아가기</a>
