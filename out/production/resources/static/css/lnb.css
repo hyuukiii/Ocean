@@ -13,8 +13,8 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* 아이템 간 간격 */
-  padding: 40px 0; /* 전체 위아래 여백 */
+  gap: 20px;
+  padding: 40px 0;
   align-items: center;
 }
 
@@ -46,7 +46,6 @@
   font-weight: 500;
 }
 
-/* 하단 아이콘 (메뉴 버튼 등) */
 .lnb-footer {
   width: 100%;
   display: flex;
