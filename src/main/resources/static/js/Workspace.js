@@ -2,6 +2,16 @@
     document.addEventListener('DOMContentLoaded', function() {
         updateAuthUI();
 
+
+        // 워크스페이스 상세 페이지로 이동
+            window.goToDetail = function(element) {
+                const workspaceCd = element.getAttribute('data-id');
+                if (workspaceCd) {
+                    // 워크스페이스 입장 시간 업데이트 후 이동
+                    location.href = `/workspace/${workspaceCd}`;
+                }
+            };
+
         // 임시로 타임리프에서 받은 사용자 정보 사용
         const userPrincipal = /*[[${#authentication?.principal}]]*/ null;
         if (userPrincipal) {
