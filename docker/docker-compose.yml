@@ -1,0 +1,79 @@
+version: '3.8'
+services:
+  # MySQL 데이터베이스
+  ocean-mysql:
+    image: mysql:8.0
+    container_name: ocean-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: ocean_db
+      MYSQL_USER: ocean_user
+      MYSQL_PASSWORD: ocean_pass
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - ocean_mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - ocean-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot1234"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+
+  # Spring Boot 애플리케이션 - 로컬 개발 시 주석 처리
+  # ocean-app:
+  #   image: ocean-app:latest
+  #   container_name: ocean-app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     ocean-mysql:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://ocean-mysql:3306/ocean_db
+  #     SPRING_DATASOURCE_USERNAME: ocean_user
+  #     SPRING_DATASOURCE_PASSWORD: ocean_pass
+  #     SPRING_PROFILES_ACTIVE: prod
+  #     TZ: Asia/Seoul
+  #   networks:
+  #     - ocean-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # phpMyAdmin (일반 이미지로 변경)
+  ocean-phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ocean-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      ocean-mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: ocean-mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 300M
+      TZ: Asia/Seoul
+    ports:
+      - "8081:80"
+    networks:
+      - ocean-network
+
+# 네트워크 설정
+networks:
+  ocean-network:
+    driver: bridge
+
+# 볼륨 설정
+volumes:
+  ocean_mysql_data:
+    driver: local

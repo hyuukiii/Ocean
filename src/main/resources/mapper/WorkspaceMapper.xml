@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.ocean.mapper.WorkspaceMapper">
+
+    <insert id="insertWorkspace" parameterType="com.example.ocean.domain.Workspace">
+        INSERT INTO WORKSPACE (
+        WORKSPACE_CD, WORKSPACE_NM, WORKSPACE_IMG,
+        INVITE_CD, ACTIVE_STATE, CREATED_DATE, END_DATE
+        )
+        VALUES (
+        #{workspaceCd}, #{workspaceNm}, #{workspaceImg},
+        #{inviteCd}, #{activeState}, #{createdDate}, #{endDate}
+        )
+    </insert>
+
+    <insert id="joinWorkspace">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_NICKNAME, USER_ROLE, ACTIVE_STATE, JOINED_DATE
+        )
+        VALUES (
+        #{workspaceCd}, #{userId}, #{userNickname}, #{userRole}, #{activeState}, NOW()
+        )
+    </insert>
+
+    <select id="findWorkspaceByInviteCd" parameterType="string" resultType="com.example.ocean.domain.Workspace">
+        SELECT WORKSPACE_CD, WORKSPACE_NM, WORKSPACE_IMG, INVITE_CD, ACTIVE_STATE, CREATED_DATE, END_DATE
+        FROM WORKSPACE
+        WHERE INVITE_CD = #{inviteCd}
+    </select>
+
+    <insert id="addUserToWorkspace">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_ROLE, ACTIVE_STATE, JOINED_DATE
+        ) VALUES (
+        #{workspaceCd}, #{userId}, #{userRole}, #{activeState}, NOW()
+        )
+    </insert>
+
+    <update id="updateUserProfile">
+        UPDATE WORKSPACE_MEMBERS
+        SET
+        USER_NICKNAME = #{userNickname},
+        STATUS_MSG = #{statusMsg},
+        EMAIL = #{email},
+        PHONE_NUM = #{phoneNum}
+        WHERE
+        WORKSPACE_CD = #{workspaceCd}
+        AND USER_ID = #{userId}
+    </update>
+
+    <insert id="insertUserProfile">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_NICKNAME,
+        STATUS_MSG, EMAIL, PHONE_NUM,
+        USER_ROLE, ACTIVE_STATE, JOINED_DATE, USER_IMG
+        ) VALUES (
+        #{workspaceCd}, #{userId}, #{userNickname},
+        #{statusMsg}, #{email}, #{phoneNum},
+        #{userRole}, '1', NOW(), #{userImg}
+        )
+    </insert>
+
+
+    <!-- 1. 초대코드로 워크스페이스 찾기 -->
+    <select id="findByInviteCode" resultType="com.example.ocean.domain.Workspace">
+        SELECT
+        WORKSPACE_CD as workspaceCd,
+        WORKSPACE_NM as workspaceNm,
+        WORKSPACE_IMG as workspaceImg,
+        INVITE_CD as inviteCd,
+        ACTIVE_STATE as activeState,
+        CREATED_DATE as createdDate,
+        END_DATE as endDate
+        FROM WORKSPACE
+        WHERE LOWER(INVITE_CD) = LOWER(#{inviteCd})
+    </select>
+
+    <!-- 2. 중복 초대 요청 확인 -->
+    <select id="countInvitation" resultType="int">
+        SELECT COUNT(*) FROM INVITATIONS
+        WHERE WORKSPACE_CD = #{workspaceCd} AND INVITED_USER_ID = #{invitedUserId}
+    </select>
+
+    <!-- 3. 초대 요청 삽입 -->
+    <insert id="insertInvitation">
+        INSERT INTO INVITATIONS (WORKSPACE_CD, INVITED_USER_ID, INVITE_CD, STATUS)
+        VALUES (#{workspaceCd}, #{invitedUserId}, #{inviteCd}, NULL)
+    </insert>
+
+    <!-- 4. 대기 중인 초대 목록 (상태가 NULL인 것만) -->
+    <select id="selectPendingInvitations" resultType="map">
+        SELECT i.WORKSPACE_CD, i.INVITED_USER_ID, u.USER_NM, u.USER_IMG, i.CREATED_DATE
+        FROM INVITATIONS i
+        JOIN USERS u ON i.INVITED_USER_ID = u.USER_ID
+        WHERE i.WORKSPACE_CD = #{workspaceCd}
+        AND i.STATUS IS NULL
+    </select>
+
+    <select id="getAllPendingInvitations" resultType="java.util.HashMap">
+        SELECT i.WORKSPACE_CD,
+        i.INVITED_USER_ID,
+        u.USER_NM,
+        u.USER_IMG,
+        i.CREATED_DATE,
+        w.WORKSPACE_NM
+        FROM INVITATIONS i
+        JOIN USERS u ON i.INVITED_USER_ID = u.USER_ID
+        JOIN WORKSPACE w ON i.WORKSPACE_CD = w.WORKSPACE_CD
+        WHERE i.STATUS IS NULL
+    </select>
+
+    <!-- 초대 상태 업데이트 -->
+    <update id="updateInvitationStatus">
+        UPDATE INVITATIONS
+        SET STATUS = #{status}
+        WHERE WORKSPACE_CD = #{workspaceCd}
+        AND INVITED_USER_ID = #{invitedUserId}
+    </update>
+
+    <insert id="insertWorkspaceMember">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_NICKNAME, USER_ROLE, STATUS_MSG,
+        EMAIL, PHONE_NUM, ACTIVE_STATE, JOINED_DATE
+        )
+        VALUES (
+        #{workspaceCd}, #{userId}, '', 'MEMBER', '',
+        '', '', '1', NOW()
+        )
+    </insert>
+
+    <!-- 8. 초대 거절 -->
+    <update id="rejectInvitation">
+        UPDATE INVITATIONS
+        SET STATUS = 'REJECT'
+        WHERE WORKSPACE_CD = #{workspaceCd}
+        AND INVITED_USER_ID = #{invitedUserId};
+    </update>
+
+    <select id="findNicknameInWorkspace" resultType="string">
+        SELECT USER_NICKNAME
+        FROM WORKSPACE_MEMBERS
+        WHERE WORKSPACE_CD = #{workspaceCd}
+        AND USER_ID = #{userId}
+    </select>
+
+    <select id="findWorkspaceByCd" resultType="com.example.ocean.domain.Workspace">
+        SELECT
+        WORKSPACE_CD   AS workspaceCd,
+        WORKSPACE_NM   AS workspaceNm,
+        WORKSPACE_IMG  AS workspaceImg,
+        INVITE_CD      AS inviteCd,
+        ACTIVE_STATE   AS activeState,
+        CREATED_DATE   AS createdDate,
+        END_DATE       AS endDate
+        FROM WORKSPACE
+        WHERE WORKSPACE_CD = #{workspaceCd}
+    </select>
+
+    <insert id="insertDepartment" parameterType="com.example.ocean.domain.WorkspaceDept">
+        INSERT INTO WORKSPACE_DEPT (WORKSPACE_CD, DEPT_CD, DEPT_NM)
+        VALUES (#{workspaceCd}, #{deptCd}, #{deptNm})
+    </insert>
+
+    <insert id="insertMember" parameterType="com.example.ocean.domain.WorkspaceMember">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_ROLE, USER_NICKNAME, ACTIVE_STATE, JOINED_DATE
+        ) VALUES (
+        #{workspaceCd}, #{userId}, #{userRole}, '', '1', NOW()
+        )
+    </insert>
+
+    <select id="findGlobalMaxDeptNumber" resultType="java.lang.Integer">
+        SELECT MAX(CAST(SUBSTRING(DEPT_CD, 2) AS UNSIGNED)) FROM WORKSPACE_DEPT
+    </select>
+
+    <select id="selectDepartmentsByWorkspace" resultType="com.example.ocean.domain.WorkspaceDept">
+        SELECT
+        WORKSPACE_CD AS workspaceCd,
+        DEPT_CD AS deptCd,
+        DEPT_NM AS deptNm
+        FROM WORKSPACE_DEPT
+        WHERE WORKSPACE_CD = #{workspaceCd}
+    </select>
+
+    <update id="updateFavorite">
+        UPDATE WORKSPACE_MEMBERS
+        SET FAVORITE = #{favorite}
+        WHERE USER_ID = #{userId}
+        AND WORKSPACE_CD = #{workspaceCd}
+    </update>
+
+    <select id="findByUserId" parameterType="string" resultType="com.example.ocean.domain.Workspace">
+        SELECT w.WORKSPACE_CD, w.WORKSPACE_NM, w.WORKSPACE_IMG,
+        w.INVITE_CD, w.ACTIVE_STATE, w.CREATED_DATE, w.END_DATE,
+        wm.FAVORITE, wm.ENTRANCE_DATE
+        FROM WORKSPACE w
+        JOIN WORKSPACE_MEMBERS wm ON w.WORKSPACE_CD = wm.WORKSPACE_CD
+        WHERE wm.USER_ID = #{userId}
+        ORDER BY wm.FAVORITE DESC, wm.ENTRANCE_DATE DESC
+    </select>
+
+    <select id="findWorkspacesByUserId" resultType="com.example.ocean.domain.Workspace">
+        SELECT
+        w.WORKSPACE_CD   AS workspaceCd,
+        w.WORKSPACE_NM   AS workspaceNm,
+        w.WORKSPACE_IMG  AS workspaceImg,
+        w.INVITE_CD      AS inviteCd,
+        w.ACTIVE_STATE   AS activeState,
+        w.CREATED_DATE   AS createdDate,
+        w.END_DATE       AS endDate,
+        CASE
+        WHEN wm.FAVORITE = 'Y' THEN 1
+        WHEN wm.FAVORITE = '1' THEN 1
+        ELSE 0
+        END AS favorite,
+        wm.ENTRANCE_DATE AS entranceDate
+        FROM WORKSPACE_MEMBERS wm
+        JOIN WORKSPACE w ON wm.WORKSPACE_CD = w.WORKSPACE_CD
+        WHERE wm.USER_ID = #{userId}
+        ORDER BY favorite DESC, wm.ENTRANCE_DATE DESC
+    </select>
+
+    <update id="updateEntranceTime">
+        UPDATE WORKSPACE_MEMBERS
+        SET ENTRANCE_DATE = #{timestamp}
+        WHERE WORKSPACE_CD = #{workspaceCd} AND USER_ID = #{userId}
+    </update>
+
+    <update id="updateQuitTime">
+        UPDATE WORKSPACE_MEMBERS
+        SET QUIT_DATE = #{timestamp}
+        WHERE WORKSPACE_CD = #{workspaceCd} AND USER_ID = #{userId}
+    </update>
+
+    <select id="findMembersByWorkspaceCd" parameterType="string" resultType="com.example.ocean.domain.WorkspaceMember">
+        SELECT
+        wm.USER_ID        AS userId,
+        wm.USER_NICKNAME  AS userNickname,
+        wm.STATUS_MSG     AS statusMsg,
+        wm.USER_IMG       AS userImg,
+        wm.USER_STATE     AS userState,
+        wm.DEPT_CD        AS deptCd,
+        d.DEPT_NM         AS deptNm,
+        wm.POSITION       AS position,
+        wm.EMAIL          AS email,
+        wm.PHONE_NUM      AS phoneNum,
+        wm.JOINED_DATE    AS joinedDate
+        FROM WORKSPACE_MEMBERS wm
+        LEFT JOIN WORKSPACE_DEPT d ON wm.DEPT_CD = d.DEPT_CD
+        WHERE wm.WORKSPACE_CD = #{workspaceCd}
+    </select>
+
+
+    <select id="findMemberByWorkspaceAndUser" parameterType="map" resultType="com.example.ocean.domain.WorkspaceMember">
+        SELECT
+        WORKSPACE_CD  AS workspaceCd,
+        USER_ID       AS userId,
+        USER_NICKNAME AS userNickname,
+        STATUS_MSG    AS statusMsg,
+        DEPT_CD       AS deptCd,
+        POSITION      AS position,
+        EMAIL         AS email,
+        PHONE_NUM     AS phoneNum,
+        JOINED_DATE   AS joinedDate
+        FROM WORKSPACE_MEMBERS
+        WHERE WORKSPACE_CD = #{workspaceCd} AND USER_ID = #{userId}
+    </select>
+
+    <update id="updateDeptAndPosition" parameterType="map">
+        UPDATE WORKSPACE_MEMBERS
+        SET DEPT_CD = #{deptCd}, POSITION = #{position}
+        WHERE WORKSPACE_CD = #{workspaceCd} AND USER_ID = #{userId}
+    </update>
+
+    <update id="updateWorkspaceProfile" parameterType="map">
+        UPDATE WORKSPACE_MEMBERS
+        SET USER_NICKNAME = #{userNickname},
+        STATUS_MSG = #{statusMsg},
+        EMAIL = #{email},
+        PHONE_NUM = #{phoneNum},
+        USER_IMG = #{userImg}
+        WHERE WORKSPACE_CD = #{workspaceCd}
+        AND USER_ID = #{userId}
+    </update>
+
+    <update id="updateUserState" parameterType="map">
+        UPDATE WORKSPACE_MEMBERS WM
+        SET WM.USER_STATE = #{userState}
+        WHERE WM.WORKSPACE_CD = #{workspaceCd} AND WM.USER_ID = #{userId}
+    </update>
+
+</mapper>

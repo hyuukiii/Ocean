@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OAuth 에러</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .error-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-title {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        .error-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-title">OAuth 인증 에러</h1>
+        
+        <div th:if="${error}">
+            <h3>에러 메시지:</h3>
+            <div class="error-details" th:text="${error}"></div>
+        </div>
+        
+        <div th:if="${errorMessage}">
+            <h3>상세 메시지:</h3>
+            <div class="error-details" th:text="${errorMessage}"></div>
+        </div>
+        
+        <div th:if="${exception}">
+            <h3>예외 정보:</h3>
+            <div class="error-details" th:text="${exception}"></div>
+        </div>
+        
+        <div th:if="${trace}">
+            <h3>스택 트레이스:</h3>
+            <div class="error-details" th:text="${trace}"></div>
+        </div>
+        
+        <a href="/" class="back-link">홈으로 돌아가기</a>
+    </div>
+</body>
+</html>

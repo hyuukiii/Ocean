@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 로그인 처리</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .loading-container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2d5a87;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            color: #333;
+            margin: 10px 0;
+            font-size: 24px;
+        }
+
+        .loading-message {
+            color: #666;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .error-container {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 5px;
+        }
+
+        .error-message {
+            color: #c33;
+            margin: 10px 0;
+        }
+
+        .retry-button {
+            background: #2d5a87;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .retry-button:hover {
+            background: #3d6a97;
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="loading-container">
+    <div class="loading-spinner"></div>
+    <h1 class="loading-title">로그인 처리 중</h1>
+    <p class="loading-message">잠시만 기다려 주세요...</p>
+
+    <div class="error-container" id="errorContainer">
+        <p class="error-message" id="errorMessage"></p>
+        <button class="retry-button" id="retryButton">다시 시도</button>
+    </div>
+    
+    <div class="debug-info" id="debugInfo"></div>
+</div>
+
+<script>
+    // 디버그 로그 함수
+    function debugLog(message, obj = null) {
+        console.log(message, obj || '');
+        
+        // 디버그 정보를 화면에도 표시 (개발 중에만)
+        const debugInfo = document.getElementById('debugInfo');
+        if (debugInfo) {
+            const logItem = document.createElement('div');
+            logItem.textContent = message + (obj ? ': ' + JSON.stringify(obj) : '');
+            debugInfo.appendChild(logItem);
+        }
+    }
+
+    // 쿠키 읽기 함수
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    // 쿠키 삭제 함수
+    function deleteCookie(name) {
+        document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+
+    // 로컬스토리지 접근 테스트 함수
+    function testLocalStorage() {
+        try {
+            const testKey = 'testLocalStorage';
+            const testValue = 'test-' + new Date().getTime();
+            
+            // 저장 시도
+            localStorage.setItem(testKey, testValue);
+            
+            // 읽기 시도
+            const readValue = localStorage.getItem(testKey);
+            
+            // 삭제
+            localStorage.removeItem(testKey);
+            
+            // 결과 확인
+            return {
+                success: readValue === testValue,
+                value: readValue
+            };
+        } catch (e) {
+            return {
+                success: false,
+                error: e.message
+            };
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        debugLog('=== OAuth2 리다이렉트 페이지 로드됨 ===');
+        debugLog('현재 URL:', window.location.href);
+        debugLog('쿠키:', document.cookie);
+        
+        // 개발 중에는 디버그 정보 표시
+        document.getElementById('debugInfo').style.display = 'block';
+
+        // 로컬스토리지 접근 테스트
+        const storageTest = testLocalStorage();
+        debugLog('로컬스토리지 접근 테스트:', storageTest);
+        
+        if (!storageTest.success) {
+            debugLog('⚠️ 로컬스토리지 접근 실패!');
+            document.getElementById('errorContainer').style.display = 'block';
+            document.getElementById('errorMessage').textContent = `로컬스토리지 접근 오류: ${storageTest.error || '알 수 없는 오류'}`;
+            return;
+        }
+
+        // 1. URL 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        let token = urlParams.get('token');
+        const error = urlParams.get('error');
+        
+        debugLog('URL 파라미터 토큰:', token ? `있음 (${token.substring(0, 10)}...)` : '없음');
+        debugLog('URL 에러 파라미터:', error || '없음');
+
+        // 2. URL 프래그먼트(#) 확인
+        if (!token && window.location.hash) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            token = hashParams.get('token');
+            debugLog('프래그먼트에서 토큰:', token ? `있음 (${token.substring(0, 10)}...)` : '없음');
+        }
+
+        // 3. 쿠키에서 확인 (최후의 수단)
+        if (!token) {
+            token = getCookie('tempAccessToken');
+            debugLog('쿠키에서 토큰:', token ? `있음 (${token.substring(0, 10)}...)` : '없음');
+
+            // 임시 쿠키는 사용 후 삭제
+            if (token) {
+                deleteCookie('tempAccessToken');
+                debugLog('임시 쿠키 삭제됨');
+            }
+        }
+
+        debugLog('최종 토큰:', token ? `있음 (길이: ${token.length})` : '없음');
+
+        // 에러 처리
+        if (error) {
+            debugLog('❌ OAuth2 에러:', error);
+            document.getElementById('errorContainer').style.display = 'block';
+            document.getElementById('errorMessage').textContent = `로그인 중 오류가 발생했습니다: ${error}`;
+
+            document.getElementById('retryButton').addEventListener('click', function() {
+                window.location.href = '/login';
+            });
+
+        } else if (token && token.length > 10) {
+            debugLog('✅ 유효한 토큰 발견, 처리 시작...');
+
+            try {
+                // 기존 데이터 정리
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('isAuthenticated');
+                debugLog('기존 로컬스토리지 데이터 삭제됨');
+
+                // 새 토큰 저장
+                localStorage.setItem('accessToken', token);
+                localStorage.setItem('isAuthenticated', 'true');
+                debugLog('새 토큰 저장 시도 완료');
+
+                // ⭐️ 여기에 추가! - 사용자 정보 저장
+                const userName = urlParams.get('userName');
+                const userImg = urlParams.get('userImg');
+
+                if (userName) {
+                    localStorage.setItem('userName', decodeURIComponent(userName));
+                    debugLog('사용자 이름 저장:', userName);
+                }
+                if (userImg) {
+                    localStorage.setItem('userImg', decodeURIComponent(userImg));
+                    debugLog('사용자 이미지 저장:', userImg);
+                }
+
+                debugLog('새 토큰 저장 시도 완료');
+
+                // 저장 확인
+                const savedToken = localStorage.getItem('accessToken');
+                const savedAuth = localStorage.getItem('isAuthenticated');
+                
+                debugLog('저장된 데이터 확인:', {
+                    token: savedToken ? `저장됨 (${savedToken.substring(0, 10)}...)` : '저장실패',
+                    auth: savedAuth
+                });
+
+                if (!savedToken || savedToken !== token) {
+                    throw new Error('토큰이 제대로 저장되지 않았습니다.');
+                }
+
+                // 성공 메시지 표시
+                document.querySelector('.loading-title').textContent = '로그인 성공!';
+                document.querySelector('.loading-message').textContent = '메인 페이지로 이동합니다...';
+
+                // 워크 스페이스 리스트로 리다이렉트
+                setTimeout(() => {
+                    debugLog('워크스페이스리스트로 리다이렉트...');
+                    window.location.href = '/workspace';
+                }, 1500);
+
+            } catch (e) {
+                debugLog('❌ 토큰 저장 중 오류:', e);
+                document.getElementById('errorContainer').style.display = 'block';
+                document.getElementById('errorMessage').textContent = `토큰 저장 중 오류가 발생했습니다: ${e.message}`;
+
+                document.getElementById('retryButton').addEventListener('click', function() {
+                    window.location.href = '/login';
+                });
+            }
+        } else {
+            debugLog('❌ 유효하지 않은 토큰');
+            document.getElementById('errorContainer').style.display = 'block';
+            document.getElementById('errorMessage').textContent = '로그인 정보를 가져올 수 없습니다. 다시 시도해주세요.';
+
+            document.getElementById('retryButton').addEventListener('click', function() {
+                window.location.href = '/login';
+            });
+        }
+    });
+
+    // 디버그 함수
+    window.checkTokenSources = function() {
+        const sources = {
+            'URL 파라미터': new URLSearchParams(window.location.search).get('token'),
+            'URL 프래그먼트': window.location.hash,
+            'tempAccessToken 쿠키': getCookie('tempAccessToken'),
+            'refreshToken 쿠키': getCookie('refreshToken'),
+            'localStorage accessToken': localStorage.getItem('accessToken')
+        };
+        
+        debugLog('=== 토큰 소스 확인 ===', sources);
+        return sources;
+    };
+</script>
+</body>
+</html>

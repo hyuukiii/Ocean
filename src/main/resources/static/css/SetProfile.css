@@ -1,0 +1,84 @@
+    .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #2d2d2d;
+        border-radius: 20px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #00f2fe;
+    }
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        font-size: 16px;
+        font: white;
+    }
+    .profile-image {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .profile-image-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e0e0e0;
+        cursor: pointer;
+        margin: 0 auto;
+    }
+    #profileImage {
+        display: none;
+    }
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+    .second-swiper{
+        color:white;
+        padding-bottom:40px;
+    }
+    #deptCd{
+        color:white;
+    }
+    option{
+        color:black;
+    }
+    .btn {
+        padding: 12px 25px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-back {
+        background-color: #f5f7fa;
+        color: #2c3e50;
+    }
+    .btn-next {
+        background-color: #4facfe;
+        color: white;
+    }
+    .btn-prev{
+        background-color:#f5f7fa;
+        color : #2c3e50;
+
+    }
+    .btn-submit {
+        background-color: #4facfe;
+        color: white;
+        width: 60%;
+    }

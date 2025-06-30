@@ -1,0 +1,199 @@
+/* 생성 페이지 컨테이너 */
+        .create-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #2d2d2d;
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* 폼 요소 스타일 */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #00f2fe;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.3);
+        }
+        
+        /* 이미지 업로드 */
+         .image-upload-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-bottom: 30px;
+                }
+                .upload-preview {
+                    width: 150px;
+                    height: 150px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    cursor: pointer;
+                    border: 2px dashed #ddd;
+                    transition: all 0.3s ease;
+                }
+                .upload-preview:hover {
+                    border-color: #4facfe;
+                    transform: scale(1.05);
+                }
+                #upload {
+                    display: none;
+                }
+                .upload-label {
+                    margin-top: 10px;
+                    color: #4facfe;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+
+        /* 부서 입력 관련 스타일 */
+        .department-input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .department-input-group input {
+            padding-right: 40px; /* X 버튼 공간 확보 */
+        }
+
+
+        .btn-remove-department {
+            position: absolute;
+            right: 10px; /* 오른쪽에서 10px 떨어진 위치 */
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 20px;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-add-department {
+            background: none;
+            border: none;
+            color: #4facfe;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 10px 0 20px;
+        }
+        
+        /* 생성 버튼 */
+        .btn {
+            color : white;
+        }
+
+        .btn-backList {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-backList:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(136, 136, 136, 0.4);
+        }
+
+        .btn-back{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(136, 136, 136, 0.4);
+        }
+        .btn-next{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 7px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-prev{
+            display: block;
+            width: 13%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #363636, #777777);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-create {
+            display: block;
+            width: 30%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(270deg, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-create:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }

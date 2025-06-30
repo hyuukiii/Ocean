@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean WorkSpace</title>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <!-- 모바일 및 기타 플랫폼용 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0a1628">
+
+
+    <!-- 메인페이지 CSS -->
+    <link rel="stylesheet" th:href="@{/css/Main.css}">
+</head>
+<body>
+    <!-- 애니메이션 배경 -->
+    <div class="ocean-background">
+        <div class="wave"></div>
+        <div class="particles" id="particles"></div>
+    </div>
+
+    <!-- 헤더 -->
+    <header class="header">
+        <a href="/" class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                </svg>
+            </div>
+            <span>Ocean WorkSpace</span>
+        </a>
+        
+        <div class="nav-buttons">
+            <a href="/login" class="login-button" id="loginButton">로그인</a>
+            
+            <div class="user-menu" id="userMenu" style="display: none;">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span class="user-initial">U</span>
+                    </div>
+                    <span class="user-name" id="userName">사용자</span>
+                </div>
+                <button class="logout-button" id="logoutButton">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="main-container">
+        <div class="left-section">
+            <div class="main-content">
+                <div class="typing-section" id="typing-section">
+                <h1 class="main-title" id="typing-text"></h1>
+                </div>
+                
+                <div class="feature-section" id="feature-section">
+                    <h2 class="section-title">주요 기능 소개</h2>
+                    
+                    <!-- 주요 기능 카드 섹션 -->
+                    <div class="feature-cards" id="feature-cards">
+                        <!-- 왼쪽 화살표 -->
+                        <div class="nav-arrow prev" id="prev-arrow">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                        </div>
+                        
+                        <div class="feature-cards-container" id="cards-container">
+                            <div class="feature-card" id="feature-card-1">
+                                <div class="feature-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 13h8V3H3v210zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="feature-title">워크스페이스 관리</h3>
+                                <p class="feature-description">프로젝트별 작업 공간을 효율적으로 관리하고 구성할 수 있는 직관적인 인터페이스를 제공합니다. 다양한 프로젝트를 한눈에 보고 손쉽게 전환할 수 있어 작업 효율성이 크게 향상됩니다.</p>
+                            </div>
+                            
+                            <div class="feature-card" id="feature-card-2">
+                                <div class="feature-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="feature-title">실시간 협업</h3>
+                                <p class="feature-description">팀원들과 실시간으로 프로젝트를 공유하고 협업할 수 있는 다양한 도구와 기능을 제공합니다. 동시 편집, 댓글, 알림 시스템으로 언제 어디서든 원활한 협업이 가능합니다.</p>
+                            </div>
+                            
+                            <div class="feature-card" id="feature-card-3">
+                                <div class="feature-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="feature-title">통합 자동화</h3>
+                                <p class="feature-description">다양한 도구와 서비스를 연동하여 작업 흐름을 자동화하고 생산성을 크게 향상시킬 수 있습니다. API 연동, 워크플로우 자동화, 알림 설정으로 반복 작업을 최소화합니다.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 오른쪽 화살표 -->
+                        <div class="nav-arrow next" id="next-arrow">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- 페이지 인디케이터 -->
+                        <div class="page-indicators" id="page-indicators">
+                            <div class="indicator active" data-index="0"></div>
+                            <div class="indicator" data-index="1"></div>
+                            <div class="indicator" data-index="2"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 시작 버튼 -->
+                    <a href="/login" class="cta-button" id="cta-button">
+                        <span class="number-badge">1</span>
+                        시작하기
+                    </a>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/Main.js}"></script>
+</body>
+</html>

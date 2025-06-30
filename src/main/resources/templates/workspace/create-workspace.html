@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크스페이스 생성 | Ocean</title>
+    <!--
+     <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
+     <link rel="stylesheet" href="/src/main/resources/static/css/CreateWorkSpace.css">
+     -->
+    <link rel="stylesheet" th:href="@{/css/Header.css}">
+    <link rel="stylesheet" th:href="@{/css/CreateWorkSpace.css}">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css" />
+
+    <!-- ⭐ Ocean Background CSS 추가 -->
+    <link rel="stylesheet" th:href="@{/css/ocean-background.css}">
+
+    <!-- Favicon -->
+    <link rel="icon" th:href="@{/favicon.ico}">
+
+    <style>
+        /* 스와이퍼 기본 스타일 */
+        .swiper-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .swiper-slide {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .swiper-pagination {
+            position: relative;
+            margin-top: 20px;
+        }
+        .swiper-button-next, .swiper-button-prev {
+            color: #4facfe;
+        }
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto; /* 하단에 고정 */
+            padding-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<!-- 헤더 섹션 -->
+<header class="header">
+    <div class="logo" th:onclick="'location.href=\'' + @{/} + '\''">
+        <div class="logo-icon">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        Ocean WorkSpace
+    </div>
+</header>
+
+<!-- 스와이퍼 컨테이너 -->
+<div class="create-container">
+    <form id="workspaceForm" action="/workspace/create" method="post" enctype="multipart/form-data">
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                <!-- 슬라이드 1: 기본 정보 -->
+                <div class="swiper-slide">
+                    <h1>워크스페이스 생성</h1>
+
+                    <div class="image-upload-container">
+                        <img id="preview" class="upload-preview"
+                             src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0icmdiYSg3OSwgMTcyLCAyNTQsIDAuMSkiLz48dGV4dCB4PSI1MCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiPlVwbG9hZDwvdGV4dD48L3N2Zz4="
+                             alt="워크스페이스 이미지"
+                             onclick="document.getElementById('upload').click()">
+                        <input type="file" id="upload" name="workspaceImg" accept="image/*">
+                        <span class="upload-label" onclick="document.getElementById('upload').click()">이미지 선택</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workspaceNm">워크스페이스 이름</label>
+                        <input type="text" id="workspaceNm" name="workspaceNm" placeholder="예: 디자인 팀 프로젝트" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">프로젝트 종료일</label>
+                        <input type="date" id="endDate" name="endDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">워크스페이스 설명</label>
+                        <textarea id="description" name="description" rows="3" placeholder="프로젝트 목표 또는 간단한 설명"></textarea>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button type="button" class="btb btn-back" th:onclick="'location.href=\'' + @{/workspace} + '\''">취소</button>
+                        <button type="button" class="btn btn-next">다음</button>
+                    </div>
+                </div>
+
+                <!-- 슬라이드 2: 부서 구성 -->
+                <div class="swiper-slide">
+                    <h1>부서 구성</h1>
+
+                    <div class="form-group" id="department-section">
+                        <label>부서 추가</label>
+                        <div class="department-input-group">
+                            <input type="text" name="departments" placeholder="부서명" required>
+                            <button type="button" class="btn-remove-department" onclick="removeDepartment(this)">×</button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-department" onclick="addDepartment()">
+                        <span>+</span> 부서 추가
+                    </button>
+
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-prev">이전</button>
+                        <button type="submit" class="btn btn-create">워크스페이스 생성</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 스와이퍼 페이지네이션 -->
+            <div class="swiper-pagination"></div>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript -->
+<script th:src="@{/js/token.js}"></script>
+<!-- ⭐ Ocean Background JavaScript 추가 -->
+<script th:src="@{/js/ocean-background.js}"></script>
+<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+<script th:inline="javascript"></script>
+<script th:src="@{/js/CreateWorkspace.js}"></script>
+
+</body>
+</html>
