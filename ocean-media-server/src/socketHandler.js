@@ -1,5 +1,6 @@
 const roomManager = require('./RoomManager');
 const Peer = require('./Peer');
+const Recorder = require('./recorder');
 
 const peers = new Map();
 
@@ -478,8 +479,92 @@ module.exports = (io, worker, router) => {
         callback({ error: error.message });
       }
     });
-  });
-};
+
+    // 녹화 시작
+    socket.on('start-recording', async (data, callback) => {
+        try {
+             const { roomId } = data;
+             const peer = peers.get(socket.id);
+
+             if (!peer) {
+                return callback({ error: '인증되지 않은 사용자' });
+             }
+
+             const room = roomManager.getRoom(roomId);
+             if (!room) {
+                 return callback({ error: '룸을 찾을 수 없습니다' });
+             }
+
+             // 녹화 시작
+             const result = await room.startRecording(peer.id);
+
+             // 모든 참가자에게 녹화 시작 알림
+             io.to(roomId).emit('recording-started', {
+                 recordingId: result.recordingId,
+                 startedBy: peer.displayName
+             });
+
+             callback({ success: true, ...result });
+
+        } catch (error) {
+             console.error('녹화 시작 오류:', error);
+             callback({ error: error.message });
+        }
+    });
+
+    // 녹화 종료
+    socket.on('stop-recording', async (data, callback) => {
+        try {
+            const { roomId } = data;
+            const peer = peers.get(socket.id);
+
+            if (!peer) {
+                return callback({ error: '인증되지 않은 사용자' });
+            }
+
+                    const room = roomManager.getRoom(roomId);
+                    if (!room) {
+                        return callback({ error: '룸을 찾을 수 없습니다' });
+                    }
+
+                    // 녹화 종료
+                    const result = await room.stopRecording();
+
+                    // 모든 참가자에게 녹화 종료 알림
+                    io.to(roomId).emit('recording-stopped', {
+                        recordingId: result.recordingId,
+                        stoppedBy: peer.displayName
+                    });
+
+                    callback({ success: true, ...result });
+
+                } catch (error) {
+                    console.error('녹화 종료 오류:', error);
+                    callback({ error: error.message });
+                }
+            });
+        // 녹화 상태 확인
+        socket.on('get-recording-status', async (data, callback) => {
+            try {
+                const { roomId } = data;
+                const room = roomManager.getRoom(roomId);
+
+                if (!room) {
+                    return callback({ error: '룸을 찾을 수 없습니다' });
+                }
+
+                callback({
+                    isRecording: room.recordingStatus,
+                    recordingId: room.recorder?.recordingId
+                });
+
+            } catch (error) {
+                console.error('녹화 상태 확인 오류:', error);
+                callback({ error: error.message });
+            }
+        });
+    });
+ };
 
 // WebRTC Transport 생성 함수 에이콘 아카데미 IP :172.30.1.49 , 192.168.100.16  투썸플레이스 신촌점 : 192.168.40.6 집 와이파이 : 192.168.0.16
 async function createWebRtcTransport(router) {

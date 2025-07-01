@@ -19,7 +19,8 @@
     "mediasoup-client": "^3.11.0",
     "multer": "^2.0.1",
     "socket.io": "^4.8.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "browserify": "^17.0.1",

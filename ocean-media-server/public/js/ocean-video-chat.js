@@ -22,6 +22,9 @@
         let screenProducer;
         let consumers = new Map();
 
+        // ===== 녹화 기능 ======
+        let currentRecordingId = null;
+
         // 로컬 미디어 스트림
         let localStream;
         let screenStream;
@@ -169,6 +172,40 @@
                 // 타이핑 상태 표시 업데이트
                 updateTypingIndicator(typingPeerId, displayName, isTyping);
             });
+
+            // 다른 사용자가 녹화 시작
+            socket.on('recording-started', ({ recordingId, startedBy }) => {
+              if (startedBy !== displayName) {
+                  isRecording = true;
+                  currentRecordingId = recordingId;
+                  document.getElementById('recordBtn').classList.add('active');
+                  document.getElementById('recordingIndicator').style.display = 'flex';
+                  showToast(`${startedBy}님이 녹화를 시작했습니다`);
+              }
+            });
+
+            // 다른 사용자가 녹화 종료
+            socket.on('recording-stopped', ({ recordingId, stoppedBy }) => {
+               if (stoppedBy !== displayName) {
+                   isRecording = false;
+                   currentRecordingId = null;
+                   document.getElementById('recordBtn').classList.remove('active');
+                   document.getElementById('recordingIndicator').style.display = 'none';
+                   showToast(`${stoppedBy}님이 녹화를 종료했습니다`);
+               }
+            });
+        }
+
+        // 페이지 로드 시 녹화 상태 확인
+        async function checkRecordingStatus() {
+            socket.emit('get-recording-status', { roomId }, (response) => {
+                if (response.isRecording) {
+                    isRecording = true;
+                    currentRecordingId = response.recordingId;
+                    document.getElementById('recordBtn').classList.add('active');
+                    document.getElementById('recordingIndicator').style.display = 'flex';
+                }
+            });
         }
 
         // ===== 미디어 권한 요청 =====
@@ -227,6 +264,9 @@
 
                 // 미디어 전송 시작
                 await startProducing();
+
+                // 녹화 상태 확인
+                checkRecordingStatus();
 
                 // 기존 참가자들 표시
                 if (data.peers) {
@@ -623,19 +663,78 @@
             }
         }
 
-        // 녹화 토글
-        function toggleRecording() {
-            isRecording = !isRecording;
+        // ========= 녹화 기능 토글 ==========
+        async function toggleRecording() {
             const recordBtn = document.getElementById('recordBtn');
+            const recordingIndicator = document.getElementById('recordingIndicator');
 
-            if (isRecording) {
-                recordBtn.classList.add('active');
-                // TODO: 서버에 녹화 기능 구현 필요
-                showToast('녹화 기능은 준비 중입니다');
-            } else {
-                recordBtn.classList.remove('active');
-            }
-        }
+            if (!isRecording) {
+                // 녹화 시작
+                try {
+                    // 권한 확인 (호스트만 녹화 가능하도록 할 수도 있음)
+                    if (!confirm('녹화를 시작하시겠습니까?')) {
+                        return;
+                    }
+
+                    // 녹화 시작 요청
+                    socket.emit('start-recording', { roomId }, (response) => {
+                        if (response.error) {
+                            showToast('녹화 시작 실패: ' + response.error);
+                            return;
+                        }
+
+                        // UI 업데이트
+                        isRecording = true;
+                        currentRecordingId = response.recordingId;
+                        recordBtn.classList.add('active');
+                        recordingIndicator.style.display = 'flex';
+
+                        showToast('녹화가 시작되었습니다');
+                        console.log('녹화 시작:', response);
+                    });
+
+                    } catch (error) {
+                        console.error('녹화 시작 오류:', error);
+                        showToast('녹화 시작 중 오류가 발생했습니다');
+                    }
+
+                    } else {
+                       // 녹화 종료
+                       try {
+                            if (!confirm('녹화를 종료하시겠습니까?')) {
+                              return;
+                            }
+
+                            // 녹화 종료 요청
+                            socket.emit('stop-recording', { roomId }, (response) => {
+                               if (response.error) {
+                                   showToast('녹화 종료 실패: ' + response.error);
+                                   return;
+                               }
+
+                               // UI 업데이트
+                               isRecording = false;
+                               currentRecordingId = null;
+                               recordBtn.classList.remove('active');
+                               recordingIndicator.style.display = 'none';
+
+                               showToast('녹화가 종료되었습니다');
+                               console.log('녹화 종료:', response);
+
+                               // 녹화 파일 정보 표시 (선택사항)
+                               if (response.fileSize) {
+                                  const fileSizeMB = (response.fileSize / 1024 / 1024).toFixed(2);
+                                  showToast(`녹화 파일 크기: ${fileSizeMB}MB`);
+                               }
+                            });
+
+                         } catch (error) {
+                                    console.error('녹화 종료 오류:', error);
+                                    showToast('녹화 종료 중 오류가 발생했습니다');
+                         }
+                    }
+                }
+
 
         // 채팅 토글 (수정됨)
         function toggleChat() {

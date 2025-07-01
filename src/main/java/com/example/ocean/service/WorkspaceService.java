@@ -136,6 +136,7 @@ public class WorkspaceService {
         return workspaceMapper.findMembersByWorkspaceCd(workspaceCd);
     }
 
+    // 사용자 멀티 프로필
     public void updateWorkspaceProfile(String workspaceCd, String userId,
                                        String userNickname, String statusMsg,
                                        String email, String phoneNum,

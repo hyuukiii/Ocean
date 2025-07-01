@@ -32,7 +32,7 @@
     </select>
 
     <insert id="addUserToWorkspace">
-        INSERT INTO workspace_members (
+        INSERT INTO WORKSPACE_MEMBERS (
         WORKSPACE_CD, USER_ID, USER_ROLE, ACTIVE_STATE, JOINED_DATE
         ) VALUES (
         #{workspaceCd}, #{userId}, #{userRole}, #{activeState}, NOW()
@@ -40,7 +40,7 @@
     </insert>
 
     <update id="updateUserProfile">
-        UPDATE workspace_members
+        UPDATE WORKSPACE_MEMBERS
         SET
         USER_NICKNAME = #{userNickname},
         STATUS_MSG = #{statusMsg},
@@ -52,7 +52,7 @@
     </update>
 
     <insert id="insertUserProfile">
-        INSERT INTO workspace_members (
+        INSERT INTO WORKSPACE_MEMBERS (
         WORKSPACE_CD, USER_ID, USER_NICKNAME,
         STATUS_MSG, EMAIL, PHONE_NUM,
         USER_ROLE, ACTIVE_STATE, JOINED_DATE, USER_IMG
@@ -211,12 +211,16 @@
         w.ACTIVE_STATE   AS activeState,
         w.CREATED_DATE   AS createdDate,
         w.END_DATE       AS endDate,
-        wm.FAVORITE      AS favorite,
+        CASE
+        WHEN wm.FAVORITE = 'Y' THEN 1
+        WHEN wm.FAVORITE = '1' THEN 1
+        ELSE 0
+        END AS favorite,
         wm.ENTRANCE_DATE AS entranceDate
-        FROM workspace_members wm
-        JOIN workspace w ON wm.workspace_cd = w.workspace_cd
-        WHERE wm.user_id = #{userId}
-        ORDER BY wm.FAVORITE DESC, wm.ENTRANCE_DATE DESC
+        FROM WORKSPACE_MEMBERS wm
+        JOIN WORKSPACE w ON wm.WORKSPACE_CD = w.WORKSPACE_CD
+        WHERE wm.USER_ID = #{userId}
+        ORDER BY favorite DESC, wm.ENTRANCE_DATE DESC
     </select>
 
     <update id="updateEntranceTime">

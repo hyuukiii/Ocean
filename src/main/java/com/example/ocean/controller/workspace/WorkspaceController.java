@@ -109,7 +109,8 @@ public class WorkspaceController {
         return ResponseEntity.ok(profile);
     }
 
-    // 워크스페이스 프로필 수정
+
+    // 워크스페이스 사용자 프로필 수정
     @PutMapping("/{workspaceCd}/profile")
     public ResponseEntity<WorkspaceMember> updateProfile(
             @PathVariable String workspaceCd,
