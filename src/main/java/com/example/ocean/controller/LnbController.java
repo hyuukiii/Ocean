@@ -59,6 +59,7 @@ public class LnbController {
             model.addAttribute("workspaceCd", workspaceCd);
             model.addAttribute("member", member);
             model.addAttribute("userId", userPrincipal.getId());
+            model.addAttribute("userName", userPrincipal.getName());
 
             log.info("워크스페이스 메인 페이지 접근: workspaceCd={}, userId={}",
                     workspaceCd, userPrincipal.getId());
