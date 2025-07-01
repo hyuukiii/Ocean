@@ -38,8 +38,11 @@ public class RecordingService {
     @Transactional
     public RecordingDto startRecording(RecordingStartRequest request) {
         try {
-            // ⭐ 룸 존재 여부 확인 및 생성
-            ensureMeetingRoomExists(request.getRoomId(), request.getWorkspaceId(), request.getRecorderId());
+            // ⭐ 룸 존재 여부만 확인 (생성하지 않음)
+            if (!isMeetingRoomExists(request.getRoomId())) {
+                log.error("미팅룸이 존재하지 않음: roomId={}", request.getRoomId());
+                throw new RuntimeException("미팅룸을 찾을 수 없습니다. 먼저 미팅을 시작해주세요.");
+            }
 
             // 녹화 ID 생성
             String recordingId = generateRecordingId();
@@ -81,44 +84,16 @@ public class RecordingService {
     }
 
     /**
-     * ⭐ 룸이 존재하지 않으면 생성
+     * ⭐ 미팅룸 존재 여부만 확인 (생성하지 않음)
      */
-    private void ensureMeetingRoomExists(String roomId, String workspaceId, String hostId) {
-        // Native Query로 룸 존재 여부 확인
-        String checkQuery = "SELECT COUNT(*) FROM MEETING_ROOMS WHERE ROOM_CD = :roomId";
+    private boolean isMeetingRoomExists(String roomId) {
+        String checkQuery = "SELECT COUNT(*) FROM MEETING_ROOMS WHERE ROOM_CD = :roomId AND STATUS = 'IN_PROGRESS'";
         Query query = entityManager.createNativeQuery(checkQuery);
         query.setParameter("roomId", roomId);
-
         Number count = (Number) query.getSingleResult();
-
-        if (count.intValue() == 0) {
-            // 룸이 없으면 생성
-            log.info("룸이 존재하지 않아 새로 생성: roomId={}", roomId);
-
-            String insertQuery = """
-                INSERT INTO MEETING_ROOMS (
-                    ROOM_CD, ROOM_NM, WORKSPACE_CD, HOST_ID, 
-                    STATUS, RECORDING_ENABLE, ACTUAL_START_TIME
-                ) VALUES (
-                    :roomId, :roomName, :workspaceId, :hostId,
-                    'IN_PROGRESS', 'Y', NOW()
-                )
-            """;
-
-            Query insertQueryObj = entityManager.createNativeQuery(insertQuery);
-            insertQueryObj.setParameter("roomId", roomId);
-            insertQueryObj.setParameter("roomName", "회의실-" + roomId); // 룸 이름
-            insertQueryObj.setParameter("workspaceId", workspaceId);
-            insertQueryObj.setParameter("hostId", hostId);
-
-            insertQueryObj.executeUpdate();
-
-            log.info("새 룸 생성 완료: roomId={}, workspaceId={}, hostId={}",
-                    roomId, workspaceId, hostId);
-        } else {
-            log.info("룸이 이미 존재함: roomId={}", roomId);
-        }
+        return count.intValue() > 0;
     }
+
 
     /**
      * 녹화 종료

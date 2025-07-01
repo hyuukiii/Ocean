@@ -29,9 +29,9 @@
         let localStream;
         let screenStream;
 
-        // 방 정보
-        const roomId = new URLSearchParams(window.location.search).get('room') || 'default-room';
-        const workspaceId = new URLSearchParams(window.location.search).get('workspace') || 'default-workspace';
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('roomId');
+        const workspaceId = urlParams.get('workspaceId');
 
         // ⭐ 토큰에서 사용자 정보 가져오기
         const userInfo = getUserInfoFromToken();

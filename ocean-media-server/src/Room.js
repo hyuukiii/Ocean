@@ -14,75 +14,111 @@ class Room {
 
   // 녹화 시작
   async startRecording(recorderId) {
-    if (this.recordingStatus) {
-      throw new Error('이미 녹화 중입니다');
-    }
-
-    try {
-      // RTP 포트 할당 (실제로는 동적으로 할당해야 함)
-      const videoPort = 5004;
-      const audioPort = 5005;
-      const videoRtcpPort = 5005;  // ⭐ RTCP 포트 추가
-      const audioRtcpPort = 5007;  // ⭐ RTCP 포트 추가
-
-      // PlainTransport 생성 (RTP 수신용)
-      const videoTransport = await this.router.createPlainTransport({
-        listenIp: { ip: '127.0.0.1', announcedIp: null },
-        rtcpMux: true,
-        comedia: false
-      });
-
-      const audioTransport = await this.router.createPlainTransport({
-        listenIp: { ip: '127.0.0.1', announcedIp: null },
-        rtcpMux: true,
-        comedia: false
-      });
-
-      // Transport 연결
-      await videoTransport.connect({ ip: '127.0.0.1', port: videoPort });
-      await audioTransport.connect({ ip: '127.0.0.1', port: audioPort });
-
-      // Consumer 생성 (녹화용)
-      // 실제로는 특정 Producer를 선택해야 함 (예: 발표자)
-      const videoProducer = this.getVideoProducer();
-      const audioProducer = this.getAudioProducer();
-
-      if (videoProducer) {
-        await videoTransport.consume({
-          producerId: videoProducer.id,
-          rtpCapabilities: this.router.rtpCapabilities
-        });
+      if (this.recordingStatus) {
+          throw new Error('이미 녹화 중입니다');
       }
 
-      if (audioProducer) {
-        await audioTransport.consume({
-          producerId: audioProducer.id,
-          rtpCapabilities: this.router.rtpCapabilities
-        });
+      try {
+          // Producer 찾기
+          const videoProducer = this.getVideoProducer();
+          const audioProducer = this.getAudioProducer();
+
+          console.log('비디오 Producer:', videoProducer ? '있음' : '없음');
+          console.log('오디오 Producer:', audioProducer ? '있음' : '없음');
+
+          if (!videoProducer && !audioProducer) {
+              throw new Error('녹화할 미디어 스트림이 없습니다');
+          }
+
+          // ⭐ PlainTransport 생성 - rtcpMux true로 변경
+          const videoTransport = await this.router.createPlainTransport({
+              listenIp: { ip: '127.0.0.1', announcedIp: null },
+              rtcpMux: true,  // ⭐ true로 변경
+              comedia: true   // ⭐ true로 다시 변경
+          });
+
+          const audioTransport = await this.router.createPlainTransport({
+              listenIp: { ip: '127.0.0.1', announcedIp: null },
+              rtcpMux: true,  // ⭐ true로 변경
+              comedia: true   // ⭐ true로 다시 변경
+          });
+
+          const videoPort = videoTransport.tuple.localPort;
+          const audioPort = audioTransport.tuple.localPort;
+
+          console.log('MediaSoup 비디오 포트:', videoPort);
+          console.log('MediaSoup 오디오 포트:', audioPort);
+
+          // ⭐ comedia가 true면 connect 불필요 (주석 처리)
+          // await videoTransport.connect({ ip: '127.0.0.1', port: videoPort });
+          // await audioTransport.connect({ ip: '127.0.0.1', port: audioPort });
+
+          // Consumer 생성
+          let videoConsumer = null;
+          let audioConsumer = null;
+
+          if (videoProducer) {
+              videoConsumer = await videoTransport.consume({
+                  producerId: videoProducer.id,
+                  rtpCapabilities: this.router.rtpCapabilities,
+                  paused: false
+              });
+              await videoConsumer.resume();
+          }
+
+          if (audioProducer) {
+              audioConsumer = await audioTransport.consume({
+                  producerId: audioProducer.id,
+                  rtpCapabilities: this.router.rtpCapabilities,
+                  paused: false
+              });
+              await audioConsumer.resume();
+          }
+
+          // Recorder 시작
+          this.recorder = new Recorder(
+              this.id,
+              this.workspaceId,
+              recorderId,
+              process.env.SPRING_BOOT_URL || 'http://localhost:8080'
+          );
+
+          const result = await this.recorder.startRecording(
+              videoPort,
+              audioPort,
+              videoConsumer ? videoConsumer.rtpParameters : null,
+              audioConsumer ? audioConsumer.rtpParameters : null
+          );
+
+          this.recordingStatus = true;
+          this.recordingTransports = {
+              videoTransport,
+              audioTransport,
+              videoConsumer,
+              audioConsumer
+          };
+
+          return result;
+
+      } catch (error) {
+          console.error('녹화 시작 실패:', error);
+
+          // 실패 시 정리
+          if (this.recordingTransports) {
+              if (this.recordingTransports.videoTransport) {
+                  this.recordingTransports.videoTransport.close();
+              }
+              if (this.recordingTransports.audioTransport) {
+                  this.recordingTransports.audioTransport.close();
+              }
+          }
+
+          this.recordingTransports = null;
+          this.recordingStatus = false;
+          this.recorder = null;
+
+          throw error;
       }
-
-      // Recorder 시작
-      this.recorder = new Recorder(
-        this.id, // this.roomId가 아니라 this.id
-        this.workspaceId,
-        recorderId,
-        process.env.SPRING_BOOT_URL || 'http://localhost:8080'
-      );
-
-      const result = await this.recorder.startRecording(
-        videoTransport.tuple.localPort,
-        audioTransport.tuple.localPort
-      );
-
-      this.recordingStatus = true;
-      this.recordingTransports = { videoTransport, audioTransport };
-
-      return result;
-
-    } catch (error) {
-      console.error('녹화 시작 실패:', error);
-      throw error;
-    }
   }
 
   // 녹화 종료

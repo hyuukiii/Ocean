@@ -10,6 +10,8 @@ class Recorder {
         this.workspaceId = workspaceId;
         this.recorderId = recorderId;
         this.springBootUrl = springBootUrl || 'http://localhost:8080';
+        // 환경 변수에서 경로 가져오기
+        this.recordingPath = process.env.RECORDING_PATH || '/Users/hyunki/Ocean/recordings';
         this.recordingId = null;
         this.ffmpegProcess = null;
         this.videoPort = null;
@@ -19,9 +21,9 @@ class Recorder {
     }
 
     /**
-     * 녹화 시작
-     */
-    async startRecording(videoPort, audioPort) {
+    * 녹화 시작
+    */
+    async startRecording(videoPort, audioPort, videoRtpParameters, audioRtpParameters) {
         try {
             // Spring Boot에 녹화 시작 알림
             const response = await axios.post(`${this.springBootUrl}/api/recordings/start`, {
@@ -30,61 +32,55 @@ class Recorder {
                 recorderId: this.recorderId
             });
 
-            // ⭐ 응답 전체 확인
-            console.log('Spring Boot 응답 전체:', response.data);
-            console.log('응답 키들:', Object.keys(response.data));
+            console.log('Spring Boot 응답:', response.data);
 
             this.recordingId = response.data.recordingId;
-            this.filePath = response.data.filePath;
 
-            // filePath가 없으면 에러 메시지 출력
-            if (!this.filePath) {
-                console.error('filePath가 응답에 없습니다!');
-                console.error('받은 데이터:', JSON.stringify(response.data, null, 2));
-            }
+            // 로컬 경로 설정
+            const fileName = path.basename(response.data.filePath);
+            const localDir = path.join(this.recordingPath, this.workspaceId, this.roomId);
+            this.filePath = path.join(localDir, fileName);
+
+            console.log('녹화 파일 경로:', this.filePath);
 
             this.videoPort = videoPort;
             this.audioPort = audioPort;
 
-            // 녹화 디렉토리 생성
-            const dir = path.dirname(this.filePath);
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
+            // 디렉토리 생성
+            if (!fs.existsSync(localDir)) {
+                fs.mkdirSync(localDir, { recursive: true });
             }
 
-            // FFmpeg 프로세스 시작
+            // SDP 생성
+            const sdp = this.createDetailedSDP(videoRtpParameters, audioRtpParameters);
+
+            // SDP를 파일로 저장
+            const sdpPath = path.join(localDir, 'recording.sdp');
+            fs.writeFileSync(sdpPath, sdp);
+            console.log('SDP 파일 저장:', sdpPath);
+
+            // ⭐ FFmpeg 실행 - SDP 파일 직접 사용
             const ffmpegArgs = [
-                '-protocol_whitelist', 'pipe,udp,rtp,file',
-                '-fflags', '+genpts',
-                '-f', 'sdp',
-                '-i', 'pipe:0',
-                '-map', '0:v:0',
-                '-map', '0:a:0',
-                '-c:v', 'libx264',
-                '-preset', 'veryfast',
-                '-tune', 'zerolatency',
-                '-crf', '23',
-                '-c:a', 'aac',
-                '-b:a', '128k',
-                '-movflags', '+faststart',
+                '-protocol_whitelist', 'file,udp,rtp',
+                '-i', sdpPath,  // ⭐ 파일로 SDP 입력
+                '-c:v', 'libvpx',  // VP8 코덱 사용
+                '-c:a', 'libopus', // Opus 코덱 사용
+                '-f', 'webm',
                 '-y',
                 this.filePath
             ];
 
+            console.log('FFmpeg 명령:', 'ffmpeg', ffmpegArgs.join(' '));
+
             this.ffmpegProcess = spawn('ffmpeg', ffmpegArgs);
 
-            // SDP 생성 및 전송
-            const sdp = this.createSDP();
-            this.ffmpegProcess.stdin.write(sdp);
-            this.ffmpegProcess.stdin.end();
-
-            // FFmpeg 로그 처리
+            // FFmpeg 로그
             this.ffmpegProcess.stderr.on('data', (data) => {
                 console.log(`FFmpeg: ${data}`);
             });
 
             this.ffmpegProcess.on('error', (error) => {
-                console.error('FFmpeg 에러:', error);
+                console.error('FFmpeg 프로세스 에러:', error);
                 this.handleRecordingError(error.message);
             });
 
@@ -109,9 +105,7 @@ class Recorder {
         }
     }
 
-    /**
-     * 녹화 종료
-     */
+    // ⭐ stopRecording 함수 확인 (이미 있는지 확인)
     async stopRecording() {
         if (!this.isRecording || !this.ffmpegProcess) {
             return { success: false, message: '녹화 중이 아닙니다' };
@@ -124,7 +118,7 @@ class Recorder {
             this.ffmpegProcess.kill('SIGTERM');
 
             // 파일 크기 확인
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             let fileSize = 0;
             if (fs.existsSync(this.filePath)) {
@@ -150,24 +144,6 @@ class Recorder {
             console.error('녹화 종료 실패:', error);
             return { success: false, message: error.message };
         }
-    }
-
-    /**
-     * SDP 파일 생성
-     */
-    createSDP() {
-        return `v=0
-o=- 0 0 IN IP4 127.0.0.1
-s=Recording
-c=IN IP4 127.0.0.1
-t=0 0
-m=video ${this.videoPort} RTP/AVP 96
-a=rtpmap:96 VP8/90000
-a=recvonly
-m=audio ${this.audioPort} RTP/AVP 97
-a=rtpmap:97 opus/48000/2
-a=recvonly
-`;
     }
 
     /**
