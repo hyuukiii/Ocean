@@ -1,0 +1,135 @@
+.main {
+  flex: 1;
+  padding: 32px;
+  background-color: #f5f6fa;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  overflow-y: auto;
+}
+
+/* 상단 배너 */
+.top-banner {
+  background: white;
+  padding: 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-banner .title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.top-banner .d-day {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2e6ff2;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 45%;
+  height: 100%;
+  background-color: #2e6ff2;
+}
+
+/* 일정 및 활동 */
+.main-section {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.schedule, .activity {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  width: 48%;
+}
+
+.schedule h2, .activity h2 {
+  margin-top: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.event, .log {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot.blue { background-color: #2e6ff2; }
+.dot.purple { background-color: #9b59b6; }
+.dot.green { background-color: #2ecc71; }
+
+.badge {
+  display: inline-block;
+  background-color: #e0e0e0;
+  color: #333;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  line-height: 22px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 하단 통계 */
+.bottom-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-box {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.stat-box .big {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2e6ff2;
+  margin-bottom: 4px;
+}
+
+.quote {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  font-style: italic;
+}

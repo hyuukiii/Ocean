@@ -1,0 +1,44 @@
+<div th:fragment="rnbFragment" class="rnb" id="rnbPanel">
+    <button class="rnb-toggle-btn" onclick="toggleRnb()">
+        <img id="toggleArrow" src="/images/arrow-right.png" alt="토글">
+    </button>
+
+    <!-- 로그인한 사용자 -->
+    <div class="user-box" onclick="toggleMiniProfile()">
+        <img class="user-img" src="/profile-images/default.png" alt="user" id="myProfileImg">
+        <div class="user-info">
+            <div class="name" id="myProfileName"></div>
+            <div class="role" id="myProfileRole"></div>
+        </div>
+        <div class="notification">
+            <img src="/images/bell.png" alt="알림">
+            <img class="noti-dot" src="/images/exclamation.png" alt="!" id="hasNotification" style="display:none;">
+        </div>
+    </div>
+
+    <!-- 진도율 -->
+    <div class="progress-box">
+        <label>전체 진도율</label>
+        <div class="bar">
+            <span id="myProgressBar" style="width:0%"></span>
+        </div>
+        <div class="percent" id="myProgressPercent">0%</div>
+    </div>
+
+    <!-- 멤버 리스트 -->
+    <div class="member-section">
+        <div class="title">
+            워크스페이스 멤버 (<span id="memberCount"></span>)
+        </div>
+
+        <div id="memberListContainer">
+            <!-- 여기에 JS로 멤버들 추가됨 -->
+        </div>
+
+        <!-- 고정된 초대 버튼 -->
+        <div class="member invite-member" onclick="openInvite()">
+            <img src="/images/invite_plus.png">
+            <div class="info"><span class="m-name">멤버 초대</span></div>
+        </div>
+    </div>
+</div>

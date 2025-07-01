@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(`워크스페이스가 생성되었습니다!\n초대 코드: ${workspace.inviteCd}`);
 
             // 워크스페이스 목록으로 이동
-            window.location.href = '/workspace';
+            window.location.href = `/wsmain?workspaceCd=${workspace.workspaceCd}`;
 
         } catch (error) {
             console.error('Error:', error);

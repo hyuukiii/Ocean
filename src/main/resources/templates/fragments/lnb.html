@@ -1,0 +1,38 @@
+<div th:fragment="lnbFragment" class="lnb">
+    <ul class="nav">
+        <li class="nav-item">
+            <a th:href="@{/wsmain}">
+                <img src="/images/home.png" alt="Home">
+                <span>홈</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a th:href="@{/calendar/team}">
+                <img src="/images/team_calendar.png" alt="Team Calendar">
+                <span>팀 캘린더</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a th:href="@{/calendar/personal}">
+                <img src="/images/personal_calendar.png" alt="Personal Calendar">
+                <span>개인 캘린더</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a th:href="@{/meeting-place}">
+                <img src="/images/location.png" alt="Location">
+                <span>모임 장소</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a th:href="@{/sketch}">
+                <img src="/images/sketch.png" alt="Sketch">
+                <span>스케치 회의</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="lnb-footer">
+        <img src="/images/menu.png" alt="menu">
+    </div>
+</div>
