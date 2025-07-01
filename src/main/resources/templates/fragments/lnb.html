@@ -1,32 +1,31 @@
 <div th:fragment="lnbFragment" class="lnb" xmlns:th="http://www.w3.org/1999/xhtml">
     <ul class="nav">
         <li class="nav-item">
-            <a th:href="@{/wsmain}">
+            <a th:href="@{/wsmain(workspaceCd=${workspaceCd})}">
                 <img src="/images/home.png" alt="Home">
                 <span>홈</span>
             </a>
         </li>
         <li class="nav-item">
-            <a th:href="@{/calendar/team}">
+            <a th:href="@{/calendar/team(workspaceCd=${workspaceCd})}">
                 <img src="/images/team_calendar.png" alt="Team Calendar">
                 <span>팀 캘린더</span>
             </a>
         </li>
         <li class="nav-item">
-            <a th:href="@{/calendar/personal}">
+            <a th:href="@{/calendar/personal(workspaceCd=${workspaceCd})}">
                 <img src="/images/personal_calendar.png" alt="Personal Calendar">
                 <span>개인 캘린더</span>
             </a>
         </li>
         <li class="nav-item">
-            <a th:href="@{/meeting-place}">
+            <a th:href="@{/meeting-place(workspaceCd=${workspaceCd})}">
                 <img src="/images/location.png" alt="Location">
                 <span>모임 장소</span>
             </a>
         </li>
-        <!-- 방법 1: 컨트롤러를 통해 이동 (현재 창) -->
         <li class="nav-item">
-            <a th:href="@{/sketch(workspaceId=${workspaceId})}">
+            <a th:href="@{/sketch(workspaceCd=${workspaceCd})}">
                 <img src="/images/sketch.png" alt="Sketch">
                 <span>스케치 회의</span>
             </a>

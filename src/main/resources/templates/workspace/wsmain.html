@@ -19,7 +19,7 @@
 <body>
 
 <!-- 왼쪽 사이드바 (LNB) -->
-<div th:replace="fragments/lnb :: lnbFragment"></div>
+<div th:replace="fragments/lnb :: lnbFragment(${workspaceCd})"></div>
 
 <!-- 메인 콘텐츠 -->
 <div class="main">
@@ -82,14 +82,15 @@
 <script th:src="@{/js/token.js}"></script>
 <script th:inline="javascript">
     function openSketchMeeting() {
-        // 사용자 정보 가져오기 (Thymeleaf에서 주입)
+        // 사용자 정보 가져오기
         const user = {
             id: /*[[${#authentication.principal.id}]]*/ '',
             name: /*[[${#authentication.principal.name}]]*/ ''
         };
 
-        // 워크스페이스 ID (현재 페이지에서 가져오기)
-        const workspaceId = /*[[${workspaceId}]]*/ 'sketch-default';
+        /*<![CDATA[*/
+        const workspaceCd = /*[[${workspaceCd}]]*/ '';
+        /*]]>*/
 
         // 룸 ID 생성
         const roomId = 'sketch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8);
@@ -100,7 +101,7 @@
         // URL 파라미터 구성
         const params = new URLSearchParams({
             roomId: roomId,
-            workspaceId: workspaceId,
+            workspaceId: workspaceCd,
             peerId: user.id,
             displayName: user.name,
             meetingType: 'sketch'
@@ -125,6 +126,9 @@
         const baseUrl = window.location.origin;
         return `${baseUrl}/sketch/join?roomId=${roomId}`;
     }
+
+    // 다른 스크립트에서 사용할 수 있도록 window 객체에 저장
+    window.currentWorkspaceCd = workspaceCd;
 </script>
 
 </body>

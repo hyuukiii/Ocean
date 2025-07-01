@@ -31,7 +31,7 @@ public class SketchMeetingController {
      */
     @GetMapping("/sketch")
     public RedirectView startSketchMeeting(
-            @RequestParam(required = false) String workspaceId,
+            @RequestParam(required = false) String workspaceCd,  // ⭐ workspaceId → workspaceCd
             @AuthenticationPrincipal UserPrincipal user) {
 
         try {
@@ -41,10 +41,10 @@ public class SketchMeetingController {
                 return new RedirectView("/login");
             }
 
-            // 워크스페이스 ID가 없으면 기본값 사용
-            if (workspaceId == null || workspaceId.isEmpty()) {
-                workspaceId = "sketch-default";
-                log.info("워크스페이스 ID가 없어 기본값 사용: {}", workspaceId);
+            // 워크스페이스 CD가 없으면 기본값 사용
+            if (workspaceCd == null || workspaceCd.isEmpty()) {
+                workspaceCd = "sketch-default";
+                log.info("워크스페이스 CD가 없어 기본값 사용: {}", workspaceCd);
             }
 
             // 고유한 룸 ID 생성 (스케치 회의용)
@@ -55,15 +55,15 @@ public class SketchMeetingController {
             StringBuilder urlBuilder = new StringBuilder(mediaServerUrl);
             urlBuilder.append("/ocean-video-chat-complete.html");
             urlBuilder.append("?roomId=").append(URLEncoder.encode(roomId, StandardCharsets.UTF_8));
-            urlBuilder.append("&workspaceId=").append(URLEncoder.encode(workspaceId, StandardCharsets.UTF_8));
+            urlBuilder.append("&workspaceId=").append(URLEncoder.encode(workspaceCd, StandardCharsets.UTF_8));  // ⭐ 미디어 서버로는 여전히 workspaceId로 전달
             urlBuilder.append("&peerId=").append(URLEncoder.encode(user.getId(), StandardCharsets.UTF_8));
             urlBuilder.append("&displayName=").append(URLEncoder.encode(user.getName(), StandardCharsets.UTF_8));
-            urlBuilder.append("&meetingType=sketch"); // 스케치 회의 타입 추가
+            urlBuilder.append("&meetingType=sketch");
 
             String redirectUrl = urlBuilder.toString();
 
-            log.info("스케치 회의 시작 - 사용자: {}, 룸ID: {}, 리다이렉트: {}",
-                    user.getName(), roomId, redirectUrl);
+            log.info("스케치 회의 시작 - 사용자: {}, 룸ID: {}, 워크스페이스CD: {}, 리다이렉트: {}",
+                    user.getName(), roomId, workspaceCd, redirectUrl);
 
             // 미디어 서버로 리다이렉트
             return new RedirectView(redirectUrl);
@@ -80,7 +80,7 @@ public class SketchMeetingController {
     @GetMapping("/sketch/join")
     public RedirectView joinSketchMeeting(
             @RequestParam String roomId,
-            @RequestParam(required = false) String workspaceId,
+            @RequestParam(required = false) String workspaceCd,  // ⭐ workspaceId → workspaceCd
             @AuthenticationPrincipal UserPrincipal user) {
 
         try {
@@ -95,8 +95,8 @@ public class SketchMeetingController {
             urlBuilder.append("/ocean-video-chat-complete.html");
             urlBuilder.append("?roomId=").append(URLEncoder.encode(roomId, StandardCharsets.UTF_8));
 
-            if (workspaceId != null) {
-                urlBuilder.append("&workspaceId=").append(URLEncoder.encode(workspaceId, StandardCharsets.UTF_8));
+            if (workspaceCd != null) {
+                urlBuilder.append("&workspaceId=").append(URLEncoder.encode(workspaceCd, StandardCharsets.UTF_8));  // ⭐ 미디어 서버로는 여전히 workspaceId로 전달
             }
 
             urlBuilder.append("&peerId=").append(URLEncoder.encode(user.getId(), StandardCharsets.UTF_8));
