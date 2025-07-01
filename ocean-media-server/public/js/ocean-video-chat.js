@@ -32,8 +32,22 @@
         // 방 정보
         const roomId = new URLSearchParams(window.location.search).get('room') || 'default-room';
         const workspaceId = new URLSearchParams(window.location.search).get('workspace') || 'default-workspace';
-        const peerId = 'peer-' + Math.random().toString(36).substr(2, 9);
-        const displayName = localStorage.getItem('userName') || '참가자';
+
+        // ⭐ 토큰에서 사용자 정보 가져오기
+        const userInfo = getUserInfoFromToken();
+        console.log('토큰에서 추출한 사용자 정보:', userInfo);
+
+        const userId = userInfo?.userId;
+        const displayName = userInfo?.userName || '참가자';
+        const peerId = userId || 'peer-' + Math.random().toString(36).substr(2, 9);
+
+        console.log('최종 userId:', userId);
+        console.log('최종 displayName:', displayName);
+
+        // userId가 없으면 경고
+        if (!userId) {
+            console.warn('userId를 찾을 수 없습니다. 로그인이 필요할 수 있습니다.');
+        }
 
         // ===== 한글 입력 관련 변수 추가 =====
         window.enterPressedDuringComposition = false;
@@ -253,7 +267,17 @@
                 roomId,
                 workspaceId,
                 peerId,
-                displayName
+                displayName,
+                userId: localStorage.getItem('userId')  // ⭐ 실제 userId 전달
+            });
+
+            // 디버깅을 위해 로그 추가
+            console.log('join-room 전송 데이터:', {
+                roomId,
+                workspaceId,
+                peerId,
+                displayName,
+                userId: localStorage.getItem('userId')
             });
 
             socket.on('room-joined', async (data) => {

@@ -21,7 +21,10 @@ module.exports = (io, worker, router) => {
 
     socket.on('join-room', async (data) => {
       try {
-        const { roomId, workspaceId, peerId, displayName } = data;
+        const { roomId, workspaceId, peerId, displayName, userId } = data;
+
+        // ⭐ 디버깅 로그 추가
+        console.log('join-room 데이터:', { roomId, workspaceId, peerId, displayName, userId });
         console.log(`${displayName} joining room ${roomId}`);
 
         // 룸 가져오기 또는 생성
@@ -32,8 +35,12 @@ module.exports = (io, worker, router) => {
 
         // Peer 생성
         const peer = new Peer(socket, roomId, peerId, displayName);
-        peers.set(socket.id, peer);
+        peer.userId = userId;
 
+        // ⭐ 저장 확인
+        console.log('Peer 생성 완료:', { peerId: peer.id, userId: peer.userId });
+
+        peers.set(socket.id, peer);
         // 룸에 피어 추가 (Peer 인스턴스 자체를 저장)
         room.peers.set(peerId, peer);
         console.log(`Peer ${peerId} added to room ${roomId}`);
@@ -483,32 +490,31 @@ module.exports = (io, worker, router) => {
     // 녹화 시작
     socket.on('start-recording', async (data, callback) => {
         try {
-             const { roomId } = data;
-             const peer = peers.get(socket.id);
+            const room = roomManager.getRoom(data.roomId);
+            const peer = peers.get(socket.id);
 
-             if (!peer) {
-                return callback({ error: '인증되지 않은 사용자' });
-             }
+            // ⭐ 디버깅 로그
+            console.log('녹화 시작 - socket.id:', socket.id);
+            console.log('녹화 시작 - peer:', peer);
+            console.log('녹화 시작 - peer.userId:', peer ? peer.userId : 'peer가 없음');
 
-             const room = roomManager.getRoom(roomId);
-             if (!room) {
-                 return callback({ error: '룸을 찾을 수 없습니다' });
-             }
+            if (!peer || !peer.userId) {
+                throw new Error('사용자 정보를 찾을 수 없습니다');
+            }
 
-             // 녹화 시작
-             const result = await room.startRecording(peer.id);
+            // 실제 사용자 ID 사용
+            const result = await room.startRecording(peer.userId);
 
-             // 모든 참가자에게 녹화 시작 알림
-             io.to(roomId).emit('recording-started', {
-                 recordingId: result.recordingId,
-                 startedBy: peer.displayName
-             });
+            // 다른 사용자에게 알림
+            io.to(data.roomId).emit('recording-started', {
+                recordingId: result.recordingId,
+                startedBy: peer.displayName
+            });
 
-             callback({ success: true, ...result });
-
+            callback(result);
         } catch (error) {
-             console.error('녹화 시작 오류:', error);
-             callback({ error: error.message });
+            console.error('녹화 시작 실패:', error);
+            callback({ error: error.message });
         }
     });
 

@@ -101,6 +101,10 @@ public class SecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
 
+                        // 녹화 API는 인증 없이 접근 가능 (내부 서버 간 통신)
+                        .requestMatchers("/api/recordings/**").permitAll()  // ⭐ 추가
+                        // .requestMatchers("/api/public/**").permitAll()
+
                         // 워크스페이스 관련 경로 추가
                         .requestMatchers("/workspace", "/workspace/**").authenticated()
 

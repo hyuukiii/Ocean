@@ -30,8 +30,19 @@ class Recorder {
                 recorderId: this.recorderId
             });
 
+            // ⭐ 응답 전체 확인
+            console.log('Spring Boot 응답 전체:', response.data);
+            console.log('응답 키들:', Object.keys(response.data));
+
             this.recordingId = response.data.recordingId;
             this.filePath = response.data.filePath;
+
+            // filePath가 없으면 에러 메시지 출력
+            if (!this.filePath) {
+                console.error('filePath가 응답에 없습니다!');
+                console.error('받은 데이터:', JSON.stringify(response.data, null, 2));
+            }
+
             this.videoPort = videoPort;
             this.audioPort = audioPort;
 

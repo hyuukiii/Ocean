@@ -1,3 +1,6 @@
+
+const Recorder = require('./recorder');
+
 class Room {
   constructor(roomId, workspaceId, router) {
     this.id = roomId;
@@ -6,7 +9,7 @@ class Room {
     this.peers = new Map(); // Peer 인스턴스를 직접 저장
     this.createdAt = new Date();
     this.recorder = null;
-    this.recordingStatus = false; // recorder = false가 아니라 recordingStatus = false
+    this.recordingStatus = false;
   }
 
   // 녹화 시작
@@ -19,17 +22,19 @@ class Room {
       // RTP 포트 할당 (실제로는 동적으로 할당해야 함)
       const videoPort = 5004;
       const audioPort = 5005;
+      const videoRtcpPort = 5005;  // ⭐ RTCP 포트 추가
+      const audioRtcpPort = 5007;  // ⭐ RTCP 포트 추가
 
       // PlainTransport 생성 (RTP 수신용)
       const videoTransport = await this.router.createPlainTransport({
         listenIp: { ip: '127.0.0.1', announcedIp: null },
-        rtcpMux: false,
+        rtcpMux: true,
         comedia: false
       });
 
       const audioTransport = await this.router.createPlainTransport({
         listenIp: { ip: '127.0.0.1', announcedIp: null },
-        rtcpMux: false,
+        rtcpMux: true,
         comedia: false
       });
 

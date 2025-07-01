@@ -80,11 +80,22 @@
 <script th:src="@{/js/invite-modal.js}"></script>
 <script th:src="@{/js/token.js}"></script>
 <script th:inline="javascript">
+    // 페이지 로드 시 즉시 실행되는 부분
+    /*<![CDATA[*/
+    const userId = /*[[${userId}]]*/ '';
+    const userName = /*[[${userName}]]*/ '';
+
+    // localStorage에 저장 (페이지 로드 시)
+    if (userId) {
+        localStorage.setItem('userId', userId);
+    }
+    /*]]>*/
+
     function openSketchMeeting() {
         // 사용자 정보 가져오기
         const user = {
-            id: /*[[${userId}]]*/ '',
-            name: /*[[${userName}]]*/ ''
+            id: userId,    // 위에서 정의한 변수 사용
+            name: userName  // 위에서 정의한 변수 사용
         };
 
         const workspaceCd = /*[[${workspaceCd}]]*/ '';

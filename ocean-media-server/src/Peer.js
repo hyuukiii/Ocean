@@ -5,6 +5,7 @@ class Peer {
     this.roomId = roomId;
     this.id = peerId;
     this.displayName = displayName;
+    this.userId = null; // ⭐ 실제 사용자 ID 저장용
     this.transports = new Map();
     this.producers = new Map();
     this.consumers = new Map();
