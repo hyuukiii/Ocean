@@ -67,7 +67,8 @@ public class RecordingController {
         log.error("녹화 실패: recordingId={}, reason={}",
                 recordingId, request.getReason());
 
-        recordingService.failRecording(recordingId, request.getReason());
+        // ⭐ 수정된 부분: request 객체를 그대로 전달
+        recordingService.failRecording(recordingId, request);
 
         return ResponseEntity.ok().build();
     }

@@ -250,7 +250,9 @@
             }
         }
 
-        // ===== 방 참가 =====
+        // ocean-video-chat.js 수정 부분만 표시
+
+        // ===== 방 참가 수정 =====
         async function joinRoom() {
             // Router RTP Capabilities 가져오기
             const routerRtpCapabilities = await new Promise((resolve, reject) => {
@@ -262,13 +264,34 @@
             // MediaSoup 디바이스 초기화
             await initializeDevice(routerRtpCapabilities);
 
+            // ⭐ userId 가져오기 수정
+            let actualUserId = userId;  // 전역 변수에서 먼저 확인
+
+            // userId가 없으면 localStorage에서 확인
+            if (!actualUserId) {
+                actualUserId = localStorage.getItem('userId');
+            }
+
+            // 그래도 없으면 토큰에서 다시 파싱
+            if (!actualUserId) {
+                const tokenUserInfo = getUserInfoFromToken();
+                actualUserId = tokenUserInfo?.userId;
+
+                // localStorage에 저장
+                if (actualUserId) {
+                    localStorage.setItem('userId', actualUserId);
+                }
+            }
+
+            console.log('최종 사용할 userId:', actualUserId);
+
             // 방 참가
             socket.emit('join-room', {
                 roomId,
                 workspaceId,
                 peerId,
                 displayName,
-                userId: localStorage.getItem('userId')  // ⭐ 실제 userId 전달
+                userId: actualUserId  // ⭐ 수정된 userId 전달
             });
 
             // 디버깅을 위해 로그 추가
@@ -277,7 +300,7 @@
                 workspaceId,
                 peerId,
                 displayName,
-                userId: localStorage.getItem('userId')
+                userId: actualUserId
             });
 
             socket.on('room-joined', async (data) => {
@@ -295,17 +318,14 @@
                 // 기존 참가자들 표시
                 if (data.peers) {
                     for (const peer of data.peers) {
-                        addRemoteVideo(peer.id, peer.displayName);
+                        addParticipant(peer.peerId, peer.displayName);
                     }
                 }
 
+                // 참가자 수 업데이트
                 updateParticipantCount();
-                showToast('회의에 참가했습니다');
-            });
 
-            socket.on('error', (error) => {
-                console.error('서버 에러:', error);
-                showToast('오류: ' + error.message);
+                showToast('회의에 참가했습니다');
             });
         }
 
