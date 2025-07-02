@@ -1,20 +1,31 @@
 package com.example.ocean.controller.workspace;
 
 import com.example.ocean.domain.Workspace;
+import com.example.ocean.domain.WorkspaceDept;
+import com.example.ocean.domain.WorkspaceMember;
 import com.example.ocean.service.WorkspaceService;
 import com.example.ocean.security.oauth.UserPrincipal;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 // 페이지 렌더링 전용 컨트롤러 (HTML 응답)
 @Slf4j
@@ -141,4 +152,152 @@ public class WorkspacePageController {
         return "main/index"; // templates/index.html
     }
     */
+
+    @PostMapping("/workspace/{workspaceCd}/set-profile")
+    @ResponseBody
+    public String handleSetProfile(
+            @PathVariable String workspaceCd,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam("userNickname") String userNickname,
+            @RequestParam("email") String email,
+            @RequestParam(value = "phoneNum", required = false) String phoneNum,
+            @RequestParam(value = "statusMsg", required = false) String statusMsg,
+            @RequestParam("deptCd") String deptCd,
+            @RequestParam("position") String position,
+            @RequestParam(value = "userImg", required = false) MultipartFile userImgFile) {
+
+        try {
+            log.info("프로필 설정 시작 - workspaceCd: {}, userId: {}", workspaceCd, userPrincipal.getId());
+
+            String userImgFileName = null;
+            if (userImgFile != null && !userImgFile.isEmpty()) {
+                userImgFileName = saveProfileImage(userImgFile);
+            }
+
+            // 멤버 존재 여부 확인
+            WorkspaceMember existingMember = workspaceService.findMemberByWorkspaceAndUser(workspaceCd, userPrincipal.getId());
+
+            if (existingMember == null) {
+                // 새 멤버 추가
+                workspaceService.insertUserProfileToWorkspace(
+                        workspaceCd,
+                        userPrincipal.getId(),
+                        userNickname,
+                        statusMsg,
+                        email,
+                        phoneNum,
+                        "MEMBER"
+                );
+            } else {
+                // 기존 멤버 업데이트
+                workspaceService.updateWorkspaceProfile(
+                        workspaceCd,
+                        userPrincipal.getId(),
+                        userNickname,
+                        statusMsg,
+                        email,
+                        phoneNum,
+                        "MEMBER"
+                );
+            }
+
+            // 부서 및 직급 정보 업데이트
+            workspaceService.updateDeptAndPosition(
+                    workspaceCd,
+                    userPrincipal.getId(),
+                    deptCd,
+                    position
+            );
+
+            log.info("프로필 설정 완료 - workspaceCd: {}, userId: {}", workspaceCd, userPrincipal.getId());
+            return "success";
+
+        } catch (Exception e) {
+            log.error("프로필 설정 중 오류 발생", e);
+            return "error: " + e.getMessage();
+        }
+    }
+
+
+
+
+    // 프로필 이미지 저장 헬퍼 메소드
+    private String saveProfileImage(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            return null;
+        }
+
+        File uploadDir = new File("C:/ocean_img");
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        String originalFileName = file.getOriginalFilename();
+        String ext = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
+        String savedFileName = UUID.randomUUID().toString() + ext;
+
+        file.transferTo(new File(uploadDir, savedFileName));
+        return savedFileName;
+    }
+
+
+
+
+    @GetMapping("/workspace/{workspaceCd}")
+    public String workspaceDetailPage(@PathVariable String workspaceCd,
+                                      @AuthenticationPrincipal UserPrincipal userPrincipal,
+                                      Model model) {
+        if (userPrincipal == null) {
+            return "redirect:/login";
+        }
+
+        // 1. 멤버 정보 조회
+        WorkspaceMember member = workspaceService.findMemberByWorkspaceAndUser(
+                workspaceCd,
+                userPrincipal.getId()
+        );
+
+        // 2. 멤버가 없는 경우
+        if (member == null) {
+            log.warn("워크스페이스 참가 페이지 접근 - 사용자: {}, 워크스페이스 코드: {}, member == null", userPrincipal.getName(), workspaceCd);
+            return "redirect:/workspace/" + workspaceCd + "/set-profile";
+        }
+
+        // 3. 프로필 정보가 없는 경우
+        if (member.getUserNickname() == null || member.getUserNickname().isBlank()) {
+            return "redirect:/workspace/" + workspaceCd + "/set-profile";
+        }
+
+        // 4. 워크스페이스 존재 여부 확인
+        Workspace workspace = workspaceService.findWorkspaceByCd(workspaceCd);
+        if (workspace == null) {
+            model.addAttribute("error", "해당 워크스페이스를 찾을 수 없습니다.");
+            return "workspace/error";
+        }
+
+        // 5. 모든 조건을 만족하면 wsmain으로 리다이렉트
+        return "redirect:/wsmain?workspaceCd=" + workspaceCd;
+    }
+
+
+    @GetMapping("/workspace/{workspaceCd}/set-profile")
+    public String setProfilePageByPath(@PathVariable String workspaceCd,
+                                       @AuthenticationPrincipal UserPrincipal userPrincipal,
+                                       Model model) {
+        List<WorkspaceDept> departments = workspaceService.getDepartments(workspaceCd);
+
+        WorkspaceMember member = workspaceService.findMemberByWorkspaceAndUser(workspaceCd, userPrincipal.getId());
+
+        // ✅ null 방어 추가
+        if (member == null) {
+            // 잘못된 접근이므로 워크스페이스 상세로 리다이렉트
+            return "redirect:/workspace/" + workspaceCd;
+        }
+
+        model.addAttribute("workspaceCd", workspaceCd);
+        model.addAttribute("departments", departments);
+        model.addAttribute("member", member);
+
+        return "workspace/set-profile";
+    }
 }

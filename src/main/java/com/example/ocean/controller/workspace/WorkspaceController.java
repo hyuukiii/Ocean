@@ -6,15 +6,20 @@ import com.example.ocean.domain.WorkspaceMember;
 import com.example.ocean.service.WorkspaceService;
 import com.example.ocean.security.oauth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,6 +29,7 @@ import java.util.*;
 @RequestMapping("/api/workspaces")
 @RequiredArgsConstructor
 public class WorkspaceController {
+
 
     private final WorkspaceService workspaceService;
 
@@ -38,39 +44,52 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspaces);
     }
 
+    // 1. @InitBinder 수정: 'endDate' 필드를 자동 변환 대상에서 제외.
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        // 스프링이 'endDate' 필드를 자동으로 변환하려는 시도를 막기.
+        binder.setDisallowedFields("endDate");
+    }
+
     // 워크스페이스 생성
     @PostMapping
     public ResponseEntity<Workspace> createWorkspace(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody Map<String, Object> requestData) {
+            @ModelAttribute Workspace workspace, // 2. 여기에 workspaceNm, endDate 등이 자동으로 담겨옴.
+            @RequestParam(value = "endDate", required = false) String endDateStr,
+            @RequestParam(value = "departments", required = false) List<String> departments,
+            @RequestParam(value = "workspaceImageFile", required = false) MultipartFile workspaceImg){
 
-        String workspaceCd = UUID.randomUUID().toString();
-        String inviteCd = UUID.randomUUID().toString().substring(0, 8);
+        // --- 수동으로 날짜 변환 및 설정 로직 추가 ---
+        if (endDateStr != null && !endDateStr.isEmpty()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date parsedDate = dateFormat.parse(endDateStr);
+                workspace.setEndDate(new Timestamp(parsedDate.getTime()));
+            } catch (ParseException e) {
+                // 날짜 형식이 잘못되었을 경우의 예외 처리 (필요 시)
+                // 예를 들어, 로그를 남기거나 특정 에러 응답을 반환할 수 있음.
+                e.printStackTrace();
+            }
+        }
+        try {
+            // 3. 서비스 호출: 컨트롤러는 서비스에 데이터를 넘겨주기만.
+            //    - UUID, 초대코드, 날짜 생성 등은 서비스에서 처리.
+                // 컨트롤러는 서비스 호출만 담당.
+                Workspace createdWorkspace = workspaceService.createWorkspace(
+                        userPrincipal,
+                        workspace,
+                        departments,
+                        workspaceImg
+                );
 
-        Workspace workspace = new Workspace();
-        workspace.setWorkspaceCd(workspaceCd);
-        workspace.setWorkspaceNm((String) requestData.get("workspaceName"));
-        workspace.setInviteCd(inviteCd);
-        workspace.setActiveState("1");
-        workspace.setCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
+                return ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(createdWorkspace);
 
-        // endDate 처리
-        String endDateStr = (String) requestData.get("endDate");
-        workspace.setEndDate(Timestamp.valueOf(endDateStr + " 00:00:00"));
-
-        // departments 처리
-        List<String> departmentsList = (List<String>) requestData.get("departments");
-        String[] departments = departmentsList.toArray(new String[0]);
-
-        workspaceService.createWorkspaceWithDepartments(
-                workspace,
-                departments,
-                userPrincipal.getId()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(workspace);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
     }
 
     // 워크스페이스 상세 조회
@@ -117,28 +136,54 @@ public class WorkspaceController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody WorkspaceMember profileData) {
 
-        workspaceService.updateWorkspaceProfile(
-                workspaceCd,
-                userPrincipal.getId(),
-                profileData.getUserNickname(),
-                profileData.getStatusMsg(),
-                profileData.getEmail(),
-                profileData.getPhoneNum(),
-                null // 이미지는 별도 처리
-        );
+        try {
+            // 멤버 존재 여부 확인
+            WorkspaceMember existingMember = workspaceService
+                    .findMemberByWorkspaceAndUser(workspaceCd, userPrincipal.getId());
 
-        workspaceService.updateDeptAndPosition(
-                workspaceCd,
-                userPrincipal.getId(),
-                profileData.getDeptCd(),
-                profileData.getPosition()
-        );
+            if (existingMember == null) {
+                // 새 멤버 추가
+                workspaceService.insertUserProfileToWorkspace(
+                        workspaceCd,
+                        userPrincipal.getId(),
+                        profileData.getUserNickname(),
+                        profileData.getStatusMsg(),
+                        profileData.getEmail(),
+                        profileData.getPhoneNum(),
+                        "MEMBER"
+                );
+            } else {
+                // 기존 멤버 업데이트
+                workspaceService.updateWorkspaceProfile(
+                        workspaceCd,
+                        userPrincipal.getId(),
+                        profileData.getUserNickname(),
+                        profileData.getStatusMsg(),
+                        profileData.getEmail(),
+                        profileData.getPhoneNum(),
+                        profileData.getUserRole()
+                );
+            }
 
-        WorkspaceMember updatedProfile = workspaceService
-                .findMemberByWorkspaceAndUser(workspaceCd, userPrincipal.getId());
+            // 부서 및 직급 정보 업데이트
+            workspaceService.updateDeptAndPosition(
+                    workspaceCd,
+                    userPrincipal.getId(),
+                    profileData.getDeptCd(),
+                    profileData.getPosition()
+            );
 
-        return ResponseEntity.ok(updatedProfile);
+            WorkspaceMember updatedProfile = workspaceService
+                    .findMemberByWorkspaceAndUser(workspaceCd, userPrincipal.getId());
+
+            return ResponseEntity.ok(updatedProfile);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
+
 
     // 부서 목록 조회
     @GetMapping("/{workspaceCd}/departments")
@@ -204,32 +249,48 @@ public class WorkspaceController {
     public ResponseEntity<Map<String, String>> uploadProfileImage(
             @PathVariable String workspaceCd,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestParam("image") MultipartFile image) throws IOException {
+            @RequestParam("image") MultipartFile image) {
 
-        if (image.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+        try {
+            if (image.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            File uploadDir = new File("C:/uploads/workspace/");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            String originalFilename = image.getOriginalFilename();
+            String ext = originalFilename != null ?
+                    originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
+            String savedFileName = UUID.randomUUID() + ext;
+
+            File destFile = new File(uploadDir, savedFileName);
+            image.transferTo(destFile);
+
+            // 이미지 파일명만 DB에 업데이트
+            workspaceService.updateWorkspaceProfile(
+                    workspaceCd,
+                    userPrincipal.getId(),
+                    null,  // userNickname
+                    null,  // statusMsg
+                    null,  // email
+                    null,  // phoneNum
+                    null   // userRole
+            );
+
+            Map<String, String> response = new HashMap<>();
+            response.put("imageUrl", savedFileName);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
         }
-
-        File uploadDir = new File("C:/ocean_img");
-        if (!uploadDir.exists()) uploadDir.mkdirs();
-
-        String ext = image.getOriginalFilename()
-                .substring(image.getOriginalFilename().lastIndexOf("."));
-        String savedFileName = UUID.randomUUID() + ext;
-
-        image.transferTo(new File(uploadDir, savedFileName));
-
-        // DB 업데이트
-        workspaceService.updateWorkspaceProfile(
-                workspaceCd,
-                userPrincipal.getId(),
-                null, null, null, null,
-                savedFileName
-        );
-
-        Map<String, String> response = new HashMap<>();
-        response.put("imageUrl", savedFileName);
-
-        return ResponseEntity.ok(response);
     }
+
 }

@@ -80,10 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/api/workspaces', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + accessToken
                 },
-                body: JSON.stringify(requestData)
+                 body: formData // JSON.stringify 대신 formData 객체 직접 삽입
             });
 
             if (!response.ok) {

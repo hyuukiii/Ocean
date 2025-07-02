@@ -110,6 +110,19 @@ module.exports = (io, worker, router) => {
         const transport = await createWebRtcTransport(router);
         // Transport에 producing/consuming 정보 추가
         transport.appData = { producing, consuming };
+        
+        // Transport 상태 변경 모니터링
+        transport.on('icestatechange', (iceState) => {
+          console.log(`Transport ${transport.id} ICE state changed to: ${iceState}`);
+        });
+        
+        transport.on('dtlsstatechange', (dtlsState) => {
+          console.log(`Transport ${transport.id} DTLS state changed to: ${dtlsState}`);
+          if (dtlsState === 'connected') {
+            console.log(`✅ Transport ${transport.id} is now fully connected!`);
+          }
+        });
+        
         peer.addTransport(transport);
 
         console.log(`Transport created: ${transport.id} (producing: ${producing}, consuming: ${consuming})`);
@@ -144,6 +157,16 @@ module.exports = (io, worker, router) => {
 
         await transport.connect({ dtlsParameters });
         console.log(`Transport connected: ${transportId}`);
+        
+        // Transport 상태 확인
+        const stats = await transport.getStats();
+        console.log(`Transport ${transportId} 연결 후 상태:`, {
+            iceState: transport.iceState,
+            dtlsState: transport.dtlsState,
+            sctpState: transport.sctpState,
+            iceSelectedTuple: transport.iceSelectedTuple
+        });
+        
         callback({ success: true });
 
       } catch (error) {
@@ -174,6 +197,55 @@ module.exports = (io, worker, router) => {
 
         peer.addProducer(producer);
         console.log(`Producer created: ${producer.id} (${kind})`);
+        console.log(`Producer 상태:`, {
+            id: producer.id,
+            kind: producer.kind,
+            paused: producer.paused,
+            type: producer.type,
+            rtpParameters: JSON.stringify(producer.rtpParameters, null, 2)
+        });
+        
+        // Transport 연결 상태 확인
+        console.log(`Producer의 Transport 상태:`, {
+            transportId: transport.id,
+            iceState: transport.iceState,
+            dtlsState: transport.dtlsState,
+            iceSelectedTuple: transport.iceSelectedTuple
+        });
+        
+        // Producer 통계 확인 (1초 후)
+        setTimeout(async () => {
+            if (!producer.closed) {
+                const stats = await producer.getStats();
+                console.log(`Producer ${producer.id} 통계 (1초 후):`, stats);
+                if (stats && stats.length > 0 && stats[0].byteCount > 0) {
+                    console.log(`✅ Producer ${producer.id}가 데이터를 생성 중입니다`);
+                } else {
+                    console.log(`❌ Producer ${producer.id}가 데이터를 생성하지 않습니다`);
+                    
+                    // Transport 상태 확인
+                    const transportStats = await transport.getStats();
+                    console.log(`Transport ${transport.id} 통계:`, transportStats);
+                    
+                    // Producer 상태 재확인
+                    console.log(`Producer 추가 정보:`, {
+                        paused: producer.paused,
+                        closed: producer.closed,
+                        appData: producer.appData,
+                        type: producer.type,
+                        score: producer.score
+                    });
+                }
+            }
+        }, 1000);
+        
+        // 5초 후 추가 확인
+        setTimeout(async () => {
+            if (!producer.closed && producer.getStats) {
+                const stats = await producer.getStats();
+                console.log(`Producer ${producer.id} 통계 (5초 후):`, stats);
+            }
+        }, 5000);
 
         // 다른 참가자들에게 새 Producer 알림
         socket.to(peer.roomId).emit('new-producer', {
@@ -502,6 +574,12 @@ module.exports = (io, worker, router) => {
                 throw new Error('사용자 정보를 찾을 수 없습니다');
             }
 
+            // ⭐⭐ 녹화 전 체크 추가 - 이 부분이 중요합니다!
+            const checkResult = await room.preRecordingCheck();
+            if (!checkResult) {
+                throw new Error('녹화 사전 체크 실패. 콘솔 로그를 확인하세요.');
+            }
+
             // 실제 사용자 ID 사용
             const result = await room.startRecording(peer.userId);
 
@@ -528,59 +606,57 @@ module.exports = (io, worker, router) => {
                 return callback({ error: '인증되지 않은 사용자' });
             }
 
-                    const room = roomManager.getRoom(roomId);
-                    if (!room) {
-                        return callback({ error: '룸을 찾을 수 없습니다' });
-                    }
-
-                    // 녹화 종료
-                    const result = await room.stopRecording();
-
-                    // 모든 참가자에게 녹화 종료 알림
-                    io.to(roomId).emit('recording-stopped', {
-                        recordingId: result.recordingId,
-                        stoppedBy: peer.displayName
-                    });
-
-                    callback({ success: true, ...result });
-
-                } catch (error) {
-                    console.error('녹화 종료 오류:', error);
-                    callback({ error: error.message });
-                }
-            });
-        // 녹화 상태 확인
-        socket.on('get-recording-status', async (data, callback) => {
-            try {
-                const { roomId } = data;
-                const room = roomManager.getRoom(roomId);
-
-                if (!room) {
-                    return callback({ error: '룸을 찾을 수 없습니다' });
-                }
-
-                callback({
-                    isRecording: room.recordingStatus,
-                    recordingId: room.recorder?.recordingId
-                });
-
-            } catch (error) {
-                console.error('녹화 상태 확인 오류:', error);
-                callback({ error: error.message });
+            const room = roomManager.getRoom(roomId);
+            if (!room) {
+                return callback({ error: '룸을 찾을 수 없습니다' });
             }
-        });
+
+            // 녹화 종료
+            const result = await room.stopRecording();
+
+            // 모든 참가자에게 녹화 종료 알림
+            io.to(roomId).emit('recording-stopped', {
+                recordingId: result.recordingId,
+                stoppedBy: peer.displayName
+            });
+
+            callback({ success: true, ...result });
+
+        } catch (error) {
+            console.error('녹화 종료 오류:', error);
+            callback({ error: error.message });
+        }
     });
- };
+    // 녹화 상태 확인
+    socket.on('get-recording-status', async (data, callback) => {
+        try {
+            const { roomId } = data;
+            const room = roomManager.getRoom(roomId);
+
+            if (!room) {
+                return callback({ error: '룸을 찾을 수 없습니다' });
+            }
+
+            callback({
+                isRecording: room.recordingStatus,
+                recordingId: room.recorder?.recordingId
+            });
+
+        } catch (error) {
+            console.error('녹화 상태 확인 오류:', error);
+            callback({ error: error.message });
+        }
+    });
+  });
+};
 
 // WebRTC Transport 생성 함수 에이콘 아카데미 IP :172.30.1.49 , 192.168.100.16  투썸플레이스 신촌점 : 192.168.40.6 집 와이파이 : 192.168.0.16
 async function createWebRtcTransport(router) {
   const transport = await router.createWebRtcTransport({
     listenIps: [
       {
-        //ip: process.env.MEDIASOUP_LISTEN_IP || '127.0.0.1',
-        //announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || '127.0.0.1'
         ip: '0.0.0.0',
-        announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || '192.168.100.16'
+        announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || '127.0.0.1'  // 로컬 테스트용
       }
     ],
     enableUdp: true,

@@ -433,8 +433,23 @@
                     }
                 });
 
+                // ⭐ 디버깅을 위해 window에 저장
+                if (!window.producers) window.producers = new Map();
+                window.producers.set('audio', audioProducer);
+                console.log(`✅ audio Producer 생성:`, audioProducer.id);
+                
+                // Track 상태 확인
+                const audioTrack = audioProducer.track;
+                console.log('오디오 Track 상태:', {
+                    enabled: audioTrack.enabled,
+                    muted: audioTrack.muted,
+                    readyState: audioTrack.readyState,
+                    settings: audioTrack.getSettings()
+                });
+
                 audioProducer.on('transportclose', () => {
                     audioProducer = null;
+                    window.producers.delete('audio');  // ⭐ 정리 시에도 제거
                 });
             }
 
@@ -452,10 +467,20 @@
                     }
                 });
 
+                // ⭐ 디버깅을 위해 window에 저장
+                if (!window.producers) window.producers = new Map();
+                window.producers.set('video', videoProducer);
+                console.log(`✅ video Producer 생성:`, videoProducer.id);
+
                 videoProducer.on('transportclose', () => {
                     videoProducer = null;
+                    window.producers.delete('video');  // ⭐ 정리 시에도 제거
                 });
             }
+
+            // ⭐ 추가: producerTransport도 window에 저장
+            window.producerTransport = producerTransport;
+            console.log('✅ Producer Transport 저장됨:', producerTransport.id);
         }
 
         // ===== 미디어 소비 ============
@@ -663,6 +688,11 @@
                         track: screenStream.getVideoTracks()[0],
                         appData: { mediaType: 'screen' }  // 화면 공유임을 표시
                     });
+
+                    // ⭐ 화면 공유 Producer도 window에 저장
+                    if (!window.producers) window.producers = new Map();
+                    window.producers.set('screen', screenProducer);
+                    console.log(`✅ screen Producer 생성:`, screenProducer.id);
 
                     screenStream.getVideoTracks()[0].onended = () => {
                         toggleScreenShare();

@@ -13,7 +13,7 @@
         display: block;
         margin-bottom: 8px;
         font-weight: 500;
-        color: #00f2fe;
+        color: white;
     }
     .form-group input,
     .form-group select {
@@ -23,7 +23,6 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 8px;
         font-size: 16px;
-        font: white;
     }
     .profile-image {
         text-align: center;

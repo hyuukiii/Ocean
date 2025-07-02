@@ -6,8 +6,9 @@
   <title>프로필 설정 | Ocean WorkSpace</title>
   <link rel="stylesheet" th:href="@{/css/Header.css}">
   <link rel="stylesheet" th:href="@{/css/setProfile.css}">
-  <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">
-  <link rel="stylesheet" href="/src/main/resources/static/css/setProfile.css">
+<!--  <link rel="stylesheet" href="/src/main/resources/static/css/Header.css">-->
+<!--  <link rel="stylesheet" href="/src/main/resources/static/css/setProfile.css">-->
+
   <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 
   <!-- ⭐ Ocean Background CSS 추가 -->
@@ -46,8 +47,54 @@
   </div>
 </header>
 <div class="container">
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
 
-  <form th:action="@{'/workspace/' + ${workspaceCd} + '/set-profile'}" method="post" enctype="multipart/form-data">
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        try {
+          const formData = new FormData(this);
+
+          // 필수 필드 검증
+          const requiredFields = ['userNickname', 'email', 'deptCd', 'position'];
+          for (let field of requiredFields) {
+            if (!formData.get(field)) {
+              alert(`${field} 필드는 필수입니다.`);
+              return;
+            }
+          }
+
+          const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            const result = await response.text();
+            console.log('서버 응답:', result); // 디버깅용
+
+            if (result === 'success') {
+              const workspaceCd = /*[[${workspaceCd}]]*/ '';
+              window.location.href = `/wsmain?workspaceCd=${workspaceCd}`;
+            } else {
+              throw new Error('프로필 설정 실패: ' + result);
+            }
+          } else {
+            const errorText = await response.text();
+            throw new Error('서버 응답 오류: ' + errorText);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('프로필 설정 중 오류가 발생했습니다: ' + error.message);
+        }
+      });
+    });
+    /*]]>*/
+  </script>
+  <form th:data-workspace-cd="${workspaceCd}" method="post" enctype="multipart/form-data">
     <div class="swiper-container">
       <div class="swiper-wrapper">
         <!-- 슬라이드 1: 기본 정보 -->
@@ -61,23 +108,45 @@
 
           <div class="form-group">
             <label for="userNickname">닉네임</label>
-            <input type="text" id="userNickname" name="userNickname" placeholder="사용하실 닉네임을 입력해주세요" required>
+            <input type="text"
+                   id="userNickname"
+                   name="userNickname"
+                   th:value="${member.userNickname}"
+                   placeholder="사용하실 닉네임을 입력해주세요"
+                   required>
           </div>
+
 
           <div class="form-group">
             <label for="email">이메일</label>
-            <input type="email" id="email" name="email" placeholder="SmapleEmail@gmail.com" required>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   th:value="${member.email}"
+                   placeholder="SmapleEmail@gmail.com"
+                   required>
           </div>
+
 
           <div class="form-group">
             <label for="phoneNum">전화번호</label>
-            <input type="text" id="phoneNum" name="phoneNum" placeholder="010-1234-5678">
+            <input type="text"
+                   id="phoneNum"
+                   name="phoneNum"
+                   th:value="${member.phoneNum}"
+                   placeholder="010-1234-5678">
           </div>
+
 
           <div class="form-group">
             <label for="statusMsg">상태 메시지</label>
-            <input type="text" id="statusMsg" name="statusMsg" placeholder="상태 메시지를 입력하세요">
+            <input type="text"
+                   id="statusMsg"
+                   name="statusMsg"
+                   th:value="${member.statusMsg}"
+                   placeholder="상태 메시지를 입력하세요">
           </div>
+
 
           <div class="navigation">
             <button type="button" class="btn btn-back" onclick="location.href='/workspace'">목록으로</button>
@@ -87,26 +156,34 @@
 
         <!-- 슬라이드 2: 부서 및 직급 정보 -->
         <div class="swiper-slide">
-          <h2>사용 하시려는 부서 / 기관을 선택 해 주세요</h2>
+          <h2 style="color: white; padding-bottom: 30px;" >사용 하시려는 부서 / 기관을 선택 해 주세요</h2>
 
-          <div class="form-group">
-            <label for="deptCd">부서/기관</label>
-            <select id="deptCd" name="deptCd" required>
-              <option value="">-- 부서를 선택하세요 --</option>
-              <option th:each="dept : ${departments}"
-                      th:value="${dept.deptCd}"
-                      th:text="${dept.deptNm}">
-              </option>
-            </select>
-          </div>
+            <!-- 부서 선택 필드 추가 -->
+            <div class="form-group">
+              <label for="deptCd">부서</label>
+              <select id="deptCd" name="deptCd" required>
+                <option value="">부서를 선택하세요</option>
+                <option th:each="dept : ${departments}"
+                        th:value="${dept.deptCd}"
+                        th:text="${dept.deptNm}">
+                </option>
+              </select>
+            </div>
 
-          <div class="form-group">
-            <label for="position">현재 직급을 입력 해주세요</label>
-            <input type="text" id="position" name="position" placeholder="예: 대리" required>
-          </div>
+            <!-- 직급 입력 필드 추가 -->
+            <div class="form-group">
+              <label for="position">직급</label>
+              <input type="text"
+                     id="position"
+                     name="position"
+                     th:value="${member?.position}"
+                     placeholder="직급을 입력하세요"
+                     required>
+            </div>
 
 
-          <div class="navigation">
+
+            <div class="navigation">
             <button type="button" class="btn btn-prev">이전으로</button>
             <button type="submit" class="btn btn-submit">참가하기</button>
           </div>
@@ -126,104 +203,129 @@
   let swiper;
 
   document.addEventListener('DOMContentLoaded', function() {
-      // 스와이퍼 초기화 (수정된 부분)
-      swiper = new Swiper('.swiper-container', {
-          allowTouchMove: false,
-          pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
-          },
-          navigation: {
-              nextEl: '.btn-next',
-              prevEl: '.btn-prev',
-          },
-          watchSlidesProgress: true,
-          preventInteractionOnTransition: true,
-          virtualTranslate: false,
-          on: {
-              init: function () {
-                  console.log('Swiper initialized');
-              }
-          }
-      });
+    // workspaceCd를 hidden input이나 data 속성에서 가져오기
+    const workspaceCd = document.querySelector('form').dataset.workspaceCd;
 
-      // 이미지 미리보기 (수정된 부분)
-     document.getElementById('profileImage').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
+    // Swiper 초기화
+    swiper = new Swiper('.swiper-container', {
+      allowTouchMove: false,
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.btn-next',
+        prevEl: '.btn-prev'
+      }
+    });
+
+    // 이전 버튼 이벤트
+    document.querySelector('.btn-prev')?.addEventListener('click', () => {
+      swiper.slidePrev();
+    });
+
+    // 프로필 폼 참조
+    const profileForm = document.querySelector('form');
+
+    // 프로필 이미지 미리보기
+    document.getElementById('profileImage')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            document.getElementById('profilePreview').src = event.target.result;
+          document.getElementById('profilePreview').src = event.target.result;
         };
         reader.readAsDataURL(file);
-    }
-});
+      }
+    });
 
+    // 폼 제출 이벤트
+    profileForm?.addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-      // 첫 번째 슬라이드 유효성 검사 (수정된 부분)
-      window.validateFirstSlide = function() {
-          const workspaceName = document.getElementById('workspaceNm').value;
+      try {
+        const formData = new FormData(this);
 
-          if (!workspaceName) {
-              alert('워크스페이스 이름은 필수 입력 항목입니다.');
-              return;
+        // 필수 필드 검증
+        const requiredFields = ['userNickname', 'email', 'deptCd', 'position'];
+        for (let field of requiredFields) {
+          if (!formData.get(field)) {
+            alert(`${field} 필드는 필수입니다.`);
+            return;
           }
+        }
 
-          swiper.slideNext();
-      };
+        // 이미지 파일 처리
+        const imageFile = formData.get('userImg');
+        if (imageFile && imageFile.size > 0) {
+          const imageFormData = new FormData();
+          imageFormData.append('image', imageFile);
 
-      // 다음 버튼 이벤트 (수정된 부분)
-      document.querySelector('.btn-next').addEventListener('click', function() {
-          validateFirstSlide();
-      });
+          try {
+            const imageResponse = await fetch(`/api/workspaces/${workspaceCd}/profile/image`, {
+              method: 'POST',
+              body: imageFormData
+            });
 
-      // 이전 버튼 이벤트 (수정된 부분)
-      document.querySelector('.btn-prev').addEventListener('click', function() {
-          swiper.slidePrev();
-      });
-
-      // 취소 버튼 이벤트
-      document.querySelector('.btn-back').addEventListener('click', function() {
-          location.href='/workspace';
-      });
-
-      // 부서 추가 기능 (수정된 부분)
-      window.addDepartment = function() {
-          const section = document.getElementById('department-section');
-          const div = document.createElement('div');
-          div.className = 'department-input-group';
-
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.name = 'departments';
-          input.placeholder = '부서명';
-          input.required = true;
-
-          const removeBtn = document.createElement('button');
-          removeBtn.type = 'button';
-          removeBtn.className = 'btn-remove-department';
-          removeBtn.innerHTML = '×';
-          removeBtn.onclick = function() { removeDepartment(this); };
-          removeBtn.style.display = 'inline-block';
-
-          div.appendChild(input);
-          div.appendChild(removeBtn);
-          section.appendChild(div);
-      };
-
-      // 부서 제거 기능 (수정된 부분)
-      window.removeDepartment = function(button) {
-          const inputGroups = document.querySelectorAll('.department-input-group');
-          if (inputGroups.length > 1) {
-              button.parentElement.remove();
-          } else {
-              alert('최소 한 개의 부서는 필요합니다.');
+            if (!imageResponse.ok) {
+              throw new Error('이미지 업로드 실패');
+            }
+          } catch (imageError) {
+            console.error('이미지 업로드 에러:', imageError);
           }
-      };
+        }
 
-      // 날짜 유효성 검사
-      document.getElementById('endDate').min = new Date().toISOString().split('T')[0];
+        // 프로필 데이터 준비
+        const profileData = {
+          userNickname: formData.get('userNickname'),
+          email: formData.get('email'),
+          phoneNum: formData.get('phoneNum') || '',
+          statusMsg: formData.get('statusMsg') || '',
+          deptCd: formData.get('deptCd'),
+          position: formData.get('position')
+        };
+
+        // 프로필 정보 업데이트
+        const response = await fetch(`/api/workspaces/${workspaceCd}/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(profileData)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error('프로필 설정 실패: ' + errorText);
+        }
+
+        window.location.href = `/wsmain?workspaceCd=${workspaceCd}`;
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('프로필 설정 중 오류가 발생했습니다: ' + error.message);
+      }
+    });
+
+
   });
+
+  // 첫 번째 슬라이드 유효성 검사
+  window.validateFirstSlide = function() {
+    const nickname = document.getElementById('userNickname').value;
+    const email = document.getElementById('email').value;
+
+    if (!nickname.trim()) {
+      alert('닉네임을 입력해주세요.');
+      return;
+    }
+    if (!email.trim()) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+
+    swiper.slideNext();
+  };
 </script>
 </body>
 </html>

@@ -13,7 +13,7 @@ class Recorder {
         // 환경 변수에서 경로 가져오기
         this.recordingPath = process.env.RECORDING_PATH || '/Users/hyunki/Ocean/recordings';
         this.recordingId = null;
-        this.ffmpegProcess = null;
+        this.gstreamerProcess = null;
         this.videoPort = null;
         this.audioPort = null;
         this.isRecording = false;
@@ -48,195 +48,142 @@ class Recorder {
                 fs.mkdirSync(localDir, { recursive: true });
             }
 
-            // SDP 생성
-            const sdp = this.createDetailedSDP(videoRtpParameters, audioRtpParameters);
+            // GStreamer는 SDP 파일이 필요 없음
+            console.log('GStreamer 녹화 준비 중...');
 
-            // SDP를 파일로 저장
-            const sdpPath = path.join(localDir, 'recording.sdp');
-            fs.writeFileSync(sdpPath, sdp);
-            console.log('SDP 파일 저장:', sdpPath);
+            // ⭐ GStreamer 파이프라인 구성
+            const videoCaps = `application/x-rtp,media=video,encoding-name=VP8,payload=${videoRtpParameters?.codecs?.[0]?.payloadType || 101},clock-rate=90000`;
+            const audioCaps = `application/x-rtp,media=audio,encoding-name=OPUS,payload=${audioRtpParameters?.codecs?.[0]?.payloadType || 100},clock-rate=48000`;
 
-            // ⭐ FFmpeg 실행 - SDP 파일 사용
-            const ffmpegArgs = [
-                '-loglevel', 'debug',  // 디버깅 로그
-                '-analyzeduration', '10M',  // 분석 시간 증가
-                '-probesize', '10M',  // 프로브 크기 증가
-                '-protocol_whitelist', 'file,rtp,udp',
-                '-reorder_queue_size', '0',  // RTP 재정렬 비활성화
-                '-max_delay', '5000000',  // 최대 지연 시간 5초
-                '-i', sdpPath,
-                '-c:v', 'copy',  // 코덱 복사 (재인코딩 없음)
-                '-c:a', 'copy',  // 코덱 복사 (재인코딩 없음)
-                '-f', 'webm',
-                '-flags', '+global_header',
-                '-y',
-                this.filePath
+            // GStreamer 파이프라인
+            const pipeline = [
+                // 비디오 입력
+                `udpsrc port=${this.videoPort} caps="${videoCaps}" ! rtpvp8depay ! vp8dec ! videoconvert ! vp8enc deadline=1 cpu-used=4 threads=4`,
+                
+                // 오디오 입력  
+                `udpsrc port=${this.audioPort} caps="${audioCaps}" ! rtpopusdepay ! opusdec ! audioconvert ! opusenc`,
+                
+                // Muxer 및 출력
+                `webmmux name=mux ! filesink location="${this.filePath}"`,
+                
+                // 비디오를 muxer에 연결
+                `name=video ! mux.`,
+                
+                // 오디오를 muxer에 연결
+                `name=audio ! mux.`
             ];
 
-            console.log('FFmpeg 명령:', 'ffmpeg', ffmpegArgs.join(' '));
+            // 전체 파이프라인을 하나의 문자열로
+            const gstPipeline = `
+                udpsrc port=${this.videoPort} caps="${videoCaps}" ! 
+                rtpvp8depay ! queue ! vp8dec ! videoconvert ! 
+                vp8enc deadline=1 cpu-used=4 threads=4 target-bitrate=1000000 ! queue ! mux.video_0 
+                
+                udpsrc port=${this.audioPort} caps="${audioCaps}" ! 
+                rtpopusdepay ! queue ! opusdec ! audioconvert ! audioresample ! 
+                opusenc bitrate=128000 ! queue ! mux.audio_0 
+                
+                webmmux name=mux ! filesink location="${this.filePath}"
+            `.replace(/\s+/g, ' ').trim();
 
-            this.ffmpegProcess = spawn('ffmpeg', ffmpegArgs);
+            console.log('GStreamer 파이프라인:', gstPipeline);
 
-            // FFmpeg 로그
-            this.ffmpegProcess.stderr.on('data', (data) => {
+            // GStreamer 실행
+            this.gstreamerProcess = spawn('gst-launch-1.0', ['-e', '-v', ...gstPipeline.split(' ')]);
+
+            // GStreamer 프로세스 시작 확인
+            this.gstreamerProcess.on('spawn', () => {
+                console.log('✅ GStreamer 프로세스 시작됨');
+                this.isRecording = true;
+            });
+
+            // GStreamer 출력 모니터링
+            this.gstreamerProcess.stdout.on('data', (data) => {
                 const log = data.toString();
-                console.log(`FFmpeg: ${log}`);
-
-                // 성공 메시지 감지
-                if (log.includes('Press [q] to stop') || log.includes('frame=')) {
-                    if (!this.isRecording) {
-                        this.isRecording = true;
-                        console.log('녹화가 성공적으로 시작되었습니다');
-                    }
+                if (log.includes('Pipeline is PREROLLING')) {
+                    console.log('GStreamer: 파이프라인 준비 중...');
+                } else if (log.includes('Pipeline is PREROLLED')) {
+                    console.log('✅ GStreamer: 파이프라인 준비 완료');
+                } else if (log.includes('Pipeline is PLAYING')) {
+                    console.log('✅ GStreamer: 녹화 시작됨');
                 }
             });
 
-            this.ffmpegProcess.on('error', (error) => {
-                console.error('FFmpeg 프로세스 에러:', error);
-                this.handleRecordingError(error.message);
-            });
-
-            this.ffmpegProcess.on('exit', (code, signal) => {
-                console.log(`FFmpeg 종료: code=${code}, signal=${signal}`);
-                if (code !== 0 && this.isRecording) {
-                    this.handleRecordingError(`FFmpeg 비정상 종료: ${code}`);
+            // 에러 모니터링
+            this.gstreamerProcess.stderr.on('data', (data) => {
+                const log = data.toString();
+                if (log.includes('ERROR')) {
+                    console.error('GStreamer 에러:', log);
+                } else if (log.includes('WARNING')) {
+                    console.warn('GStreamer 경고:', log);
+                } else {
+                    console.log('GStreamer:', log.trim());
                 }
             });
 
-            // 녹화 시작 확인을 위한 타이머
-            setTimeout(() => {
-                if (!this.isRecording && this.ffmpegProcess && !this.ffmpegProcess.killed) {
-                    console.log('녹화 시작 확인 중...');
+            // 프로세스 종료 처리
+            this.gstreamerProcess.on('exit', (code, signal) => {
+                console.log(`GStreamer 종료 - code: ${code}, signal: ${signal}`);
+                this.isRecording = false;
+            });
+
+             return {
+                        success: true,
+                        recordingId: this.recordingId
+                    };
+
+                } catch (error) {
+                    console.error('녹화 시작 실패:', error);
+                    throw error;
                 }
-            }, 3000);
+            }
 
-            return {
-                success: true,
-                recordingId: this.recordingId
-            };
-
-        } catch (error) {
-            console.error('녹화 시작 실패:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * SDP 파일 생성 - FFmpeg 호환 버전
-     * @param {Object} videoRtpParameters - 비디오 RTP 파라미터
-     * @param {Object} audioRtpParameters - 오디오 RTP 파라미터
-     * @returns {string} SDP 문자열
-     */
+    // GStreamer는 SDP 파일이 필요 없으므로 이 메서드는 더 이상 사용하지 않습니다
     createDetailedSDP(videoRtpParameters, audioRtpParameters) {
-        const videoCodec = videoRtpParameters?.codecs?.[0];
-        const audioCodec = audioRtpParameters?.codecs?.[0];
-
-        // 기본 SDP 헤더
-        let sdp = 'v=0\r\n';
-        sdp += 'o=- 0 0 IN IP4 127.0.0.1\r\n';
-        sdp += 's=MediaSoup Recording\r\n';
-        sdp += 'c=IN IP4 127.0.0.1\r\n';
-        sdp += 't=0 0\r\n';
-
-        // 비디오 스트림 추가
-        if (videoRtpParameters && videoCodec) {
-            sdp += `m=video ${this.videoPort} RTP/AVP ${videoCodec.payloadType}\r\n`;
-            sdp += 'c=IN IP4 127.0.0.1\r\n';
-            sdp += 'b=AS:5000\r\n';
-            sdp += `a=rtcp:${this.videoPort + 1} IN IP4 127.0.0.1\r\n`;
-            sdp += 'a=recvonly\r\n';
-            sdp += `a=rtpmap:${videoCodec.payloadType} ${videoCodec.mimeType.split('/')[1].toUpperCase()}/${videoCodec.clockRate}\r\n`;
-
-            // VP8 관련 추가 파라미터
-            if (videoCodec.mimeType.toLowerCase() === 'video/vp8') {
-                if (videoCodec.rtcpFeedback) {
-                    videoCodec.rtcpFeedback.forEach(fb => {
-                        if (fb.type === 'nack' && fb.parameter === 'pli') {
-                            sdp += `a=rtcp-fb:${videoCodec.payloadType} nack pli\r\n`;
-                        } else if (fb.type === 'nack' && !fb.parameter) {
-                            sdp += `a=rtcp-fb:${videoCodec.payloadType} nack\r\n`;
-                        } else if (fb.type === 'ccm' && fb.parameter === 'fir') {
-                            sdp += `a=rtcp-fb:${videoCodec.payloadType} ccm fir\r\n`;
-                        } else if (fb.type === 'goog-remb') {
-                            sdp += `a=rtcp-fb:${videoCodec.payloadType} goog-remb\r\n`;
-                        }
-                    });
-                }
-            }
-
-            // 추가 파라미터가 있다면 포함
-            if (videoCodec.parameters && Object.keys(videoCodec.parameters).length > 0) {
-                const params = Object.entries(videoCodec.parameters)
-                    .map(([key, value]) => `${key}=${value}`)
-                    .join(';');
-                sdp += `a=fmtp:${videoCodec.payloadType} ${params}\r\n`;
-            }
-        }
-
-        // 오디오 스트림 추가
-        if (audioRtpParameters && audioCodec) {
-            sdp += `m=audio ${this.audioPort} RTP/AVP ${audioCodec.payloadType}\r\n`;
-            sdp += 'c=IN IP4 127.0.0.1\r\n';
-            sdp += `a=rtcp:${this.audioPort + 1} IN IP4 127.0.0.1\r\n`;
-            sdp += 'a=recvonly\r\n';
-
-            // 오디오 코덱 정보
-            if (audioCodec.mimeType.toLowerCase() === 'audio/opus') {
-                sdp += `a=rtpmap:${audioCodec.payloadType} opus/${audioCodec.clockRate}/${audioCodec.channels || 2}\r\n`;
-
-                // Opus 파라미터
-                const opusParams = [];
-
-                // 기본 Opus 파라미터 설정
-                opusParams.push('minptime=10');
-                opusParams.push('useinbandfec=1');
-
-                if (audioCodec.parameters) {
-                    if (audioCodec.parameters.stereo !== undefined) {
-                        opusParams.push(`stereo=${audioCodec.parameters.stereo}`);
-                    }
-                    if (audioCodec.parameters.maxplaybackrate !== undefined) {
-                        opusParams.push(`maxplaybackrate=${audioCodec.parameters.maxplaybackrate}`);
-                    }
-                    if (audioCodec.parameters.sprop_stereo !== undefined) {
-                        opusParams.push(`sprop-stereo=${audioCodec.parameters.sprop_stereo}`);
-                    }
-                }
-
-                sdp += `a=fmtp:${audioCodec.payloadType} ${opusParams.join('; ')}\r\n`;
-            } else {
-                // 다른 오디오 코덱의 경우
-                sdp += `a=rtpmap:${audioCodec.payloadType} ${audioCodec.mimeType.split('/')[1]}/${audioCodec.clockRate}`;
-                if (audioCodec.channels && audioCodec.channels > 1) {
-                    sdp += `/${audioCodec.channels}`;
-                }
-                sdp += '\r\n';
-            }
-        }
-
-        console.log('생성된 SDP:\n', sdp);
-        return sdp;
+        // GStreamer는 caps 문자열로 RTP 파라미터를 직접 지정하므로 SDP 파일이 불필요
+        console.log('GStreamer 방식에서는 SDP 파일을 사용하지 않습니다.');
+        return null;
     }
 
-    // ⭐ stopRecording 함수 확인 (이미 있는지 확인)
     async stopRecording() {
-        if (!this.isRecording || !this.ffmpegProcess) {
+        if (!this.isRecording || !this.gstreamerProcess) {
             return { success: false, message: '녹화 중이 아닙니다' };
         }
 
         try {
             this.isRecording = false;
 
-            // FFmpeg 프로세스 종료
-            this.ffmpegProcess.kill('SIGTERM');
+            // GStreamer 프로세스 종료
+            console.log('GStreamer 프로세스 종료 시작...');
+            
+            // SIGINT로 정상 종료 (Ctrl+C와 동일)
+            this.gstreamerProcess.kill('SIGINT');
+            
+            // 프로세스가 종료될 때까지 대기 (최대 5초)
+            await new Promise((resolve) => {
+                let timeout = setTimeout(() => {
+                    console.log('GStreamer가 정상 종료되지 않아 강제 종료합니다.');
+                    this.gstreamerProcess.kill('SIGKILL');
+                    resolve();
+                }, 5000);
+                
+                this.gstreamerProcess.on('exit', (code, signal) => {
+                    clearTimeout(timeout);
+                    console.log(`GStreamer 종료됨 - code: ${code}, signal: ${signal}`);
+                    resolve();
+                });
+            });
 
-            // 파일 크기 확인
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 파일이 완전히 쓰여질 때까지 잠시 대기
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             let fileSize = 0;
             if (fs.existsSync(this.filePath)) {
                 const stats = fs.statSync(this.filePath);
                 fileSize = stats.size;
+                console.log(`녹화 파일 크기: ${fileSize} bytes (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
+            } else {
+                console.error('녹화 파일이 존재하지 않습니다:', this.filePath);
             }
 
             // Spring Boot에 녹화 종료 알림
@@ -244,7 +191,7 @@ class Recorder {
                 fileSize: fileSize
             });
 
-            console.log(`녹화 종료: ${this.recordingId}, 파일크기: ${fileSize}`);
+            console.log(`녹화 종료 완료: ${this.recordingId}`);
 
             return {
                 success: true,

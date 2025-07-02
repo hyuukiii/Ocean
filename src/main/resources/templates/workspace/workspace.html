@@ -10,14 +10,74 @@
 
     <!-- ⭐ Ocean Background CSS 추가 -->
     <link rel="stylesheet" th:href="@{/css/ocean-background.css}">
+
+    <script>
+        // 찜 기능
+        document.addEventListener('DOMContentLoaded', function () {
+            // 체크박스 클릭 시 workspaceCd 콘솔 출력
+            document.querySelectorAll('input[name="selectedWorkspaces"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    const workspaceCd = e.target.value;
+                    console.log(`[체크박스] ${workspaceCd} => ${isChecked ? '선택됨' : '해제됨'}`);
+                });
+            });
+
+            // 찜/찜 해제 버튼 이벤트 등록
+            document.querySelector(".btn-favorite").addEventListener("click", () => {
+                updateFavorites(true);
+            });
+
+            document.querySelector(".btn-unfavorite").addEventListener("click", () => {
+                updateFavorites(false);
+            });
+
+            function updateFavorites(isFavorite) {
+                const selectedCheckboxes = document.querySelectorAll('input[name="selectedWorkspaces"]:checked');
+
+                if (selectedCheckboxes.length === 0) {
+                    alert("워크스페이스를 선택해주세요.");
+                    return;
+                }
+
+                selectedCheckboxes.forEach((checkbox) => {
+                    const workspaceCd = checkbox.value;
+
+                    console.log("요청 URL:", `/api/workspaces/${workspaceCd}/favorite`);
+
+                    fetch(`/api/workspaces/${workspaceCd}/favorite`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ favorite: isFavorite })
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error("서버 오류 발생");
+                        })
+                        .then(() => {
+                            alert(isFavorite ? "찜 완료!" : "찜 해제 완료!");
+                            location.reload(); // 상태 반영 위해 새로고침
+                        })
+                        .catch(error => {
+                            console.error("에러 발생:", error);
+                            alert("처리 중 에러가 발생했습니다.");
+                        });
+                });
+            }
+        });
+    </script>
+
 </head>
 <body>
 <header class="header">
     <div class="logo" onclick="location.href='/'">
         <div class="logo-icon">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none" stroke-linecap="round"/>
-                <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <path d="M10 50 Q30 20 50 30 T90 20" stroke="#4facfe" stroke-width="8" fill="none"
+                      stroke-linecap="round"/>
+                <path d="M10 70 Q30 40 50 50 T90 40" stroke="#00f2fe" stroke-width="8" fill="none"
+                      stroke-linecap="round"/>
             </svg>
         </div>
         Ocean WorkSpace
@@ -45,39 +105,42 @@
     <div class="space-container">
         <h2 class="middle-text">WorkSpace List</h2>
 
-        <form th:action="@{/workspace/favorite}" method="post" class="space-list-form">
-            <div class="space-list">
-                <!-- Thymeleaf 반복문으로 워크스페이스 목록 표시 -->
-                <div th:each="ws : ${workspaceList}" class="space-item" th:attr="data-id=${ws.workspaceCd}" onclick="goToDetail(this)">
-                    <input type="checkbox" name="selectedWorkspaces" th:value="${ws.workspaceCd}" onclick="event.stopPropagation()">
+        <div class="space-list">
+            <!-- Thymeleaf 반복문으로 워크스페이스 목록 표시 -->
+            <div th:each="ws : ${workspaceList}" class="space-item" th:attr="data-id=${ws.workspaceCd}"
+                 onclick="goToDetail(this)">
+                <input type="checkbox" name="selectedWorkspaces" th:value="${ws.workspaceCd}"
+                       onclick="event.stopPropagation()">
 
-                    <div class="space-profile">
-                        <img th:src="@{'/images/' + ${ws.workspaceImg}}" width="100" height="100" th:if="${ws.workspaceImg != null}">
-                        <svg th:unless="${ws.workspaceImg != null}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="50" cy="50" r="45" th:fill="${ws.favorite == 1 ? '#ff6b6b' : '#4facfe'}"/>
-                            <text x="50" y="70" text-anchor="middle" fill="white" font-size="40" th:text="${ws.workspaceNm.substring(0,1)}"></text>
-                        </svg>
-                        <!-- 하트 표시 -->
-                        <span th:if="${ws.favorite != null and ws.favorite == 1}" class="favorite-heart">❤️</span>
-                    </div>
-
-                    <div class="space-info">
-                        <div class="space-text" th:text="${ws.workspaceNm}">워크스페이스명</div>
-                        <div class="invite-code" th:text="'초대코드: ' + ${ws.inviteCd}">초대코드</div>
-                    </div>
+                <div class="space-profile">
+                    <img th:src="@{${ws.workspaceImg}}" width="100" height="100"
+                         th:if="${ws.workspaceImg != null}">
+                    <svg th:unless="${ws.workspaceImg != null}" viewBox="0 0 100 100"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" th:fill="${ws.favorite == 1 ? '#ff6b6b' : '#4facfe'}"/>
+                        <text x="50" y="70" text-anchor="middle" fill="white" font-size="40"
+                              th:text="${ws.workspaceNm.substring(0,1)}"></text>
+                    </svg>
+                    <!-- 하트 표시 -->
+                    <span th:if="${ws.favorite != null and ws.favorite == 1}" class="favorite-heart">❤️</span>
                 </div>
 
-                <!-- 워크스페이스가 없는 경우 -->
-                <div th:if="${workspaceList == null or #lists.isEmpty(workspaceList)}" class="no-workspace">
-                    워크스페이스가 없습니다.
+                <div class="space-info">
+                    <div class="space-text" th:text="${ws.workspaceNm}">워크스페이스명</div>
+                    <div class="invite-code" th:text="'초대코드: ' + ${ws.inviteCd}">초대코드</div>
                 </div>
             </div>
 
-            <div class="favorite-buttons">
-                <button type="submit" name="action" value="favorite" class="btn-favorite">찜하기</button>
-                <button type="submit" name="action" value="unfavorite" class="btn-unfavorite">찜 해제</button>
+            <!-- 워크스페이스가 없는 경우 -->
+            <div th:if="${workspaceList == null or #lists.isEmpty(workspaceList)}" class="no-workspace">
+                워크스페이스가 없습니다.
             </div>
-        </form>
+        </div>
+
+        <div class="favorite-buttons">
+            <button type="submit" name="action" value="favorite" class="btn-favorite">찜하기</button>
+            <button type="submit" name="action" value="unfavorite" class="btn-unfavorite">찜 해제</button>
+        </div>
     </div>
 </div>
 
@@ -90,6 +153,38 @@
 
 <!--토큰 JS -->
 <script th:src="@{/js/Token.js}"></script>
+
+<script>
+    window.goToDetail = async function(workspaceCd) {
+        try {
+            // 멤버 프로필 정보 확인
+            const response = await fetch(`/api/workspaces/${workspaceCd}/profile`, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                }
+            });
+
+            if (response.ok) {
+                const memberProfile = await response.json();
+
+                // 프로필 정보 있는지 확인
+                if (memberProfile && memberProfile.userNickname) {
+                    // 프로필 있으면 메인 페이지로
+                    window.location.href = `/wsmain?workspaceCd=${workspaceCd}`;
+                } else {
+                    // 프로필 없으면 프로필 설정 페이지로
+                    window.location.href = `/workspace/${workspaceCd}/set-profile`;
+                }
+            } else {
+                throw new Error('프로필 조회 실패');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다.');
+        }
+    }
+
+</script>
 
 <!--워크 스페이스 리스트 JS -->
 <script th:src="@{/js/Workspace.js}"></script>

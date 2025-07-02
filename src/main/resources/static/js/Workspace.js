@@ -4,13 +4,14 @@
 
 
         // 워크스페이스 상세 페이지로 이동
-            window.goToDetail = function(element) {
-                const workspaceCd = element.getAttribute('data-id');
-                if (workspaceCd) {
-                    // 워크스페이스 입장 시간 업데이트 후 이동
-                    location.href = `/workspace/${workspaceCd}`;
-                }
-            };
+        window.goToDetail = function(element) {
+            const workspaceCd = element.getAttribute('data-id');
+            if (workspaceCd) {
+                // ✅ 수정된 부분: /wsmain 으로 직접 가지 않고,
+                // 서버의 컨트롤러 주소(/workspace/{workspaceCd})를 호출합니다.
+                location.href = `/workspace/${workspaceCd}`;
+            }
+        };
 
         // 임시로 타임리프에서 받은 사용자 정보 사용
         const userPrincipal = /*[[${#authentication?.principal}]]*/ null;
