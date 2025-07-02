@@ -13,6 +13,7 @@ class Room {
   }
 
   // 녹화 시작
+  // Room.js의 startRecording 메소드 - 최종 작동 버전
   async startRecording(recorderId) {
       if (this.recordingStatus) {
           throw new Error('이미 녹화 중입니다');
@@ -30,28 +31,48 @@ class Room {
               throw new Error('녹화할 미디어 스트림이 없습니다');
           }
 
-          // ⭐ PlainTransport 생성 - rtcpMux true로 변경
-          const videoTransport = await this.router.createPlainTransport({
-              listenIp: { ip: '127.0.0.1', announcedIp: null },
-              rtcpMux: true,  // ⭐ true로 변경
-              comedia: true   // ⭐ true로 다시 변경
+          // ⭐ 중요: PlainTransport는 comedia=false로 생성하고
+          // connect()로 FFmpeg가 리스닝하는 포트를 지정해야 함
+
+          // FFmpeg가 리스닝할 포트
+          const ffmpegVideoPort = 5004;
+          const ffmpegAudioPort = 5006;
+
+          // PlainTransport 생성 옵션
+          const transportOptions = {
+              listenIp: {
+                  ip: '127.0.0.1',
+                  announcedIp: null
+              },
+              rtcpMux: false,     // RTCP 분리
+              comedia: false,     // ⭐ 중요: false로 설정
+              enableSctp: false
+          };
+
+          // Transport 생성
+          const videoTransport = await this.router.createPlainTransport(transportOptions);
+          const audioTransport = await this.router.createPlainTransport(transportOptions);
+
+          // MediaSoup의 로컬 포트 확인
+          console.log('비디오 Transport 로컬 포트:', videoTransport.tuple.localPort);
+          console.log('오디오 Transport 로컬 포트:', audioTransport.tuple.localPort);
+
+          // ⭐ 중요: FFmpeg가 리스닝하는 포트로 연결
+          await videoTransport.connect({
+              ip: '127.0.0.1',
+              port: ffmpegVideoPort,
+              rtcpPort: ffmpegVideoPort + 1
           });
 
-          const audioTransport = await this.router.createPlainTransport({
-              listenIp: { ip: '127.0.0.1', announcedIp: null },
-              rtcpMux: true,  // ⭐ true로 변경
-              comedia: true   // ⭐ true로 다시 변경
+          await audioTransport.connect({
+              ip: '127.0.0.1',
+              port: ffmpegAudioPort,
+              rtcpPort: ffmpegAudioPort + 1
           });
 
-          const videoPort = videoTransport.tuple.localPort;
-          const audioPort = audioTransport.tuple.localPort;
-
-          console.log('MediaSoup 비디오 포트:', videoPort);
-          console.log('MediaSoup 오디오 포트:', audioPort);
-
-          // ⭐ comedia가 true면 connect 불필요 (주석 처리)
-          // await videoTransport.connect({ ip: '127.0.0.1', port: videoPort });
-          // await audioTransport.connect({ ip: '127.0.0.1', port: audioPort });
+          console.log(`✅ Transport 연결 완료:`);
+          console.log(`   비디오: MediaSoup -> 127.0.0.1:${ffmpegVideoPort}`);
+          console.log(`   오디오: MediaSoup -> 127.0.0.1:${ffmpegAudioPort}`);
 
           // Consumer 생성
           let videoConsumer = null;
@@ -61,18 +82,20 @@ class Room {
               videoConsumer = await videoTransport.consume({
                   producerId: videoProducer.id,
                   rtpCapabilities: this.router.rtpCapabilities,
-                  paused: false
+                  paused: true  // 일단 일시정지 상태로 생성
               });
-              await videoConsumer.resume();
+
+              console.log('비디오 Consumer 생성 완료');
           }
 
           if (audioProducer) {
               audioConsumer = await audioTransport.consume({
                   producerId: audioProducer.id,
                   rtpCapabilities: this.router.rtpCapabilities,
-                  paused: false
+                  paused: true  // 일단 일시정지 상태로 생성
               });
-              await audioConsumer.resume();
+
+              console.log('오디오 Consumer 생성 완료');
           }
 
           // Recorder 시작
@@ -83,12 +106,46 @@ class Room {
               process.env.SPRING_BOOT_URL || 'http://localhost:8080'
           );
 
+          // ⭐ FFmpeg가 리스닝할 포트를 전달
           const result = await this.recorder.startRecording(
-              videoPort,
-              audioPort,
+              ffmpegVideoPort,  // 5004
+              ffmpegAudioPort,  // 5006
               videoConsumer ? videoConsumer.rtpParameters : null,
               audioConsumer ? audioConsumer.rtpParameters : null
           );
+
+          // ⭐ FFmpeg가 준비되면 Consumer 재개
+          console.log('Consumer 재개 중...');
+
+          if (videoConsumer) {
+              await videoConsumer.resume();
+              console.log('✅ 비디오 Consumer 재개됨');
+          }
+
+          if (audioConsumer) {
+              await audioConsumer.resume();
+              console.log('✅ 오디오 Consumer 재개됨');
+          }
+
+          // 3초 후 상태 확인
+          setTimeout(async () => {
+              console.log('\n=== 녹화 상태 확인 ===');
+
+              if (videoConsumer) {
+                  const stats = await videoConsumer.getStats();
+                  console.log('비디오 Consumer 통계:', stats);
+              }
+
+              if (audioConsumer) {
+                  const stats = await audioConsumer.getStats();
+                  console.log('오디오 Consumer 통계:', stats);
+              }
+
+              if (videoTransport && !videoTransport.closed) {
+                  const stats = await videoTransport.getStats();
+                  console.log('비디오 Transport 통계:', stats);
+              }
+          }, 3000);
 
           this.recordingStatus = true;
           this.recordingTransports = {
@@ -103,7 +160,7 @@ class Room {
       } catch (error) {
           console.error('녹화 시작 실패:', error);
 
-          // 실패 시 정리
+          // 정리
           if (this.recordingTransports) {
               if (this.recordingTransports.videoTransport) {
                   this.recordingTransports.videoTransport.close();
@@ -150,6 +207,24 @@ class Room {
 
   // 첫 번째 비디오 Producer 가져오기
   getVideoProducer() {
+      for (const peer of this.peers.values()) {
+          if (peer.producers && peer.producers.size > 0) {
+              for (const producer of peer.producers.values()) {
+                  if (producer.kind === 'video' && !producer.closed) {
+                      // Producer가 paused 상태면 재개
+                      if (producer.paused) {
+                          console.log('비디오 Producer가 일시정지 상태, 재개 시도...');
+                          producer.resume();
+                      }
+                      return producer;
+                  }
+              }
+          }
+      }
+      return null;
+  }
+  /*
+  getVideoProducer() {
     for (const peer of this.peers.values()) {
       if (peer.producers && peer.producers.size > 0) {
         for (const producer of peer.producers.values()) {
@@ -161,7 +236,7 @@ class Room {
     }
     return null;
   }
-
+*/
   // 첫 번째 오디오 Producer 가져오기
   getAudioProducer() {
     for (const peer of this.peers.values()) {
