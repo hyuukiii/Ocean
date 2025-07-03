@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.ocean.mapper.PlaceMapper">
+
+    <!-- 전체 장소 조회 -->
+    <select id="findAll" resultType="Place">
+        SELECT
+        place_cd,
+        workspace_cd,
+        place_nm as place_name,
+        null as place_id,
+        address as address_name,
+        lat,
+        lng,
+        created_at,
+        null as created_by
+        FROM PLACE
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 워크스페이스별 장소 조회 -->
+    <select id="findByWorkspaceCd" resultType="Place">
+        SELECT
+        place_cd,
+        workspace_cd,
+        place_nm as place_name,
+        null as place_id,
+        address as address_name,
+        lat,
+        lng,
+        created_at,
+        null as created_by
+        FROM PLACE
+        WHERE workspace_cd = #{workspaceCd}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 장소 저장 -->
+    <insert id="insertPlace">
+        INSERT INTO PLACE (
+        workspace_cd,
+        place_nm,
+        address,
+        lat,
+        lng,
+        created_at
+        ) VALUES (
+        #{workspace_cd},
+        #{place_name},
+        #{address_name},
+        #{lat},
+        #{lng},
+        NOW()
+        )
+    </insert>
+
+</mapper>

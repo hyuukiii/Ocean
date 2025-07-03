@@ -1,0 +1,462 @@
+/* --- 1. 기본 및 레이아웃 스타일 --- */
+:root {
+  --bg-main: #1F1F1F;
+  --bg-content: #2D2D2D;
+  --bg-list-header: #3C3C3C;
+  --border-color: #4A4A4A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --accent-color: #4A90E2;
+  --font-family: 'Noto Sans KR', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- 3. 중앙 컨텐츠 (장소 목록) 스타일 --- */
+.main-content {
+  width:45%;
+  min-width: 500px;
+  padding: 20px;
+  background-color: var(--bg-content);
+  display: flex;
+  flex-direction: column;
+}
+.place-list-container {
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.place-list-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 2fr;
+  padding: 15px 20px;
+  background-color: var(--bg-list-header);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.place-list {
+  background-color: var(--bg-content);
+  overflow-y: auto;
+  flex-grow: 1;
+}
+.place-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 2fr;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.place-item:hover {
+  background-color: #383838;
+}
+.place-item.selected {
+  background-color: var(--accent-color);
+  color: var(--text-primary);
+}
+.place-item div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+.add-schedule-btn {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #3a3a3a;
+  border: none;
+  color: var(--text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+.add-schedule-btn:hover {
+  background-color: #4a4a4a;
+}
+
+/* --- 4. 우측 상세 정보 패널 스타일 --- */
+.detail-panel {
+  width: 40%;
+  background-color: var(--bg-content);
+  padding: 20px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+}
+.detail-view, .empty-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+/* 상세 정보가 없을 때 */
+.empty-view {
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 20px;
+}
+.empty-view .material-symbols-outlined {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+/* 상세 정보가 있을 때 (기본 숨김) */
+.detail-view {
+  display: none;
+}
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.detail-header textarea{
+  width : 70%;
+  resize: none;
+  border:none;
+  border-radius: 8px;
+  background-color: #383838;
+  margin: 0;
+  padding-left: 15px;
+  align-content: center;
+  font-family: var(--font-family);
+  font-size: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- 수정: detail-actions 컨테이너 (버튼들을 가로로 배치함) --- */
+.detail-actions {
+  display: flex; /* 자식 요소인 action-button들을 가로로 배치함 */
+  gap: 15px; /* 버튼들 사이의 간격임 */
+  align-items: center; /* 세로 중앙 정렬함 */
+}
+
+/* --- 수정: action-button 개별 스타일 (내부 아이콘/텍스트 세로 유지함) --- */
+.action-button {
+  display: flex;
+  flex-direction: column; /* 아이콘과 텍스트는 이 버튼 안에서 세로로 유지함 */
+  align-items: center; /* 버튼 내부 아이콘/텍스트 가로 중앙 정렬함 */
+  justify-content: center; /* 버튼 내부 아이콘/텍스트 세로 중앙 정렬함 */
+  background: none; /* 기본 버튼 배경 제거함 */
+  border: none; /* 기본 버튼 테두리 제거함 */
+  padding: 5px 10px; /* 안쪽 여백: 좌우 여백을 조금 더 줌 */
+  cursor: pointer; /* 마우스 오버 시 포인터 변경함 */
+  color: var(--text-secondary); /* 기본 텍스트 색상임 */
+  font-family: var(--font-family); /* 폰트 적용함 */
+  font-size: 0.8em; /* 텍스트 크기 조절함 */
+  transition: color 0.2s, background-color 0.2s; /* 호버 효과 부드럽게 함 */
+}
+
+.action-button:hover {
+  color: var(--text-primary); /* 호버 시 텍스트 색상 변경함 */
+  background-color: rgba(255, 255, 255, 0.08); /* 호버 시 배경색 약간 변경함 */
+  border-radius: 8px; /* 둥근 모서리임 */
+}
+
+/* 아이콘 스타일 */
+.action-button .material-symbols-outlined {
+  font-size: 28px; /* 아이콘 크기 조절함 */
+  margin-bottom: 4px; /* 아이콘과 텍스트 사이 간격임 */
+  color: inherit; /* 부모 버튼의 color 값을 상속받도록 설정함 */
+}
+
+/* 텍스트 스타일 */
+.action-button .button-text {
+  white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정함 */
+  font-size: 13px; /* 텍스트 크기임 */
+  font-weight: 400; /* 텍스트 두께임 */
+}
+
+/* 개별 버튼의 색상 오버라이드 */
+/* 취소 버튼 호버 시 빨간색 강조함 */
+#cancelAddBtn:hover .material-symbols-outlined,
+#cancelAddBtn:hover .button-text {
+  color: #E94560; /* 취소 버튼은 빨간색임 */
+}
+
+/* 저장 버튼 호버 시 강조색 (accent-color) 강조함 */
+#saveScheduleBtn:hover .material-symbols-outlined,
+#saveScheduleBtn:hover .button-text {
+  color: var(--accent-color);
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.detail-meta .user-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  margin-right: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+.detail-meta .user-info {
+    display: flex;
+    flex-direction: column;
+}
+.detail-meta .user-info .user-name {
+    font-weight: bold;
+}
+.detail-meta .user-info .meta-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+#map {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.detail-content {
+    padding: 15px;
+    background-color: #383838;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    flex-grow: 1;
+}
+
+
+/* --- 5. 일정 추가(Add Schedule) 뷰 스타일 --- */
+.add-schedule-view {
+  width: 100%;
+  height: 100%;
+  display: none; /* 기본 숨김임 */
+  flex-direction: column;
+}
+
+.add-schedule-view .detail-header h2 {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* 이 부분은 .action-button에 대한 호버 스타일로 통합되어 더 이상 필요 없음. */
+/* .add-schedule-view .detail-actions #cancelAddBtn:hover {
+    color: #E94560;
+} */
+
+.add-form-container {
+    background-color: #383838;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.add-form-container .form-item {
+    margin-bottom: 15px;
+}
+.add-form-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.add-form-container .search-box {
+    display: flex;
+}
+.add-form-container .search-box input {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #2D2D2D;
+    border: 1px solid var(--border-color);
+    border-radius: 4px 0 0 4px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+.add-form-container .search-box button {
+    padding: 10px 15px;
+    border: none;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#add_map {
+    width: 100%;
+    height: 200px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+#add_placesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+#add_placesList li {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#add_placesList li:last-child {
+    border-bottom: none;
+}
+#add_placesList li:hover {
+    background-color: #4a4a4a;
+}
+#add_placesList li span {
+    font-weight: 500;
+    font-size: 14px;
+}
+#add_placesList li p {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.add-content-area {
+    flex-grow: 1;
+    display: flex;
+    margin-bottom: 15px;
+}
+.add-content-area textarea {
+    width: 100%;
+    height: 80%;
+    flex-grow: 1;
+    background-color: #383838;
+    border: none;
+    border-radius: 8px;
+    padding: 15px;
+    color: var(--text-primary);
+    resize: none; /* 크기 조절 비활성화함 */
+    font-family: var(--font-family);
+    font-size: 14px;
+}
+
+.add-bottom-bar {
+    display: flex;
+}
+.add-bottom-bar input {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #2D2D2D;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-right: 10px;
+}
+.add-bottom-bar button {
+    padding: 10px 15px;
+    border: 1px solid #E94560;
+    background-color: transparent;
+    color: #E94560;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.add-bottom-bar button:hover {
+    background-color: rgba(233, 69, 96, 0.2);
+}
+
+/* --- 6. 상세 보기(Detail View) 추가 스타일 --- */
+#detail_map {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.detail-view .detail-meta .user-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.detail-view .meta-grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.detail-view .meta-grid span:nth-child(odd) {
+    font-weight: 500;
+    color: #aeb8c2;
+}
+
+/* --- 7. Pagination Styles --- */
+#add_pagination {
+  text-align: center;
+  margin-top: 20px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* 버튼 사이 간격임 */
+}
+
+#add_pagination a {
+  display: inline-flex; /* 아이콘과 텍스트 정렬을 위함 */
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%; /* 원형 버튼임 */
+  background-color: #383838;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+#add_pagination a:hover {
+  background-color: #4a4a4a;
+  color: var(--text-primary);
+}
+
+/* 현재 페이지 스타일 */
+#add_pagination a.on {
+  background-color: var(--accent-color);
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: default;
+}
+
+/* 이전/다음 버튼 비활성화 스타일 */
+#add_pagination a.disabled {
+  background-color: #2D2D2D;
+  color: #555;
+  cursor: not-allowed;
+}
