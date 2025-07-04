@@ -1,6 +1,7 @@
 package com.example.ocean.repository;
 
 import com.example.ocean.domain.Place;
+import com.example.ocean.dto.response.PlaceInfoResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,5 +15,7 @@ public interface PlaceRepository {
     List<Place> findAll();
 
     List<Place> findByWorkspaceCd(@Param("workspaceCd") String workspaceCd);
+
+    List<PlaceInfoResponse> findPlaceInfoByWorkspaceCd(@Param("workspaceCd") String workspaceCd);
 
 }

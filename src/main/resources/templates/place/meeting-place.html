@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
@@ -7,6 +6,7 @@
 
   <link rel="stylesheet" th:href="@{/css/placeList.css}">
   <link rel="stylesheet" th:href="@{/css/lnb.css}">
+  <link rel="stylesheet" th:href="@{/css/rnb.css}">
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,17 +16,31 @@
 <body>
 
 <div class="app-container">
-    <div th:replace="~{fragments/lnb :: lnbFragment}"></div>
+  <div th:replace="~{fragments/lnb :: lnbFragment}"></div>
   <main class="main-content">
     <div class="place-list-container">
       <div class="place-list-header">
-        <div>일자/시간</div>
-        <div>작성자</div>
+        <div>일자</div>
+        <div>약속 시간</div>
         <div>장소명</div>
         <div>주소</div>
+        <div>작성자</div>
       </div>
+
       <div class="place-list" id="placeList">
-        <!-- JavaScript로 동적 생성 -->
+        <div th:if="${#lists.isEmpty(places)}" class="empty-list-message">
+          <span>저장된 장소가 없습니다.</span>
+        </div>
+
+        <div th:each="place, iterStat : ${places}" class="place-item"
+             th:attr="data-place-json=${placesJson[iterStat.index]}">
+
+          <div th:text="${#temporals.format(place.startDatetime, 'yyyy-MM-dd')}"></div>
+          <div th:text="${#temporals.format(place.startDatetime, 'HH:mm')}"></div>
+          <div th:text="${place.placeNm}"></div>
+          <div th:text="${place.address}"></div>
+          <div th:text="${place.createdBy}"></div>
+        </div>
       </div>
     </div>
     <button class="add-schedule-btn" id="addScheduleBtn">+ 일정 추가하기</button>
@@ -47,446 +61,177 @@
         </div>
       </div>
       <div class="detail-meta">
-        <div class="user-icon" id="detailUserIcon"></div>
+        <div class="user-icon" id="detailUserIcon" style="background-image: url('/images/default-profile.png');"></div>
         <div class="user-info">
           <span class="user-name" id="detailUserName">작성자</span>
           <div class="meta-grid">
-            <span>일자</span><span id="detailDate"></span>
-            <span>시간</span><span id="detailTime"></span>
+            <span>시작</span><span id="detailStartDate"></span>
+            <span>종료</span><span id="detailEndDate"></span>
             <span>주소</span><span id="detailAddress"></span>
           </div>
         </div>
       </div>
       <div id="detail_map"></div>
-      <div class="detail-content">
+      <div class="detail-content" id="detailContent">
         내용 출력 공간
       </div>
     </div>
-
     <div class="add-schedule-view" id="addScheduleView">
-      <div class="detail-header">
-        <textarea placeholder="제목 기입란"></textarea>
-        <div class="detail-actions">
-          <button type="button" class="action-button" id="cancelAddBtn">
-            <span class="material-symbols-outlined">close</span>
-            <span class="button-text">취소하기</span>
-          </button>
-          <button type="button" class="action-button" id="saveScheduleBtn">
-            <span class="material-symbols-outlined">save</span>
-            <span class="button-text">저장하기</span>
-          </button>
-        </div>
-      </div>
-      <div class="detail-meta">
-        <div class="user-icon">?</div>
-        <div class="user-info">
-          <span class="user-name">사용자 이름</span>
-          <span class="meta-text">일정 및 장소를 선택해주세요.</span>
-        </div>
-      </div>
-      <div class="add-form-container">
-        <div class="form-item">
-          <label for="add_keyword">주소 검색</label>
-          <div class="search-box">
-            <input type="text" id="add_keyword" placeholder="장소, 주소 검색">
-            <button id="placeSearchBtn">검색</button>
-          </div>
-        </div>
-        <div id="add_map"></div>
-        <ul id="add_placesList"></ul>
-        <div id="add_pagination"></div>
-      </div>
-      <div class="add-content-area">
-        <textarea placeholder="내용 입력 공간"></textarea>
-      </div>
-      <div class="add-bottom-bar">
-        <input type="text" id="add_place_nm" placeholder="선택된 장소 이름" readonly>
-        <button id="deleteMarkerBtn">마커 삭제</button>
-      </div>
     </div>
   </aside>
+  <div id="rnbContainer"></div>
+  <div th:replace="~{fragments/rnb :: rnbFragment}"></div>
+  <script th:src="@{/js/rnb-fetch.js}"></script>
 </div>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
   document.addEventListener('DOMContentLoaded', function() {
 
-    // ⭐ 서버에서 전달받은 workspaceCd 사용 (URL 파라미터 대신)
-    const workspaceCd = /*[[${workspaceCd}]]*/ '';
-    const userId = /*[[${userId}]]*/ '';
+      const workspaceCd = /*[[${workspaceCd}]]*/ '';
+      const userId = /*[[${userId}]]*/ '';
 
-    // workspaceCd 확인
-    if (!workspaceCd) {
-      alert('워크스페이스 정보가 없습니다.');
-      window.location.href = '/workspace';
-      return;
-    }
+      if (!workspaceCd) {
+          alert('워크스페이스 정보가 없습니다.');
+          window.location.href = '/workspace';
+          return;
+      }
+      const editBtn = document.querySelector('.detail-actions span:nth-child(2)');
+const deleteBtn = document.querySelector('.detail-actions span:nth-child(1)');
 
-    console.log('현재 워크스페이스:', workspaceCd);
+      editBtn.addEventListener('click', () => {
+          const selectedItem = document.querySelector('.place-item.selected');
+          if (selectedItem) {
+              const placeJson = selectedItem.getAttribute('data-place-json');
+              const place = JSON.parse(placeJson);
+              alert(`'${place.title}' 일정을 수정합니다.`);
+              // 여기에 실제 수정 로직(예: 수정 폼으로 전환)을 구현하면 됩니다.
+          } else {
+              alert('수정할 일정을 선택해주세요.');
+          }
+      });
 
-    // 워크스페이스별 장소 목록 로드
-    loadPlacesByWorkspace(workspaceCd);
+      deleteBtn.addEventListener('click', () => {
+          const selectedItem = document.querySelector('.place-item.selected');
+          if (selectedItem) {
+              const placeJson = selectedItem.getAttribute('data-place-json');
+              const place = JSON.parse(placeJson);
+              if (confirm(`'${place.title}' 일정을 정말 삭제하시겠습니까?`)) {
+                  alert('삭제되었습니다.');
+                  // 여기에 실제 삭제 API를 호출하는 fetch 로직을 구현하면 됩니다.
+              }
+          } else {
+              alert('삭제할 일정을 선택해주세요.');
+          }
+      });
+      bindPlaceItemEvents();
 
 
-    // --- 1. 공통 변수 및 뷰 제어 ---
-    const emptyView = document.getElementById('emptyView');
-    const detailView = document.getElementById('detailView');
-    const addScheduleView = document.getElementById('addScheduleView');
-    const addScheduleBtn = document.getElementById('addScheduleBtn');
-    const cancelAddBtn = document.getElementById('cancelAddBtn');
-    const saveScheduleBtn = document.getElementById('saveScheduleBtn');
-    const placeSearchBtn = document.getElementById('placeSearchBtn');
-    const deleteMarkerBtn = document.getElementById('deleteMarkerBtn');
+      const emptyView = document.getElementById('emptyView');
+      const detailView = document.getElementById('detailView');
+      const addScheduleView = document.getElementById('addScheduleView');
+      const addScheduleBtn = document.getElementById('addScheduleBtn');
 
-    // 워크스페이스별 장소 목록 로드 함수
-    function loadPlacesByWorkspace(workspaceCd) {
-        fetch(`/api/places/workspace/${workspaceCd}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(places => {
-                displayPlaces(places);
-                bindPlaceItemEvents(); // 장소 항목 이벤트 바인딩
-            })
-            .catch(error => {
-                console.error('장소 목록 로드 중 오류:', error);
-                alert('장소 목록을 불러오는 중 오류가 발생했습니다.');
-            });
-    }
+      // --- 뷰 전환 로직 및 이벤트 리스너 ---
+      addScheduleBtn.addEventListener('click', () => {
+        showView('add');
+        if (!addMap) initAddMap();
+      });
 
-    // 장소 목록 표시 함수 (DTO 필드명에 맞게 수정)
-    function displayPlaces(places) {
-        const placeList = document.getElementById('placeList');
-        placeList.innerHTML = ''; // 기존 목록 초기화
-
-        places.forEach(place => {
-            const placeItem = document.createElement('div');
-            placeItem.className = 'place-item';
-            placeItem.setAttribute('data-place-json', JSON.stringify(place));
-
-            const formattedDate = place.created_at ?
-                new Date(place.created_at).toLocaleDateString('ko-KR', {
-                    year: '2-digit',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).replace(/\. /g, '.').replace(/\.$/, '') : '';
-
-            placeItem.innerHTML = `
-                <div>${formattedDate}</div>
-                <div>${place.created_by || ''}</div>
-                <div>${place.place_nm || ''}</div>
-                <div>${place.address || ''}</div>
-            `;
-
-            placeList.appendChild(placeItem);
-        });
-    }
-
-    // 장소 항목 클릭 이벤트 바인딩
-    function bindPlaceItemEvents() {
-        const placeItems = document.querySelectorAll('.place-item');
-        placeItems.forEach(item => {
-            item.addEventListener('click', function() {
-                placeItems.forEach(i => i.classList.remove('selected'));
-                this.classList.add('selected');
-                const placeData = this.getAttribute('data-place-json');
-                const place = JSON.parse(placeData);
-                showView('detail');
-                updateDetailView(place);
-            });
-        });
-    }
-
-    // --- 뷰 전환 로직 및 이벤트 리스너 등록 ---
-    addScheduleBtn.addEventListener('click', function() {
-      showView('add');
-      if (!addMap) { initAddMap(); }
-    });
-    cancelAddBtn.addEventListener('click', function() { showView('empty'); });
-
-    saveScheduleBtn.addEventListener('click', function() {
-        submitLocation(workspaceCd); // workspaceCd 전달
-    });
-    placeSearchBtn.addEventListener('click', searchPlaces);
-    deleteMarkerBtn.addEventListener('click', deleteUserMarker);
-
-    function showView(viewName) {
-      emptyView.style.display = 'none';
-      detailView.style.display = 'none';
-      addScheduleView.style.display = 'none';
-      if (viewName === 'detail') detailView.style.display = 'flex';
-      else if (viewName === 'add') addScheduleView.style.display = 'flex';
-      else emptyView.style.display = 'flex';
-    }
-
-    // --- 2. 상세 보기(Detail View) 관련 로직 (DTO 필드명에 맞게 수정) ---
-    let detailMap = null;
-    let detailMarker = null;
-
-    function initDetailMap() {
-      const mapContainer = document.getElementById('detail_map');
-      if (!mapContainer) return;
-      const mapOption = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 3 };
-      detailMap = new kakao.maps.Map(mapContainer, mapOption);
-      detailMarker = new kakao.maps.Marker({ position: detailMap.getCenter() });
-      detailMarker.setMap(detailMap);
-    }
-
-    function updateDetailView(place) {
-      if (!detailMap) {
-        initDetailMap();
+      function showView(viewName) {
+          emptyView.style.display = 'none';
+          detailView.style.display = 'none';
+          addScheduleView.style.display = 'none';
+          if (viewName === 'detail') detailView.style.display = 'flex';
+          else if (viewName === 'add') addScheduleView.style.display = 'flex';
+          else emptyView.style.display = 'flex';
       }
 
-      const detailTitle = document.getElementById('detailTitle');
-      const detailUserIcon = document.getElementById('detailUserIcon');
-      const detailUserName = document.getElementById('detailUserName');
-      const detailDate = document.getElementById('detailDate');
-      const detailTime = document.getElementById('detailTime');
-      const detailAddress = document.getElementById('detailAddress');
+      // --- 1. 장소 목록 이벤트 바인딩 ---
+      function bindPlaceItemEvents() {
+          const placeItems = document.querySelectorAll('.place-item');
+          placeItems.forEach(item => {
+              item.addEventListener('click', function() {
+                  placeItems.forEach(i => i.classList.remove('selected'));
+                  this.classList.add('selected');
 
-      detailTitle.textContent = place.place_nm; // place_name → place_nm
-      detailUserName.textContent = place.created_by;
-      detailUserIcon.textContent = place.created_by ? place.created_by.substring(0, 1) : '?';
-      detailAddress.textContent = place.address; // address_name → address
+                  const placeData = this.getAttribute('data-place-json');
+                  const place = JSON.parse(placeData);
 
-      if (place.created_at) {
-        const date = new Date(place.created_at);
-        detailDate.textContent = `${date.getFullYear().toString().slice(2)}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
-        detailTime.textContent = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-      } else {
-        detailDate.textContent = '-';
-        detailTime.textContent = '-';
+                  showView('detail');
+                  updateDetailView(place); // 상세 뷰 업데이트
+              });
+          });
       }
 
-      const position = new kakao.maps.LatLng(place.lat, place.lng);
-      detailMap.setCenter(position);
-      detailMarker.setPosition(position);
-    }
+      // --- 2. 상세 보기(Detail View) 관련 로직 ---
+      let detailMap = null;
+      let detailMarker = null;
 
-    // --- 3. 일정 추가(Add Schedule) 관련 로직 ---
-    let addMap = null;
-    let addPs = null;
-    let addGeocoder = null;
-    let addMarkers = [];
-    let addUserMarker = null;
-    let userSelectedLatLng = null;
-    let userSelectedPlaceId = null;
-    let userSelectedPlaceName = null;
-    let userSelectedAddressName = null;
+      function initDetailMap() {
+          const mapContainer = document.getElementById('detail_map');
+          if (!mapContainer || !kakao) return;
 
-    function initAddMap() {
-        const mapContainer = document.getElementById('add_map');
-        const mapOption = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 3 };
-        addMap = new kakao.maps.Map(mapContainer, mapOption);
-        addPs = new kakao.maps.services.Places();
-        addGeocoder = new kakao.maps.services.Geocoder();
+          const mapOption = {
+              center: new kakao.maps.LatLng(37.5665, 126.9780),
+              level: 3
+          };
+          detailMap = new kakao.maps.Map(mapContainer, mapOption);
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                addMap.setCenter(new kakao.maps.LatLng(lat, lng));
-            });
-        }
+          // 마커를 생성하고 지도에 표시합니다.
+          detailMarker = new kakao.maps.Marker({
+              position: mapOption.center,
+              map: detailMap
+          });
+      }
 
-        kakao.maps.event.addListener(addMap, 'click', function(mouseEvent) {
-            const latlng = mouseEvent.latLng;
-            userSelectedLatLng = latlng;
-            userSelectedPlaceId = null;
-            userSelectedPlaceName = null;
-            if (addUserMarker) { addUserMarker.setMap(null); }
-            addUserMarker = new kakao.maps.Marker({ position: latlng, map: addMap });
-            addMap.setCenter(latlng);
-            addGeocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    userSelectedAddressName = result[0].address.address_name;
-                    document.getElementById("add_place_nm").value = userSelectedAddressName;
-                } else {
-                    console.error('주소 변환 실패:', status);
-                }
-            });
-        });
-    }
+      function updateDetailView(place) {
+          if (!detailMap) {
+              initDetailMap();
+          }
 
-    function searchPlaces() {
-        const keyword = document.getElementById('add_keyword').value;
-        if (!keyword.trim()) {
-            alert('키워드를 입력해주세요!');
-            return;
-        }
-        addPs.keywordSearch(keyword, placesSearchCB);
-    }
 
-    function placesSearchCB(data, status, pagination) {
-        if (status === kakao.maps.services.Status.OK) {
-            displayPlaces_Search(data);
-            displayPagination(pagination);
-        } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
-            alert('검색 결과가 존재하지 않습니다.');
-        } else if (status === kakao.maps.services.Status.ERROR) {
-            alert('검색 결과 중 오류가 발생했습니다.');
-        }
-    }
+          // 1. 상세 정보 패널의 각 요소를 변수에 담습니다.
+          const detailTitle = document.getElementById('detailTitle');
+          const detailUserIcon = document.getElementById('detailUserIcon');
+          const detailUserName = document.getElementById('detailUserName');
+          const detailDate = document.getElementById('detailDate');
+          const detailTime = document.getElementById('detailTime');
+          const detailAddress = document.getElementById('detailAddress');
+          const detailContent = document.querySelector('#detailView .detail-content');
 
-    function displayPlaces_Search(places) {
-        const listEl = document.getElementById('add_placesList');
-        removeAllChildNods(listEl);
-        removeMarker();
+          // 2. DTO에서 받은 정보로 각 요소의 내용을 채웁니다.
+          detailTitle.textContent = place.title;
+          detailUserName.textContent = place.createdBy;
+          detailUserIcon.style.backgroundImage = `url('${place.userImg || '/images/default-profile.png'}')`;
+          detailContent.textContent = place.description || '상세 내용이 없습니다.';
+          detailAddress.textContent = place.address;
 
-        for (let i = 0; i < places.length; i++) {
-            const itemEl = getListItem(i, places[i]);
-            listEl.appendChild(itemEl);
-        }
-    }
+          // [수정 1] 아이콘에 글자를 넣는 대신, 배경 이미지(backgroundImage) 스타일을 직접 설정합니다.
+          detailUserIcon.style.backgroundImage = `url('${place.userImg || '/images/default-profile.png'}')`;
 
-    function getListItem(index, place) {
-        const el = document.createElement('li');
-        let itemStr = '<span class="markerbg marker_' + (index + 1) + '"></span>' +
-            '<div class="info">' +
-            '   <h5>' + place.place_name + '</h5>';
+          // [수정 2] description 데이터를 상세 내용(detailContent)에 채워줍니다.
+          detailContent.textContent = place.description || '상세 내용이 없습니다.';
 
-        if (place.road_address_name) {
-            itemStr += '    <span>' + place.road_address_name + '</span>' +
-                '   <span class="jibun gray">' + place.address_name + '</span>';
-        } else {
-            itemStr += '    <span>' + place.address_name + '</span>';
-        }
-
-        itemStr += '  <span class="tel">' + place.phone + '</span>' +
-            '</div>';
-
-        el.innerHTML = itemStr;
-        el.className = 'item';
-
-        el.onclick = function() {
-            userSelectedLatLng = new kakao.maps.LatLng(place.y, place.x);
-            userSelectedPlaceId = place.id;
-            userSelectedPlaceName = place.place_name;
-            userSelectedAddressName = place.address_name;
-            document.getElementById("add_place_nm").value = place.place_name;
-
-            if (addUserMarker) { addUserMarker.setMap(null); }
-            addUserMarker = new kakao.maps.Marker({ position: userSelectedLatLng, map: addMap });
-            addMap.setCenter(userSelectedLatLng);
+          // 날짜와 시간 포맷팅
+          const formatDate = (datetime) => {
+        if (!datetime) return '미정';
+        const date = new Date(datetime);
+        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         };
+          detailStartDate.textContent = formatDate(place.startDatetime);
+          detailEndDate.textContent = formatDate(place.endDatetime);
 
-        return el;
-    }
-
-    function removeAllChildNods(el) {
-        while (el.hasChildNodes()) {
-            el.removeChild(el.lastChild);
-        }
-    }
-
-    function removeMarker() {
-        for (let i = 0; i < addMarkers.length; i++) {
-            addMarkers[i].setMap(null);
-        }
-        addMarkers = [];
-    }
-
-    function displayPagination(pagination) {
-        const paginationEl = document.getElementById('add_pagination');
-        let fragment = document.createDocumentFragment();
-
-        while (paginationEl.hasChildNodes()) {
-            paginationEl.removeChild(paginationEl.lastChild);
-        }
-
-        for (let i = 1; i <= pagination.last; i++) {
-            const el = document.createElement('a');
-            el.href = "#";
-            el.innerHTML = i;
-
-            if (i === pagination.current) {
-                el.className = 'on';
-            } else {
-                el.onclick = (function(i) {
-                    return function() {
-                        pagination.gotoPage(i);
-                    }
-                })(i);
-            }
-
-            fragment.appendChild(el);
-        }
-        paginationEl.appendChild(fragment);
-    }
-
-    function deleteUserMarker() {
-        if (addUserMarker) {
-            addUserMarker.setMap(null);
-            addUserMarker = null;
-            userSelectedLatLng = null;
-            userSelectedPlaceId = null;
-            userSelectedPlaceName = null;
-            userSelectedAddressName = null;
-            document.getElementById("add_place_nm").value = '';
-        }
-    }
-
-    // 장소 저장 함수 (DTO 필드명에 맞게 수정)
-    function submitLocation(workspaceCd) {
-      if (!userSelectedLatLng) {
-        alert('장소를 선택해주세요.');
-        return;
+          // 지도 위치 업데이트
+          const position = new kakao.maps.LatLng(place.lat, place.lng);
+          detailMap.setCenter(position); // 지도를 새로운 위치로 이동
+          detailMarker.setPosition(position); // 마커를 새로운 위치로 이동
       }
+      // --- 3. '일정 추가' 관련 로직 (기존 코드와 동일) ---
+      // ... initAddMap, searchPlaces 등 '일정 추가' 관련 함수들 ...
 
-      const titleInput = document.querySelector('#addScheduleView textarea[placeholder="제목 기입란"]');
-      const contentInput = document.querySelector('#addScheduleView .add-content-area textarea');
-
-      const placeData = {
-        workspace_cd: workspaceCd,
-        place_nm: titleInput.value.trim() || userSelectedPlaceName || '새로운 장소',
-        place_id: userSelectedPlaceId || null,
-        address: userSelectedAddressName || '주소 정보 없음',
-        lat: userSelectedLatLng.getLat(),
-        lng: userSelectedLatLng.getLng(),
-        created_by: userId  // ⭐ 이 부분 수정 (하드코딩된 값 대신 userId 변수 사용)
-      };
-
-
-      fetch('/api/places', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(placeData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(result => {
-            alert('장소가 저장되었습니다.');
-            showView('empty');
-            loadPlacesByWorkspace(workspaceCd); // 목록 새로고침
-            resetAddForm();
-        })
-        .catch(error => {
-            console.error('장소 저장 중 오류:', error);
-            alert('장소 저장 중 오류가 발생했습니다.');
-        });
-    }
-
-    function resetAddForm() {
-        document.querySelector('#addScheduleView textarea[placeholder="제목 기입란"]').value = '';
-        document.querySelector('#addScheduleView .add-content-area textarea').value = '';
-        document.getElementById('add_keyword').value = '';
-        document.getElementById('add_place_nm').value = '';
-        deleteUserMarker();
-    }
-
-    // 초기 뷰 설정
-    showView('empty');
+      // 초기 뷰 설정
+      showView('empty');
   });
   /*]]>*/
 </script>

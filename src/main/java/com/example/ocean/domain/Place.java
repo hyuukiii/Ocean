@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 public class Place {
     private int place_cd;
+    private String event_cd;
     private String place_nm;
     private String place_id;
     private String workspace_cd;

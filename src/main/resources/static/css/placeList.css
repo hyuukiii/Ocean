@@ -59,7 +59,8 @@ body {
 }
 .place-item {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 2fr;
+  /* 기존: grid-template-columns: 1fr 1fr 2fr 2fr; */
+  grid-template-columns: 1fr 1fr 1.5fr 2.5fr 1fr; /* [수정] */
   padding: 15px 20px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
@@ -122,15 +123,29 @@ body {
     margin-bottom: 20px;
 }
 /* 상세 정보가 있을 때 (기본 숨김) */
+
+.place-item .author-img {
+    width: 24px;         /* 너비를 24px로 지정 */
+    height: 24px;        /* 높이를 24px로 지정 */
+    border-radius: 50%;  /* 이미지를 원형으로 만듦 */
+    object-fit: cover;   /* 이미지 비율을 유지하면서 꽉 채움 */
+    margin-right: 8px;   /* 이름과의 간격 */
+}
+
 .detail-view {
   display: none;
 }
-.detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+.place-list-header {
+  display: grid;
+  /* 기존: grid-template-columns: 1fr 1fr 2fr 2fr; */
+  grid-template-columns: 1fr 1fr 1.5fr 2.5fr 1fr; /* [수정] */
+  padding: 15px 20px;
+  background-color: var(--bg-list-header);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
+
 .detail-header textarea{
   width : 70%;
   resize: none;
@@ -146,12 +161,32 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.detail-header {
+    display: flex;
+    align-items: center; /* 자식 요소들 세로 중앙 정렬 */
+    gap: 16px; /* 제목과 버튼 영역 사이의 최소 간격 */
+    margin-bottom: 20px;
+}
 
-/* --- 수정: detail-actions 컨테이너 (버튼들을 가로로 배치함) --- */
+/* 2. 제목(h2) 스타일 추가 */
+/* 제목이 남는 공간을 모두 차지하도록 설정 */
+.detail-header h2 {
+    flex-grow: 1; /* 남는 공간을 모두 차지함 */
+    margin: 0; /* 브라우저 기본 h2 마진 제거 */
+
+    /* 제목이 너무 길 경우 ... 으로 표시 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 3. 버튼 영역 스타일 수정 */
+/* 버튼 영역의 크기가 줄어들지 않도록 설정 */
 .detail-actions {
-  display: flex; /* 자식 요소인 action-button들을 가로로 배치함 */
-  gap: 15px; /* 버튼들 사이의 간격임 */
-  align-items: center; /* 세로 중앙 정렬함 */
+    flex-shrink: 0; /* 공간이 부족해도 크기가 줄어들지 않음 */
+    display: flex;
+    gap: 15px;
+    align-items: center;
 }
 
 /* --- 수정: action-button 개별 스타일 (내부 아이콘/텍스트 세로 유지함) --- */
@@ -212,8 +247,12 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--accent-color);
+  background-color: var(--accent-color); /* 이미지가 없을 때를 위한 배경색 */
   margin-right: 15px;
+  /* [추가] 배경 이미지를 위한 스타일 */
+  background-size: cover;      /* 이미지가 div를 꽉 채우도록 설정 */
+  background-position: center; /* 이미지가 중앙에 오도록 설정 */
+  background-repeat: no-repeat;  /* 이미지가 반복되지 않도록 설정 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -258,10 +297,6 @@ body {
     font-weight: 500;
 }
 
-/* 이 부분은 .action-button에 대한 호버 스타일로 통합되어 더 이상 필요 없음. */
-/* .add-schedule-view .detail-actions #cancelAddBtn:hover {
-    color: #E94560;
-} */
 
 .add-form-container {
     background-color: #383838;
@@ -410,6 +445,10 @@ body {
 .detail-view .meta-grid span:nth-child(odd) {
     font-weight: 500;
     color: #aeb8c2;
+}
+
+.detail-view .detail-content {
+    color: var(--text-primary);
 }
 
 /* --- 7. Pagination Styles --- */

@@ -19,8 +19,8 @@
             </a>
         </li>
         <li class="nav-item">
-            <a th:href="@{/meeting-place(workspaceCd=${workspaceCd})}" class="lnb-item">
-            <img src="/images/location.png" alt="Location">
+            <a th:href="@{/workspaces/{workspaceCd}/meeting-place(workspaceCd=${workspaceCd})}" class="lnb-item">
+                <img src="/images/location.png" alt="Location">
                 <span>모임 장소</span>
             </a>
         </li>

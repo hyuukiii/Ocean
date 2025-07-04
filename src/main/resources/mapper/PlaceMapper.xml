@@ -3,16 +3,38 @@
 
 <mapper namespace="com.example.ocean.repository.PlaceRepository">
 
+
+    <select id="findPlaceInfoByWorkspaceCd" resultType="com.example.ocean.dto.response.PlaceInfoResponse">
+        SELECT
+        p.PLACE_NM       AS placeNm,
+        p.ADDRESS        AS address,
+        p.LAT            AS lat,
+        p.LNG            AS lng,
+        p.PLACE_ID       AS placeId,
+        e.TITLE          AS title,
+        e.DESCRIPTION    AS description,
+        e.START_DATETIME AS startDatetime,
+        e.END_DATETIME   AS endDatetime,
+        wm.USER_NICKNAME AS createdBy,
+        wm.USER_IMG      AS userImg
+        FROM PLACE p
+        JOIN EVENTS e ON p.EVENT_CD = e.EVENT_CD
+        JOIN WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
+        WHERE p.WORKSPACE_CD = #{workspaceCd}
+        ORDER BY e.START_DATETIME DESC
+    </select>
+
+
     <!--
       [수정 사항]
       - PLACE 테이블의 스키마에 맞게 존재하지 않는 CREATED_BY 컬럼을 INSERT 문에서 제거.
     -->
-    <insert id="insertPlace" parameterType="Place">
+    <insert id="insertPlace" parameterType="com.example.ocean.domain.Place">
         INSERT INTO PLACE (
-            WORKSPACE_CD, EVENT_CD, PLACE_NM, PLACE_ID, ADDRESS, LAT, LNG, CREATED_AT
+        WORKSPACE_CD, EVENT_CD, PLACE_NM, PLACE_ID, ADDRESS, LAT, LNG, CREATED_AT
         ) VALUES (
-                     #{workspace_cd}, #{event_cd}, #{place_nm}, #{place_id}, #{address}, #{lat}, #{lng}, NOW()
-                 )
+        #{workspace_cd}, #{event_cd}, #{place_nm}, #{place_id}, #{address}, #{lat}, #{lng}, NOW()
+        )
     </insert>
 
     <!--
@@ -22,24 +44,22 @@
       - e.USER_ID와 wm.USER_ID, 그리고 p.WORKSPACE_CD와 wm.WORKSPACE_CD를 기준으로 JOIN.
       - WORKSPACE_MEMBERS 테이블의 USER_NICKNAME을 created_by 라는 별칭으로 조회.
     -->
-    <select id="findAll" resultType="Place">
+    <select id="findAll" resultType="com.example.ocean.domain.Place">
         SELECT
-            p.WORKSPACE_CD AS workspace_cd,
-            p.PLACE_NM AS place_nm,
-            p.PLACE_ID AS place_id,
-            p.ADDRESS AS address,
-            p.LAT AS lat,
-            p.LNG AS lng,
-            wm.USER_NICKNAME AS created_by,
-            p.CREATED_AT AS created_at
-        FROM
-            PLACE p
-                JOIN
-            EVENTS e ON p.EVENT_CD = e.EVENT_CD
-                JOIN
-            WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
-        ORDER BY
-            p.CREATED_AT DESC
+        p.PLACE_CD       AS place_cd,
+        p.EVENT_CD       AS event_cd,
+        p.WORKSPACE_CD   AS workspace_cd,
+        p.PLACE_NM       AS place_nm,
+        p.PLACE_ID       AS place_id,
+        p.ADDRESS,
+        p.LAT,
+        p.LNG,
+        wm.USER_NICKNAME AS created_by,
+        p.CREATED_AT     AS created_at
+        FROM PLACE p
+        JOIN EVENTS e ON p.EVENT_CD = e.EVENT_CD
+        JOIN WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
+        ORDER BY p.CREATED_AT DESC
     </select>
 
     <!--
@@ -47,26 +67,23 @@
       - findAll과 동일한 JOIN 로직을 적용.
       - 특정 워크스페이스(workspaceCd)에 속한 장소만 조회하도록 WHERE 절을 추가.
     -->
-    <select id="findByWorkspaceCd" resultType="Place">
+    <select id="findByWorkspaceCd" resultType="com.example.ocean.domain.Place">
         SELECT
-            p.WORKSPACE_CD AS workspace_cd,
-            p.PLACE_NM AS place_nm,
-            p.PLACE_ID AS place_id,
-            p.ADDRESS AS address,
-            p.LAT AS lat,
-            p.LNG AS lng,
-            wm.USER_NICKNAME AS created_by,
-            p.CREATED_AT AS created_at
-        FROM
-            PLACE p
-                JOIN
-            EVENTS e ON p.EVENT_CD = e.EVENT_CD
-                JOIN
-            WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
-        WHERE
-            p.WORKSPACE_CD = #{workspaceCd}
-        ORDER BY
-            p.CREATED_AT DESC
+        p.PLACE_CD       AS place_cd,
+        p.EVENT_CD       AS event_cd,
+        p.WORKSPACE_CD   AS workspace_cd,
+        p.PLACE_NM       AS place_nm,
+        p.PLACE_ID       AS place_id,
+        p.ADDRESS,
+        p.LAT,
+        p.LNG,
+        wm.USER_NICKNAME AS created_by,
+        p.CREATED_AT     AS created_at
+        FROM PLACE p
+        JOIN EVENTS e ON p.EVENT_CD = e.EVENT_CD
+        JOIN WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
+        WHERE p.WORKSPACE_CD = #{workspaceCd}
+        ORDER BY p.CREATED_AT DESC
     </select>
 
 <!--    * **`SELECT` 쿼리**: `PLACE`, `EVENTS`, `WORKSPACE_MEMBERS` 세 테이블을 JOIN하여 `WORKSPACE_MEMBERS.USER_NICKNAME`을 `created_by`로 가져오도록 수정.-->
