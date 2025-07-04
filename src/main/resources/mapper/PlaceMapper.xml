@@ -1,60 +1,76 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.ocean.mapper.PlaceMapper">
+<mapper namespace="com.example.ocean.repository.PlaceRepository">
 
-    <!-- 전체 장소 조회 -->
-    <select id="findAll" resultType="Place">
-        SELECT
-        place_cd,
-        workspace_cd,
-        place_nm as place_name,
-        null as place_id,
-        address as address_name,
-        lat,
-        lng,
-        created_at,
-        null as created_by
-        FROM PLACE
-        ORDER BY created_at DESC
-    </select>
-
-    <!-- 워크스페이스별 장소 조회 -->
-    <select id="findByWorkspaceCd" resultType="Place">
-        SELECT
-        place_cd,
-        workspace_cd,
-        place_nm as place_name,
-        null as place_id,
-        address as address_name,
-        lat,
-        lng,
-        created_at,
-        null as created_by
-        FROM PLACE
-        WHERE workspace_cd = #{workspaceCd}
-        ORDER BY created_at DESC
-    </select>
-
-    <!-- 장소 저장 -->
-    <insert id="insertPlace">
+    <!--
+      [수정 사항]
+      - PLACE 테이블의 스키마에 맞게 존재하지 않는 CREATED_BY 컬럼을 INSERT 문에서 제거.
+    -->
+    <insert id="insertPlace" parameterType="Place">
         INSERT INTO PLACE (
-        workspace_cd,
-        place_nm,
-        address,
-        lat,
-        lng,
-        created_at
+            WORKSPACE_CD, EVENT_CD, PLACE_NM, PLACE_ID, ADDRESS, LAT, LNG, CREATED_AT
         ) VALUES (
-        #{workspace_cd},
-        #{place_name},
-        #{address_name},
-        #{lat},
-        #{lng},
-        NOW()
-        )
+                     #{workspace_cd}, #{event_cd}, #{place_nm}, #{place_id}, #{address}, #{lat}, #{lng}, NOW()
+                 )
     </insert>
 
+    <!--
+      [수정 사항]
+      - PLACE(p), EVENTS(e), WORKSPACE_MEMBERS(wm) 테이블을 JOIN.
+      - p.EVENT_CD와 e.EVENT_CD를 기준으로 JOIN.
+      - e.USER_ID와 wm.USER_ID, 그리고 p.WORKSPACE_CD와 wm.WORKSPACE_CD를 기준으로 JOIN.
+      - WORKSPACE_MEMBERS 테이블의 USER_NICKNAME을 created_by 라는 별칭으로 조회.
+    -->
+    <select id="findAll" resultType="Place">
+        SELECT
+            p.WORKSPACE_CD AS workspace_cd,
+            p.PLACE_NM AS place_nm,
+            p.PLACE_ID AS place_id,
+            p.ADDRESS AS address,
+            p.LAT AS lat,
+            p.LNG AS lng,
+            wm.USER_NICKNAME AS created_by,
+            p.CREATED_AT AS created_at
+        FROM
+            PLACE p
+                JOIN
+            EVENTS e ON p.EVENT_CD = e.EVENT_CD
+                JOIN
+            WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
+        ORDER BY
+            p.CREATED_AT DESC
+    </select>
+
+    <!--
+      [수정 사항]
+      - findAll과 동일한 JOIN 로직을 적용.
+      - 특정 워크스페이스(workspaceCd)에 속한 장소만 조회하도록 WHERE 절을 추가.
+    -->
+    <select id="findByWorkspaceCd" resultType="Place">
+        SELECT
+            p.WORKSPACE_CD AS workspace_cd,
+            p.PLACE_NM AS place_nm,
+            p.PLACE_ID AS place_id,
+            p.ADDRESS AS address,
+            p.LAT AS lat,
+            p.LNG AS lng,
+            wm.USER_NICKNAME AS created_by,
+            p.CREATED_AT AS created_at
+        FROM
+            PLACE p
+                JOIN
+            EVENTS e ON p.EVENT_CD = e.EVENT_CD
+                JOIN
+            WORKSPACE_MEMBERS wm ON e.USER_ID = wm.USER_ID AND p.WORKSPACE_CD = wm.WORKSPACE_CD
+        WHERE
+            p.WORKSPACE_CD = #{workspaceCd}
+        ORDER BY
+            p.CREATED_AT DESC
+    </select>
+
+<!--    * **`SELECT` 쿼리**: `PLACE`, `EVENTS`, `WORKSPACE_MEMBERS` 세 테이블을 JOIN하여 `WORKSPACE_MEMBERS.USER_NICKNAME`을 `created_by`로 가져오도록 수정.-->
+<!--    * **`INSERT` 쿼리**: 실제 `PLACE` 테이블 스키마에 맞게 `CREATED_BY` 컬럼을 제거.-->
+
 </mapper>
+

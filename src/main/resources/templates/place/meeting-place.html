@@ -16,9 +16,7 @@
 <body>
 
 <div class="app-container">
-  <nav class="sidebar">
-    <div th:replace="lnb :: lnbFragment"></div>
-  </nav>
+    <div th:replace="~{fragments/lnb :: lnbFragment}"></div>
   <main class="main-content">
     <div class="place-list-container">
       <div class="place-list-header">
@@ -113,18 +111,22 @@
   /*<![CDATA[*/
   document.addEventListener('DOMContentLoaded', function() {
 
-    // URL에서 workspaceCd 파라미터 가져오기
-    const urlParams = new URLSearchParams(window.location.search);
-    const workspaceCd = urlParams.get('workspaceCd');
+    // ⭐ 서버에서 전달받은 workspaceCd 사용 (URL 파라미터 대신)
+    const workspaceCd = /*[[${workspaceCd}]]*/ '';
+    const userId = /*[[${userId}]]*/ '';
 
+    // workspaceCd 확인
     if (!workspaceCd) {
-        alert('워크스페이스 정보가 없습니다.');
-        window.location.href = '/workspace';
-        return;
+      alert('워크스페이스 정보가 없습니다.');
+      window.location.href = '/workspace';
+      return;
     }
+
+    console.log('현재 워크스페이스:', workspaceCd);
 
     // 워크스페이스별 장소 목록 로드
     loadPlacesByWorkspace(workspaceCd);
+
 
     // --- 1. 공통 변수 및 뷰 제어 ---
     const emptyView = document.getElementById('emptyView');
@@ -431,25 +433,26 @@
 
     // 장소 저장 함수 (DTO 필드명에 맞게 수정)
     function submitLocation(workspaceCd) {
-        if (!userSelectedLatLng) {
-            alert('장소를 선택해주세요.');
-            return;
-        }
+      if (!userSelectedLatLng) {
+        alert('장소를 선택해주세요.');
+        return;
+      }
 
-        const titleInput = document.querySelector('#addScheduleView textarea[placeholder="제목 기입란"]');
-        const contentInput = document.querySelector('#addScheduleView .add-content-area textarea');
+      const titleInput = document.querySelector('#addScheduleView textarea[placeholder="제목 기입란"]');
+      const contentInput = document.querySelector('#addScheduleView .add-content-area textarea');
 
-        const placeData = {
-            workspace_cd: workspaceCd,
-            place_nm: titleInput.value.trim() || userSelectedPlaceName || '새로운 장소', // place_name → place_nm
-            place_id: userSelectedPlaceId || null,
-            address: userSelectedAddressName || '주소 정보 없음', // address_name → address
-            lat: userSelectedLatLng.getLat(),
-            lng: userSelectedLatLng.getLng(),
-            created_by: /*[[${userId}]]*/ 'defaultUser'
-        };
+      const placeData = {
+        workspace_cd: workspaceCd,
+        place_nm: titleInput.value.trim() || userSelectedPlaceName || '새로운 장소',
+        place_id: userSelectedPlaceId || null,
+        address: userSelectedAddressName || '주소 정보 없음',
+        lat: userSelectedLatLng.getLat(),
+        lng: userSelectedLatLng.getLng(),
+        created_by: userId  // ⭐ 이 부분 수정 (하드코딩된 값 대신 userId 변수 사용)
+      };
 
-        fetch('/api/places', {
+
+      fetch('/api/places', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -487,6 +490,8 @@
   });
   /*]]>*/
 </script>
+
+<script th:src="@{/js/Token.js}"></script>
 
 </body>
 </html>

@@ -1,21 +1,15 @@
 package com.example.ocean.service;
 
 import com.example.ocean.domain.Place;
-import com.example.ocean.mapper.PlaceMapper;
 import com.example.ocean.repository.PlaceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 
 @Service
 public class PlaceService {
 
     private final PlaceRepository repository;
-
-    @Autowired
-    private PlaceMapper placeMapper;
 
     public PlaceService(PlaceRepository repository){
         this.repository = repository;
@@ -29,7 +23,8 @@ public class PlaceService {
         return repository.findAll();
     }
 
+    // ⭐ PlaceMapper 대신 PlaceRepository 사용
     public List<Place> findByWorkspaceCd(String workspaceCd) {
-        return placeMapper.findByWorkspaceCd(workspaceCd);
+        return repository.findByWorkspaceCd(workspaceCd);
     }
 }

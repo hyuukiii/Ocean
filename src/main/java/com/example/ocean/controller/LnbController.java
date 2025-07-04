@@ -81,14 +81,6 @@ public class LnbController {
         }
     }
 
-    @GetMapping("/meeting-place-test")
-    public String meetingPlaceTest(@RequestParam(required = false) String workspaceCd, Model model) {
-        log.info("테스트 meeting-place 접근: workspaceCd={}", workspaceCd);
-        model.addAttribute("workspaceCd", workspaceCd);
-        model.addAttribute("message", "테스트 성공!");
-        return "place/meeting-place";
-    }
-
 
     @GetMapping("/meeting-place")
     public String meetingPlace(@RequestParam(required = false) String workspaceCd,
