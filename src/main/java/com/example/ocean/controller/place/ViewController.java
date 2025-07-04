@@ -1,8 +1,6 @@
 package com.example.ocean.controller.place;
 
 import com.example.ocean.domain.Place;
-import com.example.ocean.domain.Workspace;
-import com.example.ocean.domain.WorkspaceMember;
 import com.example.ocean.service.PlaceService;
 import com.example.ocean.service.WorkspaceService;
 import com.example.ocean.security.oauth.UserPrincipal;
