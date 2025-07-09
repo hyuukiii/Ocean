@@ -30,11 +30,19 @@
         let isHost = false;  // 현재 사용자가 호스트인지 여부
         let meetingEnded = false;  // 회의가 종료되었는지 여부
 
+        // URL 파라미터 파싱
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('roomId');
+        const workspaceId = urlParams.get('workspaceId');
+        const meetingTitle = urlParams.get('meetingTitle') || '회의';
+
         // ===== 녹화 기능 ======
         let currentRecordingId = null;
         // 녹화 관련 전역 변수 추가
         let recordingStartTime = null;
         let recordingTimerInterval = null;
+        // URL 파라미터에서 녹화 경로 가져오기
+        const recordingPath = urlParams.get('recordingPath') || null;
 
         // 녹화 시간 포맷팅 함수
         function formatRecordingTime(seconds) {
@@ -80,11 +88,7 @@
         let localStream;
         let screenStream;
 
-        // URL 파라미터 파싱
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('roomId');
-        const workspaceId = urlParams.get('workspaceId');
-        const meetingTitle = urlParams.get('meetingTitle') || '회의';
+
 
         // ⭐ 토큰에서 사용자 정보 가져오기 부분을 완전히 새로 작성
         const userInfo = {
@@ -1245,7 +1249,8 @@
             const recordingData = {
                 roomId: roomId,
                 peerId: peerId,
-                displayName: displayName
+                displayName: displayName,
+                recordingPath: recordingPath
             };
 
             console.log('녹화 요청 데이터:', recordingData);

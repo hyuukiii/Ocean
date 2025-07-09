@@ -10,6 +10,17 @@ class Recorder {
         this.workspaceId = workspaceId;
         this.recorderId = recorderId;
         this.springBootUrl = springBootUrl || 'http://localhost:8080';
+
+        // ⭐ 사용자 지정 경로 우선 사용
+                if (customPath) {
+                    this.recordingPath = customPath;
+                    console.log('사용자 지정 녹화 경로:', customPath);
+                } else {
+                    // 기본 경로 사용
+                    this.recordingPath = process.env.RECORDING_PATH || '/Users/hyunki/Ocean/recordings';
+                    console.log('기본 녹화 경로:', this.recordingPath);
+                }
+
         // 환경 변수에서 경로 가져오기
         this.recordingPath = process.env.RECORDING_PATH || '/Users/hyunki/Ocean/recordings';
         this.recordingId = null;
@@ -26,15 +37,18 @@ class Recorder {
             const response = await axios.post(`${this.springBootUrl}/api/recordings/start`, {
                 roomId: this.roomId,
                 workspaceId: this.workspaceId,
-                recorderId: this.recorderId
+                recorderId: this.recorderId,
+                customPath: this.recordingPath  // ⭐ 경로 정보 전달
             });
 
             console.log('Spring Boot 응답:', response.data);
 
             this.recordingId = response.data.recordingId;
 
-            // 로컬 경로 설정
+            // 파일 경로 설정
             const fileName = path.basename(response.data.filePath);
+
+            // ⭐ 사용자 지정 경로 사용
             const localDir = path.join(this.recordingPath, this.workspaceId, this.roomId);
             this.filePath = path.join(localDir, fileName);
 

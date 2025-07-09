@@ -400,78 +400,94 @@ class MeetingSetup {
   }
 
   /**
-   * 폼 제출 처리
+   * 폼 제출 처리 - 수정된 버전
    */
   async handleSubmit(e) {
-    e.preventDefault();
+      e.preventDefault();
 
-    // 로딩 표시
-    if (this.loadingOverlay) {
-      this.loadingOverlay.style.display = 'flex';
-    }
-
-    try {
-      // 폼 데이터 수집
-      const formData = new FormData(this.meetingForm);
-
-      // 선택된 멤버 수집
-      const invitedMembers = [];
-      document.querySelectorAll('input[name="invitedMembers"]:checked').forEach(checkbox => {
-        invitedMembers.push(checkbox.value);
-      });
-
-      // 요청 데이터 구성
-      const requestData = {
-        title: formData.get('meetingTitle'),
-        description: document.getElementById('meetingDesc').value,
-        workspaceCd: workspaceCd,
-        autoRecord: formData.get('autoRecord') === 'on',
-        muteOnJoin: formData.get('muteOnJoin') === 'on',
-        waitingRoom: formData.get('waitingRoom') === 'on',
-        videoQuality: formData.get('videoQuality'),
-        invitedMembers: invitedMembers
-      };
-
-      // 회의 생성 API 호출
-      const response = await fetch('/meeting/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      if (!response.ok) {
-        throw new Error('회의 생성 실패');
-      }
-
-      const result = await response.json();
-
-      // 스트림 정리
-      this.cleanup();
-
-      // 회의실로 이동
-      window.location.href = `${mediaServerUrl}/ocean-video-chat-complete.html?${new URLSearchParams({
-        roomId: result.roomId,
-        workspaceId: workspaceCd,
-        peerId: currentUserId,
-        displayName: result.displayName || '사용자',
-        meetingType: 'sketch',
-        autoRecord: requestData.autoRecord,
-        muteOnJoin: requestData.muteOnJoin,
-        videoQuality: requestData.videoQuality,
-        meetingTitle: requestData.title,
-        userProfileImg: result.userProfileImg || ''  // ⭐ 프로필 이미지 추가
-      })}`;
-
-    } catch (error) {
-      console.error('회의 생성 실패:', error);
-      alert('회의를 시작할 수 없습니다. 다시 시도해주세요.');
-
+      // 로딩 표시
       if (this.loadingOverlay) {
-        this.loadingOverlay.style.display = 'none';
+        this.loadingOverlay.style.display = 'flex';
       }
-    }
+
+      try {
+        // 폼 데이터 수집
+        const formData = new FormData(this.meetingForm);
+
+        // 선택된 멤버 수집
+        const invitedMembers = [];
+        document.querySelectorAll('input[name="invitedMembers"]:checked').forEach(checkbox => {
+          invitedMembers.push(checkbox.value);
+        });
+
+        // 녹화 경로 설정
+        let recordingPath = null;
+        const pathType = document.querySelector('input[name="pathType"]:checked')?.value;
+        if (pathType === 'custom') {
+          recordingPath = document.getElementById('recordingPath').value;
+          if (!recordingPath) {
+            alert('녹화 경로를 입력해주세요.');
+            if (this.loadingOverlay) {
+              this.loadingOverlay.style.display = 'none';
+            }
+            return;
+          }
+        }
+
+        // 요청 데이터 구성
+        const requestData = {
+          title: formData.get('meetingTitle'),
+          description: document.getElementById('meetingDesc').value,
+          workspaceCd: workspaceCd,
+          autoRecord: formData.get('autoRecord') === 'on',
+          muteOnJoin: formData.get('muteOnJoin') === 'on',
+          waitingRoom: formData.get('waitingRoom') === 'on',
+          videoQuality: formData.get('videoQuality'),
+          invitedMembers: invitedMembers,
+          recordingPath: recordingPath // 이제 정의됨
+        };
+
+        // 회의 생성 API 호출
+        const response = await fetch('/meeting/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          throw new Error('회의 생성 실패');
+        }
+
+        const result = await response.json();
+
+        // 스트림 정리
+        this.cleanup();
+
+        // 회의실로 이동
+        window.location.href = `${mediaServerUrl}/ocean-video-chat-complete.html?${new URLSearchParams({
+          roomId: result.roomId,
+          workspaceId: workspaceCd,
+          peerId: currentUserId,
+          displayName: result.displayName || '사용자',
+          meetingType: 'sketch',
+          autoRecord: requestData.autoRecord,
+          muteOnJoin: requestData.muteOnJoin,
+          videoQuality: requestData.videoQuality,
+          meetingTitle: requestData.title,
+          userProfileImg: result.userProfileImg || '',
+          recordingPath: requestData.recordingPath || ''
+        })}`;
+
+      } catch (error) {
+        console.error('회의 생성 실패:', error);
+        alert('회의를 시작할 수 없습니다. 다시 시도해주세요.');
+
+        if (this.loadingOverlay) {
+          this.loadingOverlay.style.display = 'none';
+        }
+      }
   }
 
   /**
@@ -728,6 +744,217 @@ function toggleAllMembers() {
         handleCheckboxChange(checkbox);
     });
 }
+
+// 경로 타입 변경 처리
+document.querySelectorAll('input[name="pathType"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const customPathInput = document.querySelector('.custom-path-input');
+        if (e.target.value === 'custom') {
+            customPathInput.style.display = 'flex';
+        } else {
+            customPathInput.style.display = 'none';
+            clearPathValidation();
+        }
+    });
+});
+
+// ========== 녹화 경로 설정 관련 코드 ==========
+
+/**
+ * 녹화 경로 관련 이벤트 핸들러 초기화
+ * 이 함수는 기존 DOMContentLoaded 이벤트에서 호출되거나
+ * MeetingSetup 클래스의 constructor에서 호출할 수 있습니다
+ */
+function initRecordingPathHandlers() {
+    // 경로 옵션 요소들
+    const pathOptions = document.querySelectorAll('.path-option');
+    const customPathInput = document.getElementById('customPathInput');
+    const recordingPathField = document.getElementById('recordingPath');
+    const pathValidation = document.getElementById('pathValidation');
+
+    // 경로 옵션 클릭 이벤트
+    pathOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // 라디오 버튼 체크
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+
+            // 선택된 스타일 적용
+            pathOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+
+            // 사용자 지정 경로 입력 표시/숨김
+            if (this.dataset.pathType === 'custom') {
+                customPathInput.classList.add('show');
+                recordingPathField.focus();
+            } else {
+                customPathInput.classList.remove('show');
+                hideValidationMessage();
+            }
+        });
+    });
+
+    // 경로 입력 필드 이벤트
+    if (recordingPathField) {
+        recordingPathField.addEventListener('input', debounce(validatePath, 500));
+        recordingPathField.addEventListener('blur', validatePath);
+    }
+}
+
+/**
+ * 폴더 선택 다이얼로그 열기
+ * 전역 함수로 정의하여 HTML onclick에서 호출 가능
+ */
+function selectFolder() {
+    const folderPicker = document.getElementById('folderPicker');
+    if (folderPicker) {
+        folderPicker.click();
+    }
+}
+
+/**
+ * 폴더 선택 처리
+ * 전역 함수로 정의하여 HTML onchange에서 호출 가능
+ * @param {Event} event - 파일 선택 이벤트
+ */
+function handleFolderSelection(event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+        // 첫 번째 파일의 경로에서 디렉토리 경로 추출
+        const fullPath = files[0].webkitRelativePath || files[0].name;
+        const pathParts = fullPath.split('/');
+        pathParts.pop(); // 파일명 제거
+
+        const directoryPath = '/' + pathParts.join('/');
+
+        const recordingPathField = document.getElementById('recordingPath');
+        if (recordingPathField) {
+            recordingPathField.value = directoryPath;
+            validatePath();
+        }
+    }
+}
+
+/**
+ * 경로 유효성 검증
+ */
+async function validatePath() {
+    const pathInput = document.getElementById('recordingPath');
+    const pathValidation = document.getElementById('pathValidation');
+
+    if (!pathInput || !pathInput.value.trim()) {
+        hideValidationMessage();
+        return;
+    }
+
+    const path = pathInput.value.trim();
+
+    // 기본적인 경로 형식 검증
+    if (!isValidPathFormat(path)) {
+        showValidationMessage('올바른 경로 형식이 아닙니다', 'error');
+        return;
+    }
+
+    // 서버에 경로 검증 요청
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/validate-path', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ path: path })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.valid) {
+                showValidationMessage('사용 가능한 경로입니다', 'success');
+            } else {
+                showValidationMessage(result.reason || '경로를 사용할 수 없습니다', 'error');
+            }
+        } else {
+            showValidationMessage('경로 검증에 실패했습니다', 'error');
+        }
+    } catch (error) {
+        // 서버 검증 실패 시 클라이언트 검증만 사용
+        console.error('경로 검증 오류:', error);
+        if (isValidPathFormat(path)) {
+            showValidationMessage('경로가 설정되었습니다 (오프라인)', 'success');
+        }
+    }
+}
+
+/**
+ * 경로 형식 유효성 검사
+ * @param {string} path - 검사할 경로
+ * @returns {boolean} 유효 여부
+ */
+function isValidPathFormat(path) {
+    // Unix/Mac 경로 형식
+    const unixPathRegex = /^\/[a-zA-Z0-9._\-\/]+$/;
+    // Windows 경로 형식
+    const windowsPathRegex = /^[a-zA-Z]:\\[a-zA-Z0-9._\-\\]+$/;
+
+    return unixPathRegex.test(path) || windowsPathRegex.test(path);
+}
+
+/**
+ * 검증 메시지 표시
+ * @param {string} message - 표시할 메시지
+ * @param {string} type - 메시지 타입 ('success' | 'error')
+ */
+function showValidationMessage(message, type) {
+    const pathValidation = document.getElementById('pathValidation');
+    if (!pathValidation) return;
+
+    pathValidation.textContent = message;
+    pathValidation.className = `path-validation-message ${type}`;
+    pathValidation.style.display = 'flex';
+}
+
+/**
+ * 검증 메시지 숨김
+ */
+function hideValidationMessage() {
+    const pathValidation = document.getElementById('pathValidation');
+    if (pathValidation) {
+        pathValidation.style.display = 'none';
+    }
+}
+
+/**
+ * Debounce 유틸리티 함수
+ * @param {Function} func - 실행할 함수
+ * @param {number} wait - 대기 시간(ms)
+ * @returns {Function} Debounced 함수
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// MeetingSetup 클래스가 이미 초기화된 후에 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRecordingPathHandlers);
+} else {
+    // DOM이 이미 로드된 경우 즉시 실행
+    initRecordingPathHandlers();
+}
+
+// 전역 함수로 등록 (HTML onclick/onchange에서 사용)
+window.selectFolder = selectFolder;
+window.handleFolderSelection = handleFolderSelection;
 
 /**
  * 이메일로 초대

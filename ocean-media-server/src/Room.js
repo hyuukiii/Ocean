@@ -140,7 +140,8 @@ class Room {
               this.roomId,  // ⭐ this.id → this.roomId로 변경
               this.workspaceId,
               recorderId,
-              process.env.SPRING_BOOT_URL || 'http://localhost:8080'
+              process.env.SPRING_BOOT_URL || 'http://localhost:8080',
+              customPath  // ⭐ 사용자 지정 경로 전달
           );
 
           // Consumer 생성 (⭐ paused: false로 변경)

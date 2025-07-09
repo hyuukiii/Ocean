@@ -800,7 +800,7 @@ module.exports = (io, worker, router) => {
 
     // 녹화 시작 - 수정된 버전
     socket.on('startRecording', async (data, callback) => {
-        const { roomId, peerId, displayName } = data;
+        const { roomId, peerId, displayName, recordingPath } = data;
 
         // callback 함수가 없으면 에러 처리
         if (!callback || typeof callback !== 'function') {
@@ -822,6 +822,8 @@ module.exports = (io, worker, router) => {
         console.log(`녹화 시작 - roomId: ${roomId}, peer.userId: ${peer.userId}`);
 
         try {
+            // Room의 startRecording 호출 시 경로 전달
+            const recordingResult = await room.startRecording(peer.userId, recordingPath);
             const room = roomManager.getRoom(roomId);
             if (!room) {
                 callback({

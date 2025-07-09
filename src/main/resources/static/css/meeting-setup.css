@@ -248,6 +248,335 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* 녹화 경로 설정 섹션 - 개선된 스타일 */
+.recording-path-section {
+    margin-top: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recording-path-section.active {
+    margin-top: 16px;
+}
+
+.recording-path-section > label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+
+.recording-path-section > label::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recording-path-section > label::after {
+    content: '📁';
+    position: absolute;
+    margin-left: 2px;
+    font-size: 12px;
+}
+
+/* 경로 옵션 카드 스타일 */
+.path-option {
+    position: relative;
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border-radius: 12px;
+    border: 2px solid #e8e8e8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.path-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    transition: width 0.3s ease;
+    z-index: 0;
+}
+
+.path-option:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+}
+
+.path-option:hover::before {
+    width: 100%;
+}
+
+.path-option.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+}
+
+.path-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    animation: checkIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkIn {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+/* 라디오 버튼 커스텀 스타일 */
+.path-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.path-option label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    margin-bottom: 0;
+    cursor: pointer;
+    color: #333;
+    z-index: 1;
+    padding-left: 32px;
+}
+
+.path-option label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.path-option input[type="radio"]:checked + label::before {
+    border-color: #667eea;
+    background: #667eea;
+}
+
+.path-option input[type="radio"]:checked + label::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    animation: radioIn 0.3s ease;
+}
+
+@keyframes radioIn {
+    0% {
+        transform: translateY(-50%) scale(0);
+    }
+    100% {
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+/* 경로 표시 스타일 */
+.path-display {
+    display: flex;
+    align-items: center;
+    margin-left: 32px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4b5563;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.path-option:hover .path-display {
+    background: #e5e7eb;
+}
+
+.path-option.selected .path-display {
+    background: rgba(102, 126, 234, 0.1);
+    color: #5b4b9a;
+}
+
+/* 사용자 지정 경로 입력 */
+.custom-path-input {
+    margin-top: 12px;
+    margin-left: 32px;
+    display: flex;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.custom-path-input.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.path-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.path-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.browse-btn {
+    padding: 10px 20px;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.browse-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.browse-btn:active {
+    transform: translateY(0);
+}
+
+/* 경로 검증 메시지 */
+.path-validation-message {
+    margin-top: 12px;
+    margin-left: 32px;
+    margin-right: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-height: 36px;
+}
+
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.path-validation-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.path-validation-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.path-validation-message::before {
+    content: '✓';
+    font-weight: bold;
+}
+
+.path-validation-message.error::before {
+    content: '✕';
+}
+
+/* 자동 녹화 옵션 개선 */
+#autoRecord:checked ~ .recording-path-section {
+    max-height: 400px;
+    margin-top: 16px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .recording-path-section {
+        padding: 16px;
+    }
+
+    .path-option {
+        padding: 14px 16px;
+    }
+
+    .custom-path-input {
+        flex-direction: column;
+    }
+
+    .browse-btn {
+        width: 100%;
+    }
+}
+
 .form-section h3 {
     font-size: 16px;
     font-weight: 600;
