@@ -872,7 +872,12 @@ async function validatePath() {
         if (response.ok) {
             const result = await response.json();
             if (result.valid) {
-                showValidationMessage('사용 가능한 경로입니다', 'success');
+                // 확장된 경로가 있으면 표시
+                let message = '사용 가능한 경로입니다';
+                if (result.expandedPath && result.expandedPath !== path) {
+                    message += ` (${result.expandedPath})`;
+                }
+                showValidationMessage(message, 'success');
             } else {
                 showValidationMessage(result.reason || '경로를 사용할 수 없습니다', 'error');
             }
@@ -894,10 +899,21 @@ async function validatePath() {
  * @returns {boolean} 유효 여부
  */
 function isValidPathFormat(path) {
-    // Unix/Mac 경로 형식
-    const unixPathRegex = /^\/[a-zA-Z0-9._\-\/]+$/;
-    // Windows 경로 형식
-    const windowsPathRegex = /^[a-zA-Z]:\\[a-zA-Z0-9._\-\\]+$/;
+    // 빈 경로는 무효
+    if (!path || path.trim() === '') return false;
+
+    // 일반적인 폴더명 (Desktop, Documents 등)
+    const commonFolders = /^(Desktop|Documents|Downloads|Pictures|Movies|Music)$/i;
+    if (commonFolders.test(path)) return true;
+
+    // 홈 디렉토리 시작 (~/)
+    const homePathRegex = /^~\/[a-zA-Z0-9._\-\/]*$/;
+    if (homePathRegex.test(path)) return true;
+
+    // Unix/Mac 절대 경로
+    const unixPathRegex = /^\/[a-zA-Z0-9._\-\/]*$/;
+    // Windows 절대 경로
+    const windowsPathRegex = /^[a-zA-Z]:\\[a-zA-Z0-9._\-\\]*$/;
 
     return unixPathRegex.test(path) || windowsPathRegex.test(path);
 }

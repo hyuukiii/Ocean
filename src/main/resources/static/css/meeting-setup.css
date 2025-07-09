@@ -552,6 +552,45 @@
     content: '✕';
 }
 
+.quick-path-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    margin-left: 32px;
+    flex-wrap: wrap;
+}
+
+.quick-path-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-path-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.quick-path-btn:hover svg {
+    stroke: white;
+}
+
+.quick-path-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #6b7280;
+    transition: stroke 0.2s ease;
+}
+
 /* 자동 녹화 옵션 개선 */
 #autoRecord:checked ~ .recording-path-section {
     max-height: 400px;

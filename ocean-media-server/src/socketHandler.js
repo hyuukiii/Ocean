@@ -822,30 +822,29 @@ module.exports = (io, worker, router) => {
         console.log(`녹화 시작 - roomId: ${roomId}, peer.userId: ${peer.userId}`);
 
         try {
-            // Room의 startRecording 호출 시 경로 전달
-            const recordingResult = await room.startRecording(peer.userId, recordingPath);
-            const room = roomManager.getRoom(roomId);
-            if (!room) {
-                callback({
-                    error: 'ROOM_NOT_FOUND',
-                    message: '룸을 찾을 수 없습니다'
-                });
-                return;
-            }
+                // ⭐ 먼저 room을 가져온 다음에 사용!
+                const room = roomManager.getRoom(roomId);
+                if (!room) {
+                    callback({
+                        error: 'ROOM_NOT_FOUND',
+                        message: '룸을 찾을 수 없습니다'
+                    });
+                    return;
+                }
 
-            // 기존 녹화 확인
-            if (room.recordingStatus) {
-                callback({
-                    error: 'ALREADY_RECORDING',
-                    message: '이미 녹화가 진행 중입니다'
-                });
-                return;
-            }
+                // 기존 녹화 확인
+                if (room.recordingStatus) {
+                    callback({
+                        error: 'ALREADY_RECORDING',
+                        message: '이미 녹화가 진행 중입니다'
+                    });
+                    return;
+                }
 
             // ⭐ Room의 startRecording 메서드 호출 (중요!)
             try {
                 console.log('Room.startRecording 호출 중...');
-                const recordingResult = await room.startRecording(peer.userId);
+                const recordingResult = await room.startRecording(peer.userId, recordingPath);
                 console.log('Room.startRecording 결과:', recordingResult);
 
                 // 녹화 정보 저장

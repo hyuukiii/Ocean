@@ -1244,13 +1244,14 @@
             console.log('Room ID:', roomId);
             console.log('Peer ID:', peerId);
             console.log('Display Name:', displayName);
+            console.log('Recording Path:', recordingPath); // 경로 로그 추가
 
             // 서버의 이벤트 이름 확인 - 'start-recording' 또는 'startRecording'
             const recordingData = {
                 roomId: roomId,
                 peerId: peerId,
                 displayName: displayName,
-                recordingPath: recordingPath
+                recordingPath: recordingPath  // ⭐ 경로 추가
             };
 
             console.log('녹화 요청 데이터:', recordingData);

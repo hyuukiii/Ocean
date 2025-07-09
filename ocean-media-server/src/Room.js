@@ -86,7 +86,7 @@ class Room {
     }
 
   // 녹화 시작 - 완전 수정 버전
-  async startRecording(recorderId) {
+  async startRecording(recorderId, recordingPath) {
       if (this.recordingStatus) {
           throw new Error('이미 녹화 중입니다');
       }
@@ -141,7 +141,7 @@ class Room {
               this.workspaceId,
               recorderId,
               process.env.SPRING_BOOT_URL || 'http://localhost:8080',
-              customPath  // ⭐ 사용자 지정 경로 전달
+              recordingPath  // ⭐ 사용자 지정 경로 전달
           );
 
           // Consumer 생성 (⭐ paused: false로 변경)
