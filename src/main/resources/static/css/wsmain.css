@@ -140,7 +140,7 @@ body {
 .bottom-section {
   display: flex;
   gap: 24px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 /* 📊 이번 주 통계 영역 */
@@ -191,17 +191,22 @@ body {
 
 /* ✒️ 명언 */
 .quote {
-  font-size: 16px;
+  font-size: 25px;
   color: #dfe6e9;
-  line-height: 1.6;
+  line-height: 1.8;
   font-style: italic;
   flex: 1;
-  text-align: center;
   background: #1e1e1e;
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
+
 
 /* 모달 */
 .modal {

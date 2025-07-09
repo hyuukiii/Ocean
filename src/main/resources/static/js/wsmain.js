@@ -283,7 +283,7 @@ function updateStatusDisplay(status) {
     if (!display) return;
 
     const statusMap = {
-        online: "🟢 온라인 ^^",
+        online: "🟢 온라인",
         away: "🟡 자리비움 ^^",
         offline: "🔴 오프라인 ^^"
     };
