@@ -39,11 +39,8 @@
 </tr>
 </table>
 
+  
 ## 🛠️ 기술 스택
-
-<div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=14,17,20,23,26&height=120&section=header&text=⚓%20Ocean%20Tech%20Stack&fontSize=30&fontColor=ffffff&animation=fadeIn&fontAlignY=40" width="100%"/>
-</div>
 
 ### **Frontend**
 
@@ -145,7 +142,7 @@
   </table>
 </div>
 
-### 🎥 **Real-time Communication Ocean**
+###  **Cam Chats**
 
 <div align="center">
   <table>
@@ -231,22 +228,18 @@
       <td align="center" width="120">
         <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/intellij/intellij-original.svg" width="80" height="80"/>
         <br><sub><b>IntelliJ IDEA</b></sub>
-        <br><sub><i>통합 개발환경</i></sub>
       </td>
       <td align="center" width="120">
         <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" width="80" height="80"/>
         <br><sub><b>Git</b></sub>
-        <br><sub><i>버전 관리</i></sub>
       </td>
       <td align="center" width="120">
         <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg" width="80" height="80"/>
         <br><sub><b>GitHub</b></sub>
-        <br><sub><i>코드 저장소</i></sub>
       </td>
       <td align="center" width="120">
         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" width="80" height="80"/>
         <br><sub><b>Figma</b></sub>
-        <br><sub><i>UI/UX 디자인</i></sub>
       </td>
     </tr>
   </table>
@@ -254,7 +247,7 @@
 
 ---
 
-### **하이라이트**
+### **Highlights**
 
 <table align="center">
 <tr>
@@ -276,7 +269,18 @@
 <td align="center" width="25%">
   <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" width="60"/>
   <br/><b>🚀 DevOps</b>
-  <br/><sub>Docker + AWS + CI/CD<br/>자동화된 배포</sub>
+  <br/><sub>Docker + AWS + CI/CD<br/>배포 자동화</sub>
 </td>
 </tr>
 </table>
+
+## 프로젝트 기획의도
+<div align="center">
+  <img src="docs/images/project-trend-chart.png" alt="유연근무 이용률 추이 그래프" width="85%"/>
+  <br/><br/>
+  <sub><em>📊 출처: 통계청, 「경제활동인구조사 근로형태별 부가조사」</em></sub>
+</div>
+  
+원격 근무와 유연 근무 확산으로 조직 내 소통과 협업의 어려움 증가 했고
+
+다양한 협업 툴을 따로 사용하면서 정보가 분산되고 관리가 복잡해지는 불편함 발생 하였습니다.
