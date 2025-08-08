@@ -175,9 +175,7 @@
 | **Socket.io** | 시그널링 및 채팅 | 실시간 메시지 전송 |
 | **적응형 비트레이트** | 네트워크 상황 대응 | 연결 안정성 90% |
 
---- 
-
-### 🚀 **DevOps & distribution **
+### **DevOps & distribution**
 
 <div align="center">
   <table>
@@ -245,8 +243,6 @@
   </table>
 </div>
 
----
-
 ### **Highlights**
 
 <table align="center">
@@ -274,7 +270,7 @@
 </tr>
 </table>
 
-## 프로젝트 기획의도
+## 기획의도
 <div align="center">
   <img src="docs/images/project-trend-chart.png" alt="유연근무 이용률 추이 그래프" width="85%"/>
   <br/><br/>
@@ -284,3 +280,5 @@
 원격 근무와 유연 근무 확산으로 조직 내 소통과 협업의 어려움 증가 했고
 
 다양한 협업 툴을 따로 사용하면서 정보가 분산되고 관리가 복잡해지는 불편함 발생 하였습니다.
+
+## 💌 서비스 화면 및 기능 소개
