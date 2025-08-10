@@ -5,9 +5,46 @@ function formatSecondsToHHMMSS(seconds) {
     return `${h}시간 ${m}분 ${s}초`;
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const userId = localStorage.getItem("userId");
-    const workspaceCd = new URLSearchParams(window.location.search).get("workspaceCd"); // ✅ 쿼리스트링에서 추출
+function getWorkspaceCdFromUrl() {
+    const pathParts = window.location.pathname.split('/');
+    const workspaceIndex = pathParts.indexOf('workspace');
+    if (workspaceIndex !== -1 && pathParts[workspaceIndex + 1]) {
+        return pathParts[workspaceIndex + 1];
+    }
+    return new URLSearchParams(window.location.search).get('workspaceCd');
+}
+
+async function getCurrentUserId() {
+    // 캐시 확인
+    let userId = sessionStorage.getItem('currentUserId');
+    if (userId) return userId;
+
+    // 서버 조회
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            sessionStorage.setItem('currentUserId', data.userId);
+            return data.userId;
+        }
+    } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+    }
+
+    // 폴백: 기존 localStorage (호환성)
+    return localStorage.getItem('userId');
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+    const workspaceCd = getWorkspaceCdFromUrl();  
+    const userId = await getCurrentUserId();       
+
+    // sessionStorage에 캐싱
+    sessionStorage.setItem('currentWorkspaceCd', workspaceCd);
+    sessionStorage.setItem('currentUserId', userId);
 
     console.log("📦 로딩 시작 - userId:", userId, ", workspaceCd:", workspaceCd);
 
@@ -15,7 +52,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.warn("⚠️ userId 또는 workspaceCd가 localStorage에 없습니다.");
         return;
     }
-
 
     document.querySelectorAll(".close-button").forEach(btn => {
         btn.addEventListener("click", function () {
@@ -68,36 +104,34 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("❌ 상단 배너 정보 로딩 실패:", err);
         });
 
+    // ✅ 최근 활동 알림 불러오기
+    fetch(`/api/workspaces/${workspaceCd}/notifications`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.querySelector(".activity");
+            container.innerHTML = "<h2>최근활동</h2>";
 
-        // ✅ 최근 활동 알림 불러오기
-        fetch(`/api/workspaces/${workspaceCd}/notifications`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.querySelector(".activity");
-                container.innerHTML = "<h2>최근활동</h2>";
+            if (!data || data.length === 0) {
+                container.innerHTML += "<div class='log'>최근 활동이 없습니다.</div>";
+                return;
+            }
 
-                if (!data || data.length === 0) {
-                    container.innerHTML += "<div class='log'>최근 활동이 없습니다.</div>";
-                    return;
-                }
+            data.forEach(noti => {
+                const div = document.createElement("div");
+                div.classList.add("log");
 
-                data.forEach(noti => {
-                    const div = document.createElement("div");
-                    div.classList.add("log");
+                const initial = noti.senderName?.charAt(0) || "?";
+                const content = noti.content || "알 수 없는 활동";
 
-                    const initial = noti.senderName?.charAt(0) || "?";
-                    const content = noti.content || "알 수 없는 활동";
-
-                    div.innerHTML = `<span class="badge">${initial}</span> ${noti.senderName}님이 ${content}`;
-                    container.appendChild(div);
-                });
-            })
-            .catch(err => {
-                console.error("❌ 최근 활동 알림 불러오기 실패:", err);
-                const container = document.querySelector(".activity");
-                container.innerHTML += "<div class='log'>활동 정보를 불러올 수 없습니다.</div>";
+                div.innerHTML = `<span class="badge">${initial}</span> ${noti.senderName}님이 ${content}`;
+                container.appendChild(div);
             });
-
+        })
+        .catch(err => {
+            console.error("❌ 최근 활동 알림 불러오기 실패:", err);
+            const container = document.querySelector(".activity");
+            container.innerHTML += "<div class='log'>활동 정보를 불러올 수 없습니다.</div>";
+        });
 
     // ✅ 누적 접속 시간 로딩
     fetch(`/api/events/${workspaceCd}/usage-time`)
@@ -170,15 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('created-this-week').innerText = '불러오기 실패';
         });
 
-    // ✅ 사용자 정보 로딩
-//    fetch(`/api/workspaces/${workspaceCd}/member/${userId}`)
-//        .then(res => res.json())
-//        .then(user => {
-//            document.getElementById("mini-profile-img").src = user.userImg || "/images/default.png";
-//            document.getElementById("mini-profile-name").textContent = user.userNickname || user.userId;
-//            document.getElementById("mini-profile-role").textContent = user.userRole || "MEMBER";
-//        });
-
     // ✅ 상태 불러오기
     fetch(`/api/workspaces/${workspaceCd}/member/${userId}/status`)
         .then(res => {
@@ -187,22 +212,18 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(status => {
             console.log( "status  ===>  ", status);
-            //updateStatusDisplay(status);
-              setTimeout(() => {
-
+            setTimeout(() => {
               updateStatusDisplay(status);
-
               } ,0);
         })
         .catch(err => {
             console.error("❌ 상태 불러오기 실패:", err);
-           // updateStatusDisplay("online");
         });
 });
 
-
+// ✅ 수정 1: sessionStorage 사용
 function showUserDetailModal(userId) {
-    const workspaceCd = localStorage.getItem("workspaceCd");
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd");  // ✅ 변경됨
 
     fetch(`/api/workspaces/${workspaceCd}/member/${userId}`)
         .then(res => res.json())
@@ -223,9 +244,10 @@ function showUserDetailModal(userId) {
         });
 }
 
+// ✅ 수정 2: sessionStorage 사용
 function goToMyPage() {
-    const workspaceCd = localStorage.getItem("workspaceCd");
-    const userId = localStorage.getItem("userId");
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd");  // ✅ 변경됨
+    const userId = sessionStorage.getItem("currentUserId");  // ✅ 변경됨
 
     fetch(`/api/workspaces/${workspaceCd}/member/${userId}`)
         .then(res => res.json())
@@ -259,8 +281,9 @@ function openEditModal() {
     loadDepartmentOptions();
 }
 
+// ✅ 수정 3: sessionStorage 사용
 function submitEdit() {
-    const workspaceCd = localStorage.getItem("workspaceCd");
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd");  // ✅ 변경됨
 
     const formData = new FormData();
     formData.append("userNickname", document.getElementById("edit-nickname").value);
@@ -341,30 +364,29 @@ function updateStatusDisplay(status) {
     console.log("✅ 상태 표시됨:", label);
 }
 
+// ✅ 수정 4: sessionStorage 사용
+function changeStatus(newStatus) {
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd");  // ✅ 변경됨
+    const userId = sessionStorage.getItem("currentUserId");  // ✅ 변경됨
 
-   // ✅ 실제 상태 PATCH 요청
-            function changeStatus(newStatus) {
-                const workspaceCd = localStorage.getItem("workspaceCd");
-                const userId = localStorage.getItem("userId");
+    fetch(`/api/workspaces/${workspaceCd}/member/${userId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "text/plain" },
+        body: newStatus
+    })
+        .then(res => {
+            if (!res.ok) throw new Error("업데이트 실패");
+            return res.text(); 
+        })
+        .then(msg => {
+            console.log("✅ 상태 변경 성공:", msg);
+            updateStatusDisplay(newStatus);  
+        })
+}
 
-                fetch(`/api/workspaces/${workspaceCd}/member/${userId}/status`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "text/plain" },
-                    body: newStatus
-                })
-                    .then(res => {
-                        if (!res.ok) throw new Error("업데이트 실패");
-                        return res.text(); // ✅ 절대 res.json() 쓰지 마!
-                    })
-                    .then(msg => {
-                        console.log("✅ 상태 변경 성공:", msg);
-                        updateStatusDisplay(newStatus);  // UI 반영
-                    })
-
-            }
-
+// ✅ 수정 5: sessionStorage 사용
 function loadDepartmentOptions() {
-    const workspaceCd = localStorage.getItem("workspaceCd");
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd");  // ✅ 변경됨
     const select = document.getElementById("edit-dept");
 
     fetch(`/api/workspaces/${workspaceCd}/departments`)

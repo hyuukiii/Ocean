@@ -148,46 +148,6 @@
     window.location.href = `/meeting/setup?workspaceCd=${workspaceCd}`;
     }
 
-    /* 정적으로 페이지를 만들고 불러오는거라 테스트용 함수(안써서 주석처리)
-    function openSketchMeeting() {
-        // 사용자 정보 가져오기
-        const user = {
-            id: userId,    // 위에서 정의한 변수 사용
-            name: userName  // 위에서 정의한 변수 사용
-        };
-
-        const workspaceCd = /*[[${workspaceCd}]]*/ '';
-
-        // 룸 ID 생성
-        const roomId = 'sketch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8);
-
-        // 미디어 서버 URL
-        const mediaServerUrl = /*[[${@environment.getProperty('media.server.url')}]]*/ 'https://localhost:3001';
-
-        // URL 파라미터 구성
-        const params = new URLSearchParams({
-            roomId: roomId,
-            workspaceId: workspaceCd,
-            peerId: user.id,
-            displayName: user.name,
-            meetingType: 'sketch'
-        });
-
-        // 새 창에서 열기
-        const meetingUrl = `${mediaServerUrl}/ocean-video-chat-complete.html?${params}`;
-
-        // 팝업 창 옵션
-        const windowFeatures = 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no';
-        const meetingWindow = window.open(meetingUrl, 'SketchMeeting', windowFeatures);
-
-        if (!meetingWindow) {
-            alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
-            // 팝업이 차단된 경우 현재 창에서 열기
-            window.location.href = meetingUrl;
-        }
-    }
-    */
-
     // 초대 링크 생성 함수
     function getSketchMeetingInviteLink(roomId) {
         const baseUrl = window.location.origin;
