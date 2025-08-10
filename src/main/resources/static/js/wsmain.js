@@ -405,6 +405,39 @@ function loadDepartmentOptions() {
         });
 }
 
+// wsmain.js에 추가
+document.addEventListener("DOMContentLoaded", function() {
+    // 현재 사용자 프로필 확인
+    const userId = localStorage.getItem('userId');
+    const workspaceCd = sessionStorage.getItem("currentWorkspaceCd") ||
+                        document.getElementById('rnbContainer')?.dataset.workspaceCd;
+
+    if (userId && workspaceCd) {
+        // 프로필 정보 확인
+        fetch(`/api/workspaces/${workspaceCd}/profile`)
+            .then(res => res.json())
+            .then(profile => {
+                // 프로필 미설정 체크
+                if (!profile.userNickname || profile.userNickname.trim() === '') {
+                    console.log("프로필 설정이 필요합니다.");
+
+                    // 1초 후 알림 표시 (페이지 로드 완료 후)
+                    setTimeout(() => {
+                        if (typeof showProfileSetupAlert === 'function') {
+                            showProfileSetupAlert();
+                        }
+                    }, 1000);
+                }
+
+                // 전역 변수에 프로필 정보 저장 (다른 곳에서 사용)
+                window.currentUserProfile = profile;
+            })
+            .catch(err => {
+                console.error("프로필 조회 실패:", err);
+            });
+    }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const statusOptions = document.querySelectorAll(".status-option");
 

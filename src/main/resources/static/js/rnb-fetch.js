@@ -14,27 +14,84 @@
                 console.log(data);
 
                 const modal = document.getElementById("profileModal");
-
                 const viewProfileImg = document.getElementById("viewProfileImg");
-                viewProfileImg.src = data.userImg || "/images/default.png";
 
-                document.getElementById("viewNickname").textContent = data.userNickname || "-";
-                document.getElementById("viewPhone").textContent = data.phoneNum || "-";
-                document.getElementById("viewPosition").textContent = data.position || "-";
-                document.getElementById("viewEmail").textContent = data.email || "-";
-                document.getElementById("viewDept").textContent = data.deptNm || "-";
+                // ⭐ 프로필 이미지 처리 개선
+                const profileImgSrc = data.userImg || data.userProfileImg || "/images/default-profile.png";
+                viewProfileImg.src = profileImgSrc;
+                viewProfileImg.onerror = function() {
+                    this.src = '/images/default-profile.png';
+                };
+
+                // ⭐ NULL 처리 및 기본값 설정
+                const displayNickname = data.userNickname || data.userName || '프로필 미설정';
+                const needsProfileSetup = !data.userNickname || data.userNickname.trim() === '';
+
+                document.getElementById("viewNickname").innerHTML =
+                    displayNickname + (needsProfileSetup ? ' <span class="badge-warning">설정 필요</span>' : '');
+                document.getElementById("viewPhone").textContent = data.phoneNum || "미입력";
+                document.getElementById("viewPosition").textContent = data.position || "직급 미설정";
+                document.getElementById("viewEmail").textContent = data.email || "미입력";
+                document.getElementById("viewDept").textContent = data.deptNm || "부서 미설정";
+
+                // 상태 메시지 처리
+                const statusMsg = data.statusMsg || "상태 메시지를 입력해주세요";
+                if (document.getElementById("viewStatusMsg")) {
+                    document.getElementById("viewStatusMsg").textContent = statusMsg;
+                }
 
                 // 🔸 내 정보일 때만 편집 버튼 보이기
                 const toggleBtn = document.getElementById("toggleEditBtn");
                 if (loggedInUserId === data.userId) {
                     toggleBtn.style.display = "inline-block";
+
+                    // 프로필 미설정 시 알림 표시
+                    if (needsProfileSetup) {
+                        showProfileSetupAlert();
+                    }
                 } else {
                     toggleBtn.style.display = "none";
                 }
 
                 modal.style.display = "block";
                 document.getElementById("profileModalOverlay").style.display = "block";
+            })
+            .catch(error => {
+                console.error("프로필 조회 실패:", error);
+                alert("프로필 정보를 불러올 수 없습니다.");
             });
+    }
+
+    // 프로필 설정 알림 표시 함수
+    function showProfileSetupAlert() {
+        // 이미 알림이 표시되어 있으면 중복 방지
+        if (document.getElementById('profile-setup-alert')) return;
+
+        const alertHtml = `
+            <div id="profile-setup-alert" class="alert-setup">
+                <div class="alert-content">
+                    <span class="alert-icon">⚠️</span>
+                    <span class="alert-text">프로필 정보를 설정해주세요!</span>
+                    <a href="/workspace/${workspaceCd}/set-profile" class="btn-setup">설정하기</a>
+                    <button onclick="closeProfileSetupAlert()" class="btn-close">×</button>
+                </div>
+            </div>
+        `;
+
+        // body 최상단에 알림 추가
+        document.body.insertAdjacentHTML('afterbegin', alertHtml);
+
+        // 5초 후 자동으로 사라지기
+        setTimeout(() => {
+            closeProfileSetupAlert();
+        }, 5000);
+    }
+
+    function closeProfileSetupAlert() {
+        const alert = document.getElementById('profile-setup-alert');
+        if (alert) {
+            alert.remove();
+        }
     }
 
     function closeProfileModal() {
@@ -301,6 +358,9 @@
 
 
 
+            // rnb-fetch.js 파일에서 멤버 목록 렌더링 부분 수정
+
+            // 기존 코드 (약 90-120줄 부근)
             const memberRes = await fetch(`/api/workspaces/${workspaceCd}/members`);
             if (!memberRes.ok) throw new Error("멤버 API 실패");
             const data = await memberRes.json();
@@ -312,25 +372,50 @@
             members.forEach(member => {
                 const memberDiv = document.createElement("div");
                 memberDiv.classList.add("member");
+
+                // 상태 아이콘 매핑
                 const statusIconMap = {
-                  online: "/images/green_circle.png",
-                  away: "/images/red_circle.png",
-                  offline: "/images/gray_circle.png"
+                    online: "/images/green_circle.png",
+                    away: "/images/red_circle.png",
+                    offline: "/images/gray_circle.png"
                 };
 
                 const statusIcon = statusIconMap[member.userState?.toLowerCase()] || "/images/gray_circle.png";
 
+                // ⭐⭐⭐ NULL 처리 및 기본값 설정
+                const displayName = member.userNickname || member.userName || '프로필 미설정';
+                const displayPosition = member.position || '직급 미설정';
+                const displayImg = member.userImg || '/images/default-profile.png';
+                const needsProfile = !member.userNickname || member.userNickname.trim() === '';
+
+                // getImagePath 함수 개선 (존재하지 않으면 추가)
+                const getImagePath = (imgPath) => {
+                    if (!imgPath || imgPath === 'null' || imgPath === 'undefined' || imgPath.trim() === '') {
+                        return '/images/default-profile.png';
+                    }
+                    // 절대 경로가 아니면 기본 경로 추가
+                    if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
+                        return '/' + imgPath;
+                    }
+                    return imgPath;
+                };
+
                 memberDiv.innerHTML = `
-                  <a href="javascript:void(0);" class="member-link" onclick="showProfileModel('${member.userId}')">
-                      <div class="member-img-wrapper">
-                          <img src="${getImagePath(member.userImg)}" alt="멤버이미지" class="member-img">
-                          <img src="${statusIcon}" class="status-overlay-icon" />
-                      </div>
-                      <div class="info">
-                          <span class="m-name">${member.userNickname}</span>
-                          <span class="m-role">${member.position}</span>
-                      </div>
-                  </a>
+                    <a href="javascript:void(0);" class="member-link" onclick="showProfileModel('${member.userId}')">
+                        <div class="member-img-wrapper">
+                            <img src="${getImagePath(displayImg)}"
+                                 alt="${displayName}"
+                                 class="member-img"
+                                 onerror="this.src='/images/default-profile.png'">
+                            <img src="${statusIcon}" class="status-overlay-icon" />
+                            ${needsProfile ? '<span class="profile-badge">!</span>' : ''}
+                        </div>
+                        <div class="info">
+                            <span class="m-name ${needsProfile ? 'needs-profile' : ''}">${displayName}</span>
+                            <span class="m-role">${displayPosition}</span>
+                            ${member.deptNm ? `<span class="m-dept">${member.deptNm}</span>` : ''}
+                        </div>
+                    </a>
                 `;
 
                 memberContainer.appendChild(memberDiv);

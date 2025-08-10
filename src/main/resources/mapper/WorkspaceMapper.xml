@@ -131,7 +131,7 @@
         AND INVITED_USER_ID = #{invitedUserId}
     </update>
 
-    <!-- 워크스페이스 멤버 등록 (기본 정보 자동 포함) -->
+    <!-- 워크스페이스 멤버 등록 (기본 정보 자동 포함)
     <insert id="insertWorkspaceMember">
         INSERT INTO WORKSPACE_MEMBERS (
         WORKSPACE_CD, USER_ID, USER_NICKNAME, USER_ROLE, STATUS_MSG,
@@ -141,6 +141,28 @@
         #{workspaceCd}, #{userId}, '', 'MEMBER', '',
         '', '', 'Y', NOW()
         )
+    </insert>
+    -->
+
+    <!-- 워크스페이스 멤버 등록 (USERS 테이블의 기본 정보 활용) == USERS 테이블의 이름을 기본 닉네임으로 -->
+    <insert id="insertWorkspaceMember">
+        INSERT INTO WORKSPACE_MEMBERS (
+        WORKSPACE_CD, USER_ID, USER_NICKNAME, USER_ROLE, STATUS_MSG,
+        EMAIL, PHONE_NUM, USER_IMG, ACTIVE_STATE, JOINED_DATE
+        )
+        SELECT
+        #{workspaceCd},
+        #{userId},
+        COALESCE(u.USER_NM, '새 멤버'),
+        'MEMBER',
+        '',
+        '',
+        '',
+        u.USER_IMG,
+        'Y',
+        NOW()
+        FROM USERS u
+        WHERE u.USER_ID = #{userId}
     </insert>
 
     <!-- 초대 거절 처리 -->
