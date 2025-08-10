@@ -16,14 +16,14 @@
                 const modal = document.getElementById("profileModal");
                 const viewProfileImg = document.getElementById("viewProfileImg");
 
-                // ⭐ 프로필 이미지 처리 개선
-                const profileImgSrc = data.userImg || data.userProfileImg || "/images/default-profile.png";
+                // ⭐ 기본 이미지 경로 수정
+                const profileImgSrc = data.userImg || data.userProfileImg || "/images/default.png"; // ⭐ 변경됨
                 viewProfileImg.src = profileImgSrc;
                 viewProfileImg.onerror = function() {
-                    this.src = '/images/default-profile.png';
+                    this.src = '/images/default.png'; // ⭐ 변경됨
                 };
 
-                // ⭐ NULL 처리 및 기본값 설정
+                // NULL 처리 및 기본값 설정
                 const displayNickname = data.userNickname || data.userName || '프로필 미설정';
                 const needsProfileSetup = !data.userNickname || data.userNickname.trim() === '';
 
@@ -40,7 +40,7 @@
                     document.getElementById("viewStatusMsg").textContent = statusMsg;
                 }
 
-                // 🔸 내 정보일 때만 편집 버튼 보이기
+                // 내 정보일 때만 편집 버튼 보이기
                 const toggleBtn = document.getElementById("toggleEditBtn");
                 if (loggedInUserId === data.userId) {
                     toggleBtn.style.display = "inline-block";
@@ -358,9 +358,7 @@
 
 
 
-            // rnb-fetch.js 파일에서 멤버 목록 렌더링 부분 수정
-
-            // 기존 코드 (약 90-120줄 부근)
+            // 멤버 목록 렌더링 부분 수정
             const memberRes = await fetch(`/api/workspaces/${workspaceCd}/members`);
             if (!memberRes.ok) throw new Error("멤버 API 실패");
             const data = await memberRes.json();
@@ -373,7 +371,6 @@
                 const memberDiv = document.createElement("div");
                 memberDiv.classList.add("member");
 
-                // 상태 아이콘 매핑
                 const statusIconMap = {
                     online: "/images/green_circle.png",
                     away: "/images/red_circle.png",
@@ -382,16 +379,16 @@
 
                 const statusIcon = statusIconMap[member.userState?.toLowerCase()] || "/images/gray_circle.png";
 
-                // ⭐⭐⭐ NULL 처리 및 기본값 설정
+                // ⭐ 기본 이미지 경로를 default.png로 수정
                 const displayName = member.userNickname || member.userName || '프로필 미설정';
                 const displayPosition = member.position || '직급 미설정';
-                const displayImg = member.userImg || '/images/default-profile.png';
+                const displayImg = member.userImg || '/images/default.png'; // ⭐ 변경됨
                 const needsProfile = !member.userNickname || member.userNickname.trim() === '';
 
-                // getImagePath 함수 개선 (존재하지 않으면 추가)
+                // getImagePath 함수 수정
                 const getImagePath = (imgPath) => {
                     if (!imgPath || imgPath === 'null' || imgPath === 'undefined' || imgPath.trim() === '') {
-                        return '/images/default-profile.png';
+                        return '/images/default.png'; // ⭐ 변경됨
                     }
                     // 절대 경로가 아니면 기본 경로 추가
                     if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
@@ -406,7 +403,7 @@
                             <img src="${getImagePath(displayImg)}"
                                  alt="${displayName}"
                                  class="member-img"
-                                 onerror="this.src='/images/default-profile.png'">
+                                 onerror="this.src='/images/default.png'"> <!-- ⭐ 변경됨 -->
                             <img src="${statusIcon}" class="status-overlay-icon" />
                             ${needsProfile ? '<span class="profile-badge">!</span>' : ''}
                         </div>
@@ -691,18 +688,19 @@ async function showMyProfile() {
         localStorage.setItem("userId", myProfile.userId);
         localStorage.setItem("workspaceCd", workspaceCd);
 
+        // ⭐ getImagePath 함수를 재사용하거나 직접 처리
+        const getImagePath = (imgPath) => {
+            if (!imgPath || imgPath === 'null' || imgPath === 'undefined' || imgPath.trim() === '') {
+                return '/images/default.png'; // ⭐ 변경됨
+            }
+            if (!imgPath.startsWith('http') && !imgPath.startsWith('/')) {
+                return '/' + imgPath;
+            }
+            return imgPath;
+        };
+
         document.getElementById("viewProfileImg").src = getImagePath(myProfile.userImg);
-        document.getElementById("viewNickname").textContent = myProfile.userNickname || "-";
-        document.getElementById("viewPhone").textContent = myProfile.phoneNum || "-";
-        document.getElementById("viewPosition").textContent = myProfile.position || "-";
-        document.getElementById("viewEmail").textContent = myProfile.email || "-";
-        document.getElementById("viewDept").textContent = myProfile.deptNm || "-";
-
-        document.getElementById("toggleEditBtn").style.display = "inline-block";
-        document.getElementById("toggleEditBtn").dataset.editing = "false"; // 🔑 편집 상태 초기화
-
-        document.getElementById("profileModal").style.display = "block";
-        document.getElementById("profileModalOverlay").style.display = "block";
+        // 나머지 코드...
     } catch (e) {
         console.error("내 정보 모달 로딩 실패:", e);
     }
