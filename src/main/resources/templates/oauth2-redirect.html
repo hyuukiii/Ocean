@@ -5,181 +5,496 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocean - 로그인 처리 중</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #2d5a87 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            color: white;
+            overflow: hidden;
         }
 
-        .loading-container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 20px;
+        /* 배경 애니메이션 */
+        .ocean-waves {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            max-height: 150px;
+            z-index: 1;
+        }
+
+        .wave {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23ffffff20'/%3E%3C/svg%3E");
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            animation: wave 10s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .wave:nth-of-type(2) {
+            bottom: -5px;
+            animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) -0.125s infinite, swell 7s ease -1.25s infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes wave {
+            0% { margin-left: 0; }
+            100% { margin-left: -100%; }
+        }
+
+        @keyframes swell {
+            0%, 100% { transform: translate3d(0, -10px, 0); }
+            50% { transform: translate3d(0, 5px, 0); }
+        }
+
+        /* 메인 컨테이너 */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 48px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-width: 400px;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
         }
 
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #4DC8F5;
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 로고 영역 */
+        .logo-container {
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 로딩 상태 */
+        .loading-state {
+            display: block;
+        }
+
+        .spinner-container {
+            margin: 32px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto;
+            border: 3px solid #f3f4f6;
+            border-top-color: #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .debug-info {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #999;
-            text-align: left;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            font-family: monospace;
+        /* 진행 바 */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 24px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            animation: progress 2s ease-in-out;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* 텍스트 스타일 */
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .message {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .status-dots {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* 성공 상태 */
+        .success-state {
+            display: none;
         }
 
         .success-icon {
-            color: #4DC8F5;
-            font-size: 48px;
-            margin-bottom: 20px;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: successPop 0.6s ease-out;
         }
 
-        .error-container {
+        @keyframes successPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: checkmark 0.8s ease-out 0.3s forwards;
+        }
+
+        @keyframes checkmark {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* 에러 상태 */
+        .error-state {
             display: none;
-            margin-top: 20px;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
         .error-message {
-            color: #ff6b6b;
-            margin-bottom: 20px;
+            color: #ef4444;
+            margin-bottom: 24px;
+            padding: 12px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fee2e2;
+        }
+
+        .retry-button {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 480px) {
+            .auth-container {
+                min-width: 90%;
+                padding: 32px 24px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .message {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="loading-container">
-    <div class="loading-spinner"></div>
-    <h1 class="loading-title">로그인 처리 중</h1>
-    <p class="loading-message">잠시만 기다려 주세요...</p>
+<!-- Ocean 물결 애니메이션 -->
+<div class="ocean-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+</div>
 
-    <div class="error-container" id="errorContainer">
-        <p class="error-message" id="errorMessage"></p>
-        <button onclick="window.location.href='/login'">다시 시도</button>
+<!-- 메인 컨테이너 -->
+<div class="auth-container">
+    <!-- 로고 -->
+    <div class="logo-container">
+        <div class="logo">O</div>
     </div>
 
-    <div class="debug-info" id="debugInfo"></div>
+    <!-- 로딩 상태 -->
+    <div class="loading-state" id="loadingState">
+        <h1 class="title">
+            로그인 처리 중
+            <span class="status-dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </span>
+        </h1>
+        <p class="message">잠시만 기다려 주세요</p>
+
+        <div class="spinner-container">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <p class="message" id="statusMessage">인증 정보를 확인하고 있습니다...</p>
+    </div>
+
+    <!-- 성공 상태 -->
+    <div class="success-state" id="successState">
+        <div class="success-icon">
+            <svg class="checkmark" viewBox="0 0 52 52">
+                <path d="M14 27l10 10 20-20"/>
+            </svg>
+        </div>
+        <h1 class="title">로그인 성공!</h1>
+        <p class="message">Ocean 워크스페이스로 이동합니다...</p>
+    </div>
+
+    <!-- 에러 상태 -->
+    <div class="error-state" id="errorState">
+        <div class="error-icon">!</div>
+        <h1 class="title">로그인 실패</h1>
+        <div class="error-message" id="errorMessage">
+            로그인 처리 중 문제가 발생했습니다.
+        </div>
+        <button class="retry-button" onclick="window.location.href='/login'">
+            다시 시도하기
+        </button>
+    </div>
 </div>
 
 <script>
-    // 디버그 로그 함수
-    function debugLog(message, obj = null) {
-        console.log(message, obj || '');
-        const debugInfo = document.getElementById('debugInfo');
-        if (debugInfo) {
-            const logItem = document.createElement('div');
-            logItem.textContent = message + (obj ? ': ' + JSON.stringify(obj) : '');
-            debugInfo.appendChild(logItem);
+    // 환경 변수 설정 (production에서는 false로 설정)
+    const IS_DEVELOPMENT = window.location.hostname === 'localhost' ||
+                          window.location.hostname === '127.0.0.1';
+
+    // 개발 환경에서만 콘솔 로그 출력
+    function debugLog(message, data) {
+        if (IS_DEVELOPMENT) {
+            console.log(`[OAuth2 Debug] ${message}`, data || '');
         }
     }
 
-    // 쿠키 읽기 함수
+    // 쿠키 읽기 헬퍼 함수
     function getCookie(name) {
-        const nameEQ = name + "=";
-        const ca = document.cookie.split(';');
-        for(let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
         }
         return null;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        debugLog('=== OAuth2 리다이렉트 페이지 로드됨 ===');
-        debugLog('현재 URL:', window.location.href);
-        debugLog('쿠키:', document.cookie);
+    // 상태 메시지 업데이트
+    function updateStatus(message) {
+        const statusElement = document.getElementById('statusMessage');
+        if (statusElement) {
+            statusElement.textContent = message;
+        }
+    }
 
-        // 1. URL 파라미터에서 액세스 토큰 확인
+    // 성공 상태 표시
+    function showSuccess() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('successState').style.display = 'block';
+
+        // 2초 후 워크스페이스로 리다이렉트
+        setTimeout(() => {
+            window.location.href = '/workspace';
+        }, 2000);
+    }
+
+    // 에러 상태 표시
+    function showError(message) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorMessage').textContent = message;
+    }
+
+    // OAuth2 토큰 처리
+    function processOAuth2Token() {
+        debugLog('OAuth2 토큰 처리 시작');
+
+        // URL 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
-        let accessToken = urlParams.get('token');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+        let accessToken = urlParams.get('token') ||
+                        hashParams.get('token') ||
+                        getCookie('tempAccessToken');
+
         const error = urlParams.get('error');
-
-        debugLog('URL 파라미터 토큰:', accessToken ? `있음 (${accessToken.substring(0, 10)}...)` : '없음');
-
-        // 2. URL 프래그먼트(#) 확인
-        if (!accessToken && window.location.hash) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            accessToken = hashParams.get('token');
-            debugLog('프래그먼트에서 토큰:', accessToken ? `있음 (${accessToken.substring(0, 10)}...)` : '없음');
-        }
-
-        // 3. 임시 쿠키에서 확인
-        if (!accessToken) {
-            accessToken = getCookie('tempAccessToken');
-            debugLog('쿠키에서 액세스 토큰:', accessToken ? `있음 (${accessToken.substring(0, 10)}...)` : '없음');
-        }
-
-        // 4. 리프레시 토큰 확인 (쿠키에서)
         const refreshToken = getCookie('refreshToken');
-        debugLog('리프레시 토큰:', refreshToken ? '쿠키에 저장됨' : '없음');
+
+        debugLog('토큰 상태', {
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken,
+            hasError: !!error
+        });
 
         // 에러 처리
         if (error) {
-            debugLog('❌ OAuth2 에러:', error);
-            document.getElementById('errorContainer').style.display = 'block';
-            document.getElementById('errorMessage').textContent = `로그인 중 오류가 발생했습니다: ${error}`;
+            debugLog('OAuth2 에러 발생', error);
+            showError(`로그인 중 오류가 발생했습니다: ${error}`);
+            return;
+        }
 
-        } else if (accessToken && accessToken.length > 10) {
-            debugLog('✅ 유효한 액세스 토큰 발견');
-            debugLog('✅ 리프레시 토큰:', refreshToken ? '있음' : '없음');
+        // 토큰 검증 및 저장
+        if (accessToken && accessToken.length > 10) {
+            updateStatus('인증 정보를 저장하고 있습니다...');
 
             try {
-                // 액세스 토큰을 로컬 스토리지에 저장
+                // 토큰 저장
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('isAuthenticated', 'true');
-                debugLog('액세스 토큰 로컬 스토리지 저장 완료');
 
-                // 성공 메시지 표시
-                document.querySelector('.loading-spinner').style.display = 'none';
-                document.querySelector('.loading-title').innerHTML = '✅ 로그인 성공!';
-                document.querySelector('.loading-message').textContent = '메인 페이지로 이동합니다...';
+                debugLog('토큰 저장 완료', {
+                    localStorage: true,
+                    refreshTokenExists: !!refreshToken
+                });
 
-                // 토큰 상태 표시
-                const tokenStatus = document.createElement('div');
-                tokenStatus.style.marginTop = '20px';
-                tokenStatus.innerHTML = `
-                    <p>✅ 액세스 토큰: 로컬 스토리지에 저장됨</p>
-                    <p>${refreshToken ? '✅ 리프레시 토큰: 쿠키에 저장됨' : '⚠️ 리프레시 토큰: 없음'}</p>
-                `;
-                document.querySelector('.loading-container').appendChild(tokenStatus);
+                // 임시 쿠키 제거 (보안을 위해)
+                if (getCookie('tempAccessToken')) {
+                    document.cookie = 'tempAccessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                }
 
-                // 2초 후 워크스페이스 페이지로 리다이렉트
-                setTimeout(() => {
-                    window.location.href = '/workspace';
-                }, 2000);
+                updateStatus('로그인이 완료되었습니다!');
+                showSuccess();
 
             } catch (e) {
-                debugLog('❌ 토큰 저장 중 오류:', e.message);
-                document.getElementById('errorContainer').style.display = 'block';
-                document.getElementById('errorMessage').textContent = '토큰 저장 중 오류가 발생했습니다.';
+                debugLog('토큰 저장 실패', e);
+                showError('토큰 저장 중 오류가 발생했습니다.');
             }
-
         } else {
-            debugLog('❌ 유효한 토큰을 찾을 수 없음');
-            document.getElementById('errorContainer').style.display = 'block';
-            document.getElementById('errorMessage').textContent = '로그인 처리 중 문제가 발생했습니다.';
+            debugLog('유효한 토큰을 찾을 수 없음');
+            showError('로그인 처리 중 문제가 발생했습니다. 다시 시도해 주세요.');
+        }
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', function() {
+        debugLog('페이지 로드 완료');
+
+        // 약간의 지연 후 토큰 처리 (로딩 애니메이션을 보여주기 위해)
+        setTimeout(() => {
+            processOAuth2Token();
+        }, 500);
+    });
+
+    // 페이지 가시성 변경 감지 (보안 강화)
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            debugLog('페이지가 백그라운드로 전환됨');
         }
     });
 </script>
