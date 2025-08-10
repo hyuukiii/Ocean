@@ -1,3 +1,7 @@
+/* ========================================
+   LNB (Left Navigation Bar) 스타일
+   ======================================== */
+
 .lnb {
   width: 80px;
   height: 100vh;
@@ -8,6 +12,14 @@
   align-items: center;
   padding: 20px 0;
   box-sizing: border-box;
+  position: relative;
+  transition: width 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* 호버 시 확장 (서브메뉴 표시용) */
+.lnb:hover {
+  width: 200px;
 }
 
 .nav {
@@ -16,11 +28,14 @@
   gap: 20px;
   padding: 40px 0;
   align-items: center;
+  width: 100%;
 }
 
+/* 기본 네비게이션 아이템 */
 .nav-item {
   width: 100%;
   text-align: center;
+  position: relative;
 }
 
 .nav-item a {
@@ -31,12 +46,32 @@
   padding: 10px 0;
   transition: background-color 0.2s ease;
   border-radius: 8px;
+  position: relative;
 }
 
 .nav-item a:hover {
   background-color: #333;
 }
 
+/* 활성 상태 */
+.nav-item a.active {
+  background-color: #2a2a2a;
+  position: relative;
+}
+
+.nav-item a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background-color: #4a9eff;
+  border-radius: 0 2px 2px 0;
+}
+
+/* 아이콘 스타일 */
 .nav-item img {
   width: 28px;
   height: 28px;
@@ -45,11 +80,173 @@
   filter: brightness(1.2);
 }
 
+/* SVG 아이콘 지원 */
+.nav-item svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 6px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.nav-item:hover svg {
+  opacity: 1;
+}
+
+/* 텍스트 라벨 */
 .nav-item span {
   font-size: 12px;
   color: #fff;
   font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+
+/* LNB 호버 시 텍스트 표시 */
+.lnb:hover .nav-item span {
+  opacity: 1;
+}
+
+/* ========================================
+   화상회의 그룹 메뉴 스타일
+   ======================================== */
+
+.nav-item-group {
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-group-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 8px;
+}
+
+.nav-group-header:hover {
+  background-color: #333;
+}
+
+.nav-group-header svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+.nav-group-header span {
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.lnb:hover .nav-group-header span {
+  opacity: 1;
+}
+
+/* 서브메뉴 */
+.nav-sub {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* LNB 호버 시 서브메뉴 표시 */
+.lnb:hover .nav-sub {
+  max-height: 200px;
+}
+
+.nav-sub-item {
+  width: 100%;
+  margin: 5px 0;
+}
+
+.nav-sub-item a {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.nav-sub-item a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  padding-left: 25px;
+}
+
+.nav-sub-item a.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #4a9eff;
+}
+
+/* 서브메뉴 아이콘 */
+.nav-sub-item img,
+.nav-sub-item svg {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  opacity: 0.8;
+}
+
+.nav-sub-item span {
+  font-size: 13px;
+  opacity: 1;
+}
+
+/* ========================================
+   진행 중 회의 특별 스타일 (녹화 중 표시)
+   ======================================== */
+
+.nav-sub-item .recording-icon {
+  position: relative;
+}
+
+.nav-sub-item .recording-icon::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background-color: #ff4444;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+   LNB Footer
+   ======================================== */
 
 .lnb-footer {
   width: 100%;
@@ -68,4 +265,56 @@
 
 .lnb-footer img:hover {
   opacity: 1;
+}
+
+/* ========================================
+   모바일 반응형 (선택사항)
+   ======================================== */
+
+@media (max-width: 768px) {
+  .lnb {
+    width: 60px;
+  }
+
+  .lnb:hover {
+    width: 180px;
+  }
+
+  .nav-item img,
+  .nav-item svg,
+  .nav-group-header svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav-item span,
+  .nav-group-header span {
+    font-size: 11px;
+  }
+}
+
+/* ========================================
+   다크 테마 최적화
+   ======================================== */
+
+.lnb {
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 스크롤바 커스텀 (서브메뉴가 많을 경우) */
+.lnb::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lnb::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lnb::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.lnb::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

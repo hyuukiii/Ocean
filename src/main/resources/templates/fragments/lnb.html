@@ -28,7 +28,11 @@
         <!-- 회의 관련 메뉴 그룹 -->
         <li class="nav-item nav-item-group">
             <div class="nav-group-header">
-                <i class="fas fa-video" style="width: 20px; text-align: center;"></i>
+                <!-- 비디오 카메라 아이콘 (심플한 SVG 또는 이미지) -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.8;">
+                    <rect x="2" y="6" width="13" height="12" rx="2" ry="2" fill="currentColor"/>
+                    <path d="M16 10l5-3v10l-5-3z" fill="currentColor"/>
+                </svg>
                 <span>화상회의</span>
             </div>
             <ul class="nav-sub">
@@ -40,9 +44,16 @@
                 </li>
                 <li class="nav-sub-item">
                     <a th:href="@{/meeting/list(workspaceCd=${workspaceCd})}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                        <!-- 개선된 아이콘 옵션들 -->
+
+                        <!-- 옵션 1: 심플한 원형 녹화 아이콘 (추천) -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="display: inline-block; vertical-align: middle;">
+                            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <circle cx="12" cy="12" r="4" fill="#ff4444">
+                                <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                            </circle>
                         </svg>
+
                         <span>진행 중인 회의</span>
                     </a>
                 </li>
