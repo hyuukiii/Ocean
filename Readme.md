@@ -282,10 +282,21 @@
 다양한 협업 툴을 따로 사용하면서 정보가 분산되고 관리가 복잡해지는 불편함 발생 하였습니다.
 
 ## 💌 서비스 화면 및 기능 소개
-### 메인페이지
+
+### ⭐️ Mainpage
 <div align="center">
-  <img src="docs/demos/main page.gif" alt="실시간 화상채팅 데모" width="80%"/>
+  <img src="docs/demos/main-page.gif" alt="실시간 화상채팅 데모" width="80%"/>
   <br/><sub>💡 <strong>저희 웹 사이트를 소개 해주는 접속 시 나오는 첫 페이지 입니다.</strong></sub>
   <br/><sub>전체 배경은 컨셉에 맞게 바다의 느낌을 동적인 애니메이션으로 추가 하였고 그 이후 스와이프 형태로 저희의 기능을 소개 합니다.</strong></sub>
+  <br/><sub>또한 첫 페이지를 재방문한 사용자에게 루즈한 경험을 줄 수 있으므로 글자를 클릭 하면 스킵을 가능 하도록 만들어 놨습니다.</strong></sub>
+</div>
+
+### ⭐️ Login
+<div align="center">
+  <img src="docs/demos/login-page.gif" alt="실시간 화상채팅 데모" width="80%"/>
+  <br/><sub>💡 <strong>로그인 페이지 플로우 입니다.</strong></sub>
+  <br/><sub>Google,Kakao 소셜 로그인으로 빠르게 저희 서비스에 접근 하도록 구현 했습니다.</strong></sub>
+  <br/><sub>1️⃣.사용자의 급증을 대비하여 JWT기능을 구현 했습니다</strong></sub>
+  <br/><sub>또한, XSS 공격 방지를 위해 HttpOnly 쿠키 방식을 채택 했고, CSRF 보호를 위해 SamSite속성도 적용 했습니다.</strong></sub>
 </div>
 
