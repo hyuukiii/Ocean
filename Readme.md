@@ -287,16 +287,52 @@
 <div align="center">
   <img src="docs/demos/main-page.gif" alt="실시간 화상채팅 데모" width="80%"/>
   <br/><sub>💡 <strong>저희 웹 사이트를 소개 해주는 접속 시 나오는 첫 페이지 입니다.</strong></sub>
-  <br/><sub>전체 배경은 컨셉에 맞게 바다의 느낌을 동적인 애니메이션으로 추가 하였고 그 이후 스와이프 형태로 저희의 기능을 소개 합니다.</strong></sub>
-  <br/><sub>또한 첫 페이지를 재방문한 사용자에게 루즈한 경험을 줄 수 있으므로 글자를 클릭 하면 스킵을 가능 하도록 만들어 놨습니다.</strong></sub>
+  <br/><sub>1. 전체 배경은 컨셉에 맞게 바다의 느낌을 동적인 애니메이션으로 추가 하였고 그 이후 스와이프 형태로 저희의 기능을 소개 합니다.</strong></sub>
+  <br/><sub>2. 또한 첫 페이지를 재방문한 사용자에게 루즈한 경험을 줄 수 있으므로 글자를 클릭 하면 스킵을 가능 하도록 만들어 놨습니다.</strong></sub>
 </div>
 
 ### ⭐️ Login
 <div align="center">
   <img src="docs/demos/login-page.gif" alt="실시간 화상채팅 데모" width="80%"/>
-  <br/><sub>💡 <strong>로그인 페이지 플로우 입니다.</strong></sub>
-  <br/><sub>Google,Kakao 소셜 로그인으로 빠르게 저희 서비스에 접근 하도록 구현 했습니다.</strong></sub>
-  <br/><sub>1️⃣.사용자의 급증을 대비하여 JWT기능을 구현 했습니다</strong></sub>
-  <br/><sub>또한, XSS 공격 방지를 위해 HttpOnly 쿠키 방식을 채택 했고, CSRF 보호를 위해 SamSite속성도 적용 했습니다.</strong></sub>
+  <br/>💡 <strong>로그인 페이지 입니다.저희 서비스에선 현재 소셜 로그인을 제공 합니다.</sub>
+    <br/>
+
+### 🤔 **`WHY?`**
+소셜 로그인은 빠르게 회원가입을 할 수 있으므로 `'사용자 이탈율'`을 줄이기 위해 채택 했습니다.
+<br/>
+  <br/><sub>2. 사용자의 급증을 대비하여 JWT기능을 구현 했습니다</strong></sub>
+  <br/><sub>3. 또한, XSS 공격 방지를 위해 HttpOnly 쿠키 방식을 채택 했고, CSRF 보호를 위해 SamSite 속성을 적용 했습니다.</strong></sub>
+  <br/><sub>4. 사용자의 경험을 향상 시키기 위해 토큰 만료 5분전 자동 갱신 로직을 구현 하였습니다.</strong></sub>
 </div>
+
+### ⭐️ Workspace List
+<div align="center">
+  <img src="docs/demos/create-workspace.gif" alt="실시간 화상채팅 데모" width="80%"/>
+  <br/>💡 <strong>로그인 성공 후, 워크스페이스 리스트 페이지에 리다이렉트 되고 워크스페이스 생성,참가를 할 수 있습니다.</strong>
+  <br/><sub>1. 사용자 경험을 위해 생성 절차를 스와이프 형태로 단계적 폼으로 구현 했습니다.</strong></sub>
+  <br/><sub>2. 파일 업로드 시 UUID로 파일명 중복을 방지하고, 트랜잭션을 통해 파일 저장과 DB 작업의 원자성을 보장했습니다.</strong></sub>
+</div>
+
+<div align="center">
+  <img src="docs/demos/user-info.gif" alt="실시간 화상채팅 데모" width="80%"/>
+  <br/>💡 <strong>워크스페이스 생성 후, 해당 사용자의 추가 정보 입력 폼으로 넘어 갑니다.</strong>
+  <br/>
+
+### 🤔 **`WHY?`**
+`'사용자 온보딩 완료율'`을 위해 추가 정보는 나중에 입력 받을 수 있도록 했습니다
+
+<br/>
+  <br/><sub>1. 정보입력 절차를 스와이프 형태로 단계적 폼으로 구현 하였고, 모든 워크스페이스 접근 시점에 인터셉터를 통해 프로필을 검증 합니다.</strong></sub>
+  <br/><sub>2. 한 사용자가 여러 워크스페이스에서 다른 역할과 정보를 가질 수 있는 멀티테넌트 구조로 설계 했습니다.</strong></sub>
+</div>
+
+<div align="center">
+  <img src="docs/demos/join-workspace.gif" alt="실시간 화상채팅 데모" width="80%"/>
+  <br/>💡 <strong>워크스페이스 참가 시 워크스페이스가 생성 될 떄 나오는 초대 코드로 호스트에게 전송 할 수 있습니다.</strong>
+  <br/><sub>1. 초대 코드는 외부 노출되므로 보안에 위협이 될 수 있으므로 UUID의 처음 8자리만 사용 했습니다.</strong></sub>
+</div>
+
+
+
+
 
