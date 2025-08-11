@@ -344,7 +344,9 @@
 <div align="center">
   <img src="docs/demos/wsmain.gif" alt="실시간 화상채팅 데모" width="80%"/>
   <br/>💡 <strong>워크스페이스 생성 후, 나오는 워크스페이스 메인페이지 입니다</strong>
-  <br/><sub>1. 해당 워크스페이스에 온보딩을 완료하지 않은 사용자는 default.png 사진으로 처리 되고, 프로필이 미설정 되었다는 뱃지가 표시 됩니다.</strong></sub>
+  <br/><sub>1. 해당 워크스페이스에 온보딩을 완료하지 않은 사용자는 추가정보 폼으로 리다이렉트 됩니다.</strong></sub>
+  <br/><sub>2. 워크스페이스 메인 페이지 Body에는 해당 워크스페이스의 전체적인 정보를 볼 수 있는 대시보드로 형성 했습니다.</strong></sub>
+  <br/><sub>3. 온보딩을 완료 하지 않은 사용자는 워크스페이스 메인 페이지 에서 default.png 사진으로 처리 되고, 프로필이 미설정 되었다는 뱃지가 표시 됩니다.</strong></sub>
 </div>
 
 ### 🚨 Issue: 온보딩 미완료 사용자 정보 NULL 표시 문제
@@ -363,7 +365,7 @@
 > 워크스페이스 멤버 목록에서 프로필 미설정 사용자가 'null'로 표시되는 문제
 
 **문제가 있던 코드:**
-```javascript
+``` javascript
 // Before: 문제가 있던 코드
 memberDiv.innerHTML = `
     <span class="m-name">${member.userNickname}</span>  // null 표시
@@ -382,8 +384,31 @@ memberDiv.innerHTML = `
         <span class="m-role">${displayPosition}</span>
     </div>
 `;
-</details>
+
 ```
+✅✅✅ 워크스페이스 멤버 NULL 표시 이슈 해결 ✅✅✅
+## 해결 방법: Backend JOIN 쿼리 개선 하였고  Frontend Null Safety 처리를 하여 문제를 해결 했습니다.
+</details>
 
+## ⭐️ Calendar, Meeting Page
+<div align="center">
+  <img src="docs/demos/calendar.gif" alt="팀 캘린더 데모" width="80%"/>
+  <br/>💡 <strong>팀원들과 일정을 실시간으로 공유하고 관리하는 캘린더 페이지 입니다.</strong>
+  <br/><sub>1. FullCalendar의 refetchEvents API를 활용하여 실시간 동기화를 구현 했습니다.</sub>
+  <br/><sub>2. 페이지를 전체 새로 고침 하는 'location.reload()' 대신 ===> 캘린더만 업데이트 하는 'calendar.refetchEvents()' 변경 하여 UX 개선 및 네트워크 비용 절감 했습니다.</sub>
+  <br/><sub>3. Kakao Map API와 FullCalendar 라이브러리를 연동하여 일정 추가 시 장소 추가 시 모임장소 페이지에도 추가 됩니다.</sub>
+  <br/>
+  
+</div>
 
+## ⭐️ Cam-Chats Pages
+<div align="center">
+  <img src="docs/demos/CamChats.gif" alt="팀 캘린더 데모" width="80%"/>
+  <br/>💡 <strong>최대 12명이 참가 할 수 있는 다자간 화상 채팅 페이지 입니다.</strong>
+  <br/><sub>1. 내용</sub>
+  <br/><sub>2. 내용</sub>
+  <br/><sub>3. 내용</sub>
+  <br/>
+  
+</div>
 
