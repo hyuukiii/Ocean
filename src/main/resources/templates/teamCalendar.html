@@ -373,6 +373,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
+
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'ko',
@@ -383,6 +384,7 @@
             },
             height: 'auto',
             initialDate: new Date(),
+
             dateClick: async function (info) {
                 closeDetailModal();
                 closeUpdateModal();
@@ -441,44 +443,45 @@
 
                     });
             },
-            events: function (fetchInfo, successCallback, failureCallback) {
-                fetch(`/api/calendar/team?workspaceCd=${workspaceCd}`)
+            // ⭐ events 함수 수정
+            events: function(fetchInfo, successCallback, failureCallback) {
+                // 동적 workspaceCd 사용
+                const url = workspaceCd
+                ? `/api/calendar/team?workspaceCd=${workspaceCd}`
+                : '/api/calendar/team';
+
+                fetch(url)
                     .then(response => {
                         if (!response.ok) {
-                            return response.text().then(text => {
-                                console.error("서버 응답 오류 (events fetch):", text);
-                                throw new Error("일정 불러오기 실패: " + text);
-                            });
+                            throw new Error("일정 불러오기 실패!");
                         }
-                        return response.text().then(text => {
-                            if (text.length === 0) {
-                                return [];
-                            }
-                            try {
-                                return JSON.parse(text);
-                            } catch (e) {
-                                console.error("JSON 파싱 오류:", e);
-                                console.error("수신된 텍스트:", text);
-                                throw new Error("일정 데이터 파싱 실패: 유효하지 않은 JSON");
-                            }
-                        });
+                        return response.json();
                     })
                     .then(data => {
+                        console.log("받은 일정 데이터:", data); // 디버깅용
+
                         const events = data.map(item => ({
-                            id: item.eventCd,
-                            title: item.title,
-                            start: item.startDatetime,
-                            end: item.endDatetime,
-                            color: item.color
-                        }));
-                        successCallback(events);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert("캘린더 일정 불러오기 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
-                        failureCallback(err);
-                    });
+                        id: item.eventCd,
+                        title: item.title,
+                        start: item.startDatetime,
+                        end: item.endDatetime,
+                        color: item.color || '#0066CC',
+                        extendedProps: {
+                            description: item.description,
+                            priority: item.priority,
+                            progressStatus: item.progressStatus
+                        }
+                    }));
+
+                    console.log("변환된 이벤트:", events); // 디버깅용
+                    successCallback(events);
+                })
+                .catch(err => {
+                    console.error("캘린더 이벤트 로드 실패:", err);
+                    failureCallback(err);
+                });
             },
+
             eventClick: function (info) {
                 closeCreateEventModal();
                 closeUpdateModal();
@@ -676,67 +679,77 @@
         document.getElementById('createEventModal').style.display = 'none';
     }
 
-    function saveEvent() {
-        const form = document.getElementById("eventForm");
+    // teamCalendar.html의 saveEvent 함수 수정
+function saveEvent() {
+    const form = document.getElementById("eventForm");
 
-        for (const file of selectedFiles) {
-            if (file.name.length > MAX_FILENAME_LENGTH) {
-                alert(`첨부하신 파일 '${file.name}'의 이름이 너무 길어 업로드가 불가능합니다.`);
-                return;
-            }
+    // 파일명 검증
+    for (const file of selectedFiles) {
+        if (file.name.length > MAX_FILENAME_LENGTH) {
+            alert(`첨부하신 파일 '${file.name}'의 이름이 너무 길어 업로드가 불가능합니다.`);
+            return;
         }
-
-        const formData = new FormData();
-        const requestBody = {
-            userId: currentUserId,
-            workspaceCd: workspaceCd,
-            title: form.title.value,
-            description: form.description.value,
-            startDatetime: form.startDatetime.value,
-            endDatetime: form.endDatetime.value,
-            color: form.color.value,
-            isShared: form.isShared ? form.isShared.value : '1',
-            progressStatus: "TODO",
-            priority: form.priority.value,
-            notifyTime: parseInt(form.notification.value),
-            placeName: document.getElementById('placeName').value,
-            address: document.getElementById('placeAddress').value,
-            placeId: document.getElementById('placeId').value,
-            lat: parseFloat(document.getElementById('placeLat').value),
-            lng: parseFloat(document.getElementById('placeLng').value)
-        };
-
-        formData.append("request", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
-
-        const checkedCheckboxes = document.querySelectorAll('#workspaceMembers input[name="attendenceIds"]:checked');
-        const attendenceIds = Array.from(checkedCheckboxes).map(cb => cb.value);
-        if (attendenceIds.length > 0) {
-            formData.append("attendenceIds", new Blob([JSON.stringify(attendenceIds)], { type: "application/json" }));
-        }
-
-        selectedFiles.forEach(file => {
-            formData.append("files", file);
-        });
-
-        fetch('/api/calendar/team', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('등록 실패');
-                return res.text();
-            })
-            .then(data => {
-                alert("일정 등록 성공!");
-                location.reload();
-            })
-            .catch(err => {
-                console.error(err);
-                alert("서버 오류 발생");
-            });
-
-        closeCreateEventModal();
     }
+
+    const formData = new FormData();
+    const requestBody = {
+        // ⭐ 하드코딩 대신 동적 값 사용
+        userId: currentUserId,  // Thymeleaf에서 전달받은 값
+        workspaceCd: workspaceCd,  // Thymeleaf에서 전달받은 값
+        title: form.title.value,
+        description: form.description.value,
+        startDatetime: form.startDatetime.value,
+        endDatetime: form.endDatetime.value,
+        color: form.color.value,
+        isShared: form.isShared ? form.isShared.value : '1',
+        progressStatus: "TODO",
+        priority: form.priority.value,
+        notifyTime: parseInt(form.notification.value),
+        placeName: document.getElementById('placeName').value,
+        address: document.getElementById('placeAddress').value,
+        placeId: document.getElementById('placeId').value,
+        lat: parseFloat(document.getElementById('placeLat').value),
+        lng: parseFloat(document.getElementById('placeLng').value)
+    };
+
+    formData.append("request", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
+
+    const checkedCheckboxes = document.querySelectorAll('#workspaceMembers input[name="attendenceIds"]:checked');
+    const attendenceIds = Array.from(checkedCheckboxes).map(cb => cb.value);
+    if (attendenceIds.length > 0) {
+        formData.append("attendenceIds", new Blob([JSON.stringify(attendenceIds)], { type: "application/json" }));
+    }
+
+    selectedFiles.forEach(file => {
+        formData.append("files", file);
+    });
+
+    fetch('/api/calendar/team', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('등록 실패');
+        return res.text();
+    })
+    .then(data => {
+        alert("일정 등록 성공!");
+        closeCreateEventModal();
+
+        // ⭐ 캘린더 갱신
+        if (calendar) {
+            calendar.refetchEvents();
+        }
+
+        // 폼 초기화
+        document.getElementById('eventForm').reset();
+        selectedFiles = [];
+    })
+    .catch(err => {
+        console.error(err);
+        alert("서버 오류 발생");
+    });
+}
 
     /* "종일" 체크박스 로직 (createEventModal 내) */
     const createAllDayCheckbox = document.getElementById('allDay');
@@ -1104,120 +1117,122 @@
     }
 
     function submitUpdateEvent() {
-        const form = document.getElementById('updateEventForm');
-        const formData = new FormData();
-        const eventCd = document.getElementById('update-eventCd').value;
+    const form = document.getElementById('updateEventForm');
+    const formData = new FormData();
+    const eventCd = document.getElementById('update-eventCd').value;
 
-        for (const file of newUpdateFiles) { // ⭐ newUpdateFiles 배열을 직접 반복
-            if (file && file.name.length > MAX_FILENAME_LENGTH) { // null 값 체크 추가
-                alert(`첨부하신 파일 '${file.name}'의 이름이 너무 길어 업로드가 불가능합니다.`);
-                return;
-            }
+    // 파일명 길이 검증
+    for (const file of newUpdateFiles) {
+        if (file && file.name.length > MAX_FILENAME_LENGTH) {
+            alert(`첨부하신 파일 '${file.name}'의 이름이 너무 길어 업로드가 불가능합니다.`);
+            return;
         }
-
-        const requestBody = {
-            eventCd: eventCd,
-            title: form.title.value,
-            description: form.description.value,
-            startDatetime: form.startDatetime.value,
-            endDatetime: form.endDatetime.value,
-            color: form.color.value,
-            priority: form.priority.value,
-            progressStatus: document.getElementById('update-progressStatus').value,
-            isShared: form.isShared ? form.isShared.value : '1',
-            userId: currentUserId,
-            workspaceCd: workspaceCd,
-            notifyTime: parseInt(form.notification.value),
-            placeName: document.getElementById('update-placeName').value,
-            address: document.getElementById('update-placeAddress').value,
-            placeId: document.getElementById('update-placeId').value,
-            lat: parseFloat(document.getElementById('update-placeLat').value),
-            lng: parseFloat(document.getElementById('update-placeLng').value)
-        };
-
-        formData.append("request", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
-
-        const checkedCheckboxes = document.querySelectorAll('#update-workspaceMembers input[name="attendenceIds"]:checked');
-        const attendenceIds = Array.from(checkedCheckboxes).map(cb => cb.value);
-        if (attendenceIds.length > 0) {
-            formData.append("attendenceIds", new Blob([JSON.stringify(attendenceIds)], { type: "application/json" }));
-        }
-
-        // 새 파일 추가 로직 (newUpdateFiles 배열에 있는 실제 File 객체만 추가)
-        newUpdateFiles.forEach(file => { // ⭐ 필터링 없이 직접 순회 (null 값은 이미 제거됨)
-            if (file) { // 혹시 모를 null 방지
-                formData.append("files", file);
-            }
-        });
-        // ⭐ 파일이 없을 경우 files 파트를 아예 추가하지 않음 (서버에서 MultipartFile[]이 null로 처리됨)
-        // if (newUpdateFiles.length === 0) {
-        //     formData.append("files", new Blob([], { type: "application/octet-stream" })); // 이 줄 제거
-        // }
-
-
-        formData.append("deletedFileIds", new Blob([JSON.stringify(deletedFileIds)], { type: "application/json" }));
-
-
-        fetch(`/api/calendar/team/events/${eventCd}`, {
-            method: 'PUT',
-            body: formData
-        })
-            .then(res => {
-                return res.text().then(text => {
-                    if (!res.ok) {
-                        console.error("서버 응답 오류 (텍스트):", text);
-                        throw new Error("수정 실패: " + text);
-                    }
-                    return text;
-                });
-            })
-            .then(data => {
-                alert("일정이 수정되었습니다!");
-                closeUpdateModal();
-                location.reload();
-            })
-            .catch(err => {
-                console.error(err);
-                alert("수정에 실패했습니다. 콘솔을 확인해주세요.");
-            });
     }
+
+    const requestBody = {
+        eventCd: eventCd,
+        title: form.title.value,
+        description: form.description.value,
+        startDatetime: form.startDatetime.value,
+        endDatetime: form.endDatetime.value,
+        color: form.color.value,
+        priority: form.priority.value,
+        progressStatus: document.getElementById('update-progressStatus').value,
+        isShared: form.isShared ? form.isShared.value : '1',
+        userId: currentUserId,  // ⭐ 동적 값 사용
+        workspaceCd: workspaceCd,  // ⭐ 동적 값 사용
+        notifyTime: parseInt(form.notification?.value || '0'),
+        placeName: document.getElementById('update-placeName')?.value,
+        address: document.getElementById('update-placeAddress')?.value,
+        placeId: document.getElementById('update-placeId')?.value,
+        lat: parseFloat(document.getElementById('update-placeLat')?.value) || null,
+        lng: parseFloat(document.getElementById('update-placeLng')?.value) || null
+    };
+
+    formData.append("request", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
+    formData.append("deletedFileIds", new Blob([JSON.stringify(deletedFileIds)], { type: "application/json" }));
+
+    // 새 파일 추가
+    newUpdateFiles.forEach(file => {
+        if (file) formData.append("files", file);
+    });
+
+    // 참가자 정보 추가
+    const checkedMembers = document.querySelectorAll('#update-workspaceMembers input[name="attendenceIds"]:checked');
+    const attendenceIds = Array.from(checkedMembers).map(cb => cb.value);
+    if (attendenceIds.length > 0) {
+        formData.append("attendenceIds", new Blob([JSON.stringify(attendenceIds)], { type: "application/json" }));
+    }
+
+    fetch(`/api/calendar/team/events/${eventCd}`, {
+        method: 'PUT',
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("수정 실패");
+        return res.text();
+    })
+    .then(data => {
+        alert("일정이 수정되었습니다!");
+        closeUpdateModal();
+
+        // ⭐ location.reload() 대신 캘린더 갱신
+        if (calendar) {
+            calendar.refetchEvents();
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("수정에 실패했습니다. 콘솔을 확인해주세요.");
+    });
+}
 
     function deleteEvent() {
-        const confirmDelete = confirm("정말로 이 일정을 삭제하시겠습니까?");
-        if (confirmDelete) {
-            const eventCd = window.selectedEventData?.event?.eventCd;
-            const userId = currentUser.userId;
+    const confirmDelete = confirm("정말로 이 일정을 삭제하시겠습니까?");
 
-            if (!eventCd) {
-                alert("삭제할 이벤트 코드가 없습니다.");
-                return;
-            }
+    if (confirmDelete) {
+        const eventCd = window.selectedEventData?.event?.eventCd;
+        const userId = currentUser.userId;  // ✅ 동적 값 사용
 
-            fetch(`/api/calendar/team/events/${eventCd}?userId=${userId}`, {
-                method: 'DELETE'
-            })
-                .then(res => {
-                    return res.text().then(text => {
-                        if (!res.ok) {
-                            console.error("서버 응답 오류 (텍스트):", text);
-                            throw new Error("삭제 실패: " + text);
-                        }
-                        return text;
-                    });
-                })
-                .then(data => {
-                    alert("일정이 삭제되었습니다!");
-                    closeDetailModal();
-                    location.reload();
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("삭제 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
-                });
-        } else {
-            console.log("삭제 취소됨");
+        if (!eventCd) {
+            alert("삭제할 이벤트 코드가 없습니다.");
+            return;
         }
+
+        // 디버깅용 로그
+        console.log("삭제 요청 - eventCd:", eventCd, "userId:", userId);
+
+        fetch(`/api/calendar/team/events/${eventCd}?userId=${userId}`, {
+            method: 'DELETE'
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`삭제 실패 (${res.status})`);
+            }
+            return res.text();
+        })
+        .then(data => {
+            console.log("삭제 응답:", data);  // 디버깅용
+            alert("일정이 삭제되었습니다!");
+            closeDetailModal();
+
+            // ⭐ location.reload() 대신 캘린더 갱신
+            if (calendar) {
+                calendar.refetchEvents();
+                console.log("캘린더 이벤트 갱신 완료");
+            } else {
+                console.warn("calendar 인스턴스를 찾을 수 없습니다.");
+                location.reload();  // fallback
+            }
+        })
+        .catch(err => {
+            console.error("삭제 중 오류:", err);
+            alert("삭제 중 오류가 발생했습니다: " + err.message);
+        });
+    } else {
+        console.log("삭제 취소됨");
     }
+}
 
     function initMap(mapContainerId, searchInputId, searchBtnId, listId, hiddenFields) {
         const mapContainer = document.getElementById(mapContainerId);
