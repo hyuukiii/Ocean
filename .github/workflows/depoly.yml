@@ -11,57 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew clean bootJar
-
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_KEY: ${{ secrets.EC2_KEY }}
         run: |
-          # Base64로 인코딩된 키를 디코딩
+          # SSH 키 설정
           echo "$EC2_KEY" | base64 -d > ocean-key.pem
           chmod 600 ocean-key.pem
           
-          # 키 파일 확인 (디버깅용)
-          echo "Key file created, checking format..."
-          head -n 1 ocean-key.pem
-          
-          # JAR 파일 전송
-          scp -o StrictHostKeyChecking=no -i ocean-key.pem build/libs/*.jar $EC2_USER@$EC2_HOST:/home/ubuntu/ocean-app.jar
-          
-          # 애플리케이션 재시작
+          # EC2에서 배포 스크립트 실행
           ssh -o StrictHostKeyChecking=no -i ocean-key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            # 기존 프로세스 종료
-            sudo pkill -f ocean-app.jar || true
-          
-            # MySQL 연결 정보 환경변수 설정
-            export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/ocean_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
-            export SPRING_DATASOURCE_USERNAME="ocean_user"
-            export SPRING_DATASOURCE_PASSWORD="ocean_pass"
-          
-            # 애플리케이션 시작
-            nohup java -jar -Xmx512m /home/ubuntu/ocean-app.jar > /home/ubuntu/app.log 2>&1 &
-          
-            # 시작 확인
-            sleep 10
-            if ps aux | grep -v grep | grep ocean-app.jar > /dev/null; then
-              echo "✅ 애플리케이션이 성공적으로 시작되었습니다!"
-              echo "📋 실행 중인 프로세스:"
-              ps aux | grep -v grep | grep ocean-app.jar
-            else
-              echo "❌ 애플리케이션 시작 실패!"
-              echo "📋 최근 로그:"
-              tail -n 20 /home/ubuntu/app.log
-              exit 1
-            fi
+            cd /home/ubuntu/ocean
+            git pull origin main
+            ./deploy.sh
           EOF
