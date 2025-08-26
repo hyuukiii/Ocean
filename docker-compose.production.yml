@@ -32,7 +32,7 @@ services:
   # Spring Boot 애플리케이션
   spring-app:
     build:
-      context: docker
+      context: .
       dockerfile: Dockerfile
     container_name: ocean-spring
     restart: unless-stopped
