@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스
+  mysql:
+    image: mysql:8.0
+    container_name: ocean-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root1234}
+      MYSQL_DATABASE: ocean_db
+      MYSQL_USER: ocean_user
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ocean_pass}
+      TZ: Asia/Seoul
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - ocean-network
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+        reservations:
+          memory: 200M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Spring Boot 애플리케이션
+  spring-app:
+    build:
+      context: docker
+      dockerfile: Dockerfile
+    container_name: ocean-spring
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ocean_db
+      SPRING_DATASOURCE_USERNAME: ocean_user
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ocean_pass}
+      JAVA_OPTS: "-Xmx600m -Xms300m"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - ocean-network
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+        reservations:
+          memory: 400M
+
+  # Node.js 미디어 서버
+  media-server:
+    build:
+      context: ./ocean-media-server
+      dockerfile: Dockerfile
+    container_name: ocean-media
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+    networks:
+      - ocean-network
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+        reservations:
+          memory: 200M
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: ocean-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl
+    depends_on:
+      - spring-app
+      - media-server
+    networks:
+      - ocean-network
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+
+networks:
+  ocean-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

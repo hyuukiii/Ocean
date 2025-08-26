@@ -78,7 +78,7 @@ jacoco.exec
 # === Docker ===
 docker-compose.override.yml
 .docker/
-docker-compose*.yml
+#docker-compose*.yml
 !docker-compose.yml
 !docker-compose.dev.yml
 
