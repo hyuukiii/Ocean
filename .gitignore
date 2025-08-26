@@ -49,12 +49,9 @@ rebel-remote.xml
 # === Environment files ===
 .env
 *.env
-application-*.properties
-application-*.yml
+# application-*.properties
 !application.properties
-!application.yml
-!application-dev.properties
-!application-test.properties
+!application-local.properties
 
 # === Security ===
 *.pem
