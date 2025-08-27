@@ -1,4 +1,4 @@
-package com.example.ocean.repository;
+package com.example.ocean.mapper;
 
 import com.example.ocean.domain.Event;
 import com.example.ocean.dto.request.EventUpdateRequest;
@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface TeamEventRepository {
+public interface TeamEventMapper {
     List<CalendarResponse> selectTeamEvents(@Param("workspaceCd") String workspaceCd);
     Event selectTeamEventDetail(@Param("eventCd") String eventCd);
     int insertTeamEvent(Event event);

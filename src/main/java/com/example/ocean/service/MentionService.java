@@ -1,7 +1,7 @@
 package com.example.ocean.service;
 
 import com.example.ocean.domain.MentionNotification;
-import com.example.ocean.repository.MentionNotificationRepository;
+import com.example.ocean.mapper.MentionNotificationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,17 +10,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MentionService {
-    private final MentionNotificationRepository mentionNotificationRepository;
+    private final MentionNotificationMapper mentionNotificationMapper;
 
     public List<MentionNotification> selectUserNoti(String userId) {
-        return mentionNotificationRepository.selectUserNoti(userId);
+        return mentionNotificationMapper.selectUserNoti(userId);
     }
 
     public void updateAllUserNoti(String userId) {
-        mentionNotificationRepository.updateAllNoti(userId);
+        mentionNotificationMapper.updateAllNoti(userId);
     }
 
     public void updateUserNoti(String notiCd) {
-        mentionNotificationRepository.updateNoti(notiCd);
+        mentionNotificationMapper.updateNoti(notiCd);
     }
 }

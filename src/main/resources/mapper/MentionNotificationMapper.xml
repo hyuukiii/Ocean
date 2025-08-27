@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.ocean.repository.MentionNotificationRepository">
+<mapper namespace="com.example.ocean.mapper.MentionNotificationMapper">
     <insert id="insertMentionNotification">
         INSERT INTO `MENTION_NOTIFICATION` (
         NOTI_CD, EVENT_CD, USER_ID, NOTI_STATE, READ_STATE

@@ -1,4 +1,4 @@
-package com.example.ocean.repository;
+package com.example.ocean.mapper;
 
 
 import com.example.ocean.domain.Place;
@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface CalendarEventRepository {
+public interface CalendarEventMapper {
     List<CalendarResponse> selectPersonalCalendar(@Param("userId") String userId, @Param("workspaceCd") String workspaceCd);
     int insertPersonalEvent(Event event);
     Event selectPersonalEvent(@Param("eventCd")String eventCd);
@@ -24,5 +24,5 @@ public interface CalendarEventRepository {
 
 
     //
-    List<Place>  findAll2 ();
+    List<Place> findAll2 ();
 }

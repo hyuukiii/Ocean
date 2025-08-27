@@ -6,8 +6,7 @@ import com.example.ocean.domain.MentionNotification;
 import com.example.ocean.domain.Place;
 import com.example.ocean.dto.request.*;
 import com.example.ocean.dto.response.*;
-import com.example.ocean.mapper.WorkspaceMapper; // 사용되지 않는 import 제거 권장
-import com.example.ocean.repository.*;
+import com.example.ocean.mapper.*;
 import com.example.ocean.util.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -28,26 +27,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamCalendarService {
 
-    private final TeamEventRepository teamEventRepository;
+    private final TeamEventMapper teamEventMapper;
     private final EventAttendencesRepository eventAttendencesRepository;
-    private final FileRepository fileRepository;
-    private final MentionNotificationRepository mentionNotificationRepository;
+    private final FileMapper fileMapper;
+    private final MentionNotificationMapper mentionNotificationMapper;
     private final S3Uploader s3Uploader;
-    private final WorkspaceMemberRepository workspaceMemberRepository;
-    private final PlaceRepository placeRepository;
+    private final WorkspaceMemberMapper workspaceMemberMapper;
+    private final PlaceMapper placeMapper;
 
     public List<CalendarResponse> getTeamEvents(String workspaceCd){
-        return teamEventRepository.selectTeamEvents(workspaceCd);
+        return teamEventMapper.selectTeamEvents(workspaceCd);
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public EventDetailResponse selectTeamEventDetail(String eventCd){
-        Event event = teamEventRepository.selectTeamEventDetail(eventCd);
+        Event event = teamEventMapper.selectTeamEventDetail(eventCd);
         if (event == null) {
             return null;
         }
         List<AttendeesInfo> attendences = eventAttendencesRepository.selectAttendeesInfo(eventCd);
-        List<File> fileList = fileRepository.selectFileByEventCd(eventCd);
+        List<File> fileList = fileMapper.selectFileByEventCd(eventCd);
         Place place = event.getPlace(); // Event 내부에 Place 객체 포함
 
         return new EventDetailResponse(event, attendences, fileList, place);
@@ -74,7 +73,7 @@ public class TeamCalendarService {
         detail.setCreatedDate(LocalDateTime.now());
         detail.setNotifyTime(request.getNotifyTime());
 
-        int events = teamEventRepository.insertTeamEvent(detail);
+        int events = teamEventMapper.insertTeamEvent(detail);
 
         // 장소 정보 저장 (Event 도메인에 place 필드가 추가되었으므로 PlaceRepository 사용)
         // EventCreateRequest에 장소 정보가 직접 담겨 오지 않고, Event 도메인에 Place 객체가 통째로 들어있지 않다면
@@ -90,10 +89,10 @@ public class TeamCalendarService {
             place.setPlace_id(request.getPlaceId());
             place.setLat(request.getLat());
             place.setLng(request.getLng());
-            placeRepository.insertPlace(place);
+            placeMapper.insertPlace(place);
         }
 
-        List<String> attendenceIds = workspaceMemberRepository.getWorkspaceMemberId(request.getWorkspaceCd());
+        List<String> attendenceIds = workspaceMemberMapper.getWorkspaceMemberId(request.getWorkspaceCd());
         // 참가자 삽입
         if (attendenceIds != null && !attendenceIds.isEmpty()) { // size() > 0 대신 isEmpty() 권장
             for(String attendId : attendenceIds){
@@ -114,11 +113,11 @@ public class TeamCalendarService {
         // 현재 EventUpdateRequest DTO 구조를 모르므로, 이 부분은 DTO에 맞게 조정 필요
         // 예시: eventUpdateRequest.setIsShared("Y");
 
-        int events = teamEventRepository.updateTeamEvent(eventUpdateRequest);
+        int events = teamEventMapper.updateTeamEvent(eventUpdateRequest);
         String eventCd = eventUpdateRequest.getEventCd();
         String userId = eventUpdateRequest.getUserId();
 
-        boolean placeExists = placeRepository.checkPlaceExistsByEventCd(eventCd) > 0;
+        boolean placeExists = placeMapper.checkPlaceExistsByEventCd(eventCd) > 0;
         boolean newPlaceDataExists = eventUpdateRequest.getPlaceName() != null && !eventUpdateRequest.getPlaceName().isBlank() && eventUpdateRequest.getLat() != null;
 
         if (newPlaceDataExists) {
@@ -131,18 +130,18 @@ public class TeamCalendarService {
             place.setLat(eventUpdateRequest.getLat());
             place.setLng(eventUpdateRequest.getLng());
             if (placeExists) {
-                placeRepository.updatePlace(place);
+                placeMapper.updatePlace(place);
             } else {
-                placeRepository.insertPlace(place);
+                placeMapper.insertPlace(place);
             }
         } else if (placeExists) {
-            placeRepository.deletePlaceByEventCd(eventCd);
+            placeMapper.deletePlaceByEventCd(eventCd);
         }
 
         //삭제된파일
         if (deletedFileIds != null && !deletedFileIds.isEmpty()) { // size() > 0 대신 isEmpty() 권장
             for(String fileId:deletedFileIds){
-                fileRepository.updateFileActiveByEventCdAndFileId(eventCd, fileId);
+                fileMapper.updateFileActiveByEventCdAndFileId(eventCd, fileId);
             }
         }
 
@@ -156,11 +155,11 @@ public class TeamCalendarService {
     @Transactional // 트랜잭션 적용
     public int deleteTeamEvent(String eventCd, String userId){
         insertMentionNotification(eventCd, "DELETE");
-        fileRepository.deleteFileByEventCd(eventCd);
+        fileMapper.deleteFileByEventCd(eventCd);
         // Place 정보도 함께 삭제 (Event 삭제보다 먼저 호출되어야 외래키 제약조건 위반 방지)
-        placeRepository.deletePlaceByEventCd(eventCd);
+        placeMapper.deletePlaceByEventCd(eventCd);
         int attendences = eventAttendencesRepository.deleteAttendeesByEventCd(eventCd);
-        int events = teamEventRepository.deleteTeamEvent(eventCd, userId);
+        int events = teamEventMapper.deleteTeamEvent(eventCd, userId);
         return events;
     }
 
@@ -179,14 +178,14 @@ public class TeamCalendarService {
                         .uploadedBy(userId)
                         .build();
 
-                fileRepository.insertFile(insertFileRequest);
+                fileMapper.insertFile(insertFileRequest);
 
             }
         }
     }
 
     public ResponseEntity<byte[]> downloadFile(String fileId) throws IOException {
-        File file = fileRepository.selectFileByFileId(fileId);
+        File file = fileMapper.selectFileByFileId(fileId);
         String key = extractKeyFromUrl(file.getFilePath());
         byte[] bytes = s3Uploader.download(key);
 
@@ -210,7 +209,7 @@ public class TeamCalendarService {
                 String attendId = info.getUserId();
                 String notiCd="noti_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
                 MentionNotification noti = new MentionNotification(notiCd, eventCd, attendId, notiState,"N" );
-                mentionNotificationRepository.insertMentionNotification(noti);
+                mentionNotificationMapper.insertMentionNotification(noti);
             }
         }
     }

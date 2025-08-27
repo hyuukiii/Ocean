@@ -1,8 +1,7 @@
-package com.example.ocean.repository;
+package com.example.ocean.mapper;
 
 
 import com.example.ocean.domain.File;
-import com.example.ocean.domain.Workspace;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -10,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface FileRepository {
+public interface FileMapper {
 
     int insertFile(File file);
     List<File> selectFileByEventCd(@Param("eventCd")String eventCd);

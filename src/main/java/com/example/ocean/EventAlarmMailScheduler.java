@@ -1,16 +1,14 @@
 package com.example.ocean;
 
 import com.example.ocean.dto.response.MailInfo;
+import com.example.ocean.mapper.CalendarEventMapper;
+import com.example.ocean.mapper.EventAttendencesMapper;
 import com.example.ocean.mapper.WorkspaceMapper;
-import com.example.ocean.repository.CalendarEventRepository;
-
-import com.example.ocean.repository.EventAttendencesRepository;
-import com.example.ocean.repository.WorkspaceMemberRepository;
+import com.example.ocean.mapper.WorkspaceMemberMapper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,10 +25,10 @@ import java.util.List;
 @Component
 public class EventAlarmMailScheduler {
 
-    private final CalendarEventRepository calendarEventRepository;
+    private final CalendarEventMapper calendarEventtMapper;
     private final WorkspaceMapper workspaceMapper;
-    private final EventAttendencesRepository eventAttendencesRepository;
-    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final EventAttendencesMapper eventAttendencesRepository;
+    private final WorkspaceMemberMapper workspaceMemberMapper;
 
     @Autowired
     private JavaMailSender  emailSender;
@@ -69,11 +67,11 @@ public class EventAlarmMailScheduler {
     }
 
     public void getAlarmMessage() throws MessagingException {
-        List<String> eventCds = calendarEventRepository.selectTodayAlarm();
+        List<String> eventCds = calendarEventtMapper.selectTodayAlarm();
         if (eventCds != null && !eventCds.isEmpty()) {
             for(String eventCd : eventCds){
                 //이벤트 제목 찾기(EVENTS테이블)
-                MailInfo mailInfo = calendarEventRepository.selectMailInfo(eventCd);
+                MailInfo mailInfo = calendarEventtMapper.selectMailInfo(eventCd);
                 //이벤트 워크스페이스 이름 찾기(WORKSPACE)
                 String workspaceCd = mailInfo.getWorkspaceCd();
                 String workspaceName = workspaceMapper.findWorkspaceNameByWorkspaceCd(workspaceCd);
@@ -82,7 +80,7 @@ public class EventAlarmMailScheduler {
                 List<String> attendencdEmails  = new ArrayList<>();
                 if (userIds != null && !userIds.isEmpty()) {
                     for(String userId : userIds){
-                        String email = workspaceMemberRepository.selectMemberEmail(workspaceCd, userId);
+                        String email = workspaceMemberMapper.selectMemberEmail(workspaceCd, userId);
                         attendencdEmails.add(email);
                     }
                 }

@@ -3,7 +3,7 @@ package com.example.ocean.controller.place;
 import com.example.ocean.domain.Event;
 import com.example.ocean.domain.Place;
 import com.example.ocean.dto.response.PlaceInfoResponse;
-import com.example.ocean.repository.PlaceRepository;
+import com.example.ocean.mapper.PlaceMapper;
 import com.example.ocean.service.PlaceService;
 import com.example.ocean.service.WorkspaceService;
 import com.example.ocean.security.oauth.UserPrincipal;
@@ -25,11 +25,11 @@ public class PlaceController {
 
     private final PlaceService service;
     private final WorkspaceService workspaceService;
-    private final PlaceRepository repository;
+    private final PlaceMapper repository;
     private final ObjectMapper objectMapper;
 
     public PlaceController(PlaceService service, WorkspaceService workspaceService,
-                           PlaceRepository repository, ObjectMapper objectMapper) {
+                           PlaceMapper repository, ObjectMapper objectMapper) {
         this.service = service;
         this.workspaceService = workspaceService;
         this.repository = repository;

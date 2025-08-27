@@ -1,4 +1,4 @@
-package com.example.ocean.repository;
+package com.example.ocean.mapper;
 
 import com.example.ocean.domain.Event; // Event 도메인 추가
 import com.example.ocean.domain.Place;
@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface PlaceRepository {
+public interface PlaceMapper {
 
     int insertPlace(Place place);
 

@@ -6,7 +6,7 @@ import com.example.ocean.domain.MentionNotification;
 import com.example.ocean.domain.Place;
 import com.example.ocean.dto.request.*;
 import com.example.ocean.dto.response.*;
-import com.example.ocean.repository.*;
+import com.example.ocean.mapper.*;
 import com.example.ocean.util.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -28,17 +28,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PersonalCalendarService {
 
-    private final CalendarEventRepository calendarEventRepository;
-    private final PlaceRepository placeRepository;
-    private final FileRepository fileRepository;
+    private final CalendarEventtMapper calendarEventtMapper;
+    private final PlaceMapper placeMapper;
+    private final FileMapper fileMapper;
     private final S3Uploader s3Uploader;
     private final EventAttendencesRepository eventAttendencesRepository;
-    private final MentionNotificationRepository mentionNotificationRepository;
+    private final MentionNotificationMapper mentionNotificationMapper;
 
     // 일정 crud
 
     public List<CalendarResponse> getPersonalEvents(String userId, String workspaceCd){
-        return calendarEventRepository.selectPersonalCalendar(userId, workspaceCd);
+        return calendarEventtMapper.selectPersonalCalendar(userId, workspaceCd);
     }
 
     @Transactional
@@ -64,7 +64,7 @@ public class PersonalCalendarService {
         event.setNotifyTime(request.getNotifyTime());
         event.setCreatedDate(LocalDateTime.now());
 
-        int result = calendarEventRepository.insertPersonalEvent(event);
+        int result = calendarEventtMapper.insertPersonalEvent(event);
 
         if (request.getPlaceName() != null && !request.getPlaceName().isBlank() && request.getLat() != null && request.getLng() != null) {
             Place place = new Place();
@@ -75,7 +75,7 @@ public class PersonalCalendarService {
             place.setPlace_id(request.getPlaceId());
             place.setLat(request.getLat());
             place.setLng(request.getLng());
-            placeRepository.insertPlace(place);
+            placeMapper.insertPlace(place);
         }
 
         // 참가자 삽입
@@ -95,14 +95,14 @@ public class PersonalCalendarService {
 
     public EventDetailResponse getPersonalEventDetail(String eventCd){
 
-        Event event = calendarEventRepository.selectPersonalEvent(eventCd);
+        Event event = calendarEventtMapper.selectPersonalEvent(eventCd);
 
         if (event == null) {
             return null;
         }
 
         // 파일과 참석자 정보는 그대로 별도 조회.
-        List<File> fileList = fileRepository.selectFileByEventCd(eventCd);
+        List<File> fileList = fileMapper.selectFileByEventCd(eventCd);
         List<AttendeesInfo> attendences = eventAttendencesRepository.selectAttendeesInfo(eventCd);
 
         // [수정] 별도의 placeRepository 호출 없이, event 객체에 담겨온 place 정보를 바로 가져옵니다.
@@ -116,11 +116,11 @@ public class PersonalCalendarService {
 
     @Transactional
     public int updatePersonalEvent(EventUpdateRequest eventUpdateRequest, List<String> attendenceIds, List<String> deletedFileIds, MultipartFile[] insertedFiles){
-        int events = calendarEventRepository.updatePersonalEvent(eventUpdateRequest);
+        int events = calendarEventtMapper.updatePersonalEvent(eventUpdateRequest);
         String eventCd = eventUpdateRequest.getEventCd();
         String userId = eventUpdateRequest.getUserId();
 
-        boolean placeExists = placeRepository.checkPlaceExistsByEventCd(eventCd) > 0;
+        boolean placeExists = placeMapper.checkPlaceExistsByEventCd(eventCd) > 0;
         boolean newPlaceDataExists = eventUpdateRequest.getPlaceName() != null && !eventUpdateRequest.getPlaceName().isBlank() && eventUpdateRequest.getLat() != null;
 
         if (newPlaceDataExists) { // 요청에 새로운 장소 정보가 있을 경우
@@ -134,13 +134,13 @@ public class PersonalCalendarService {
             place.setLng(eventUpdateRequest.getLng());
 
             if (placeExists) { // 기존 장소가 있었으면 -> 업데이트
-                placeRepository.updatePlace(place);
+                placeMapper.updatePlace(place);
             } else { // 기존 장소가 없었으면 -> 새로 삽입
-                placeRepository.insertPlace(place);
+                placeMapper.insertPlace(place);
             }
         } else { // 요청에 새로운 장소 정보가 없을 경우
             if (placeExists) { // 기존 장소가 있었으면 -> 삭제
-                placeRepository.deletePlaceByEventCd(eventCd);
+                placeMapper.deletePlaceByEventCd(eventCd);
             }
         }
 
@@ -156,7 +156,7 @@ public class PersonalCalendarService {
         //삭제된파일
         if (deletedFileIds != null && !deletedFileIds.isEmpty()) {
             for(String fileId:deletedFileIds){
-                fileRepository.updateFileActiveByEventCdAndFileId(eventCd, fileId);
+                fileMapper.updateFileActiveByEventCdAndFileId(eventCd, fileId);
             }
         }
 
@@ -172,9 +172,9 @@ public class PersonalCalendarService {
         //파일 참석자 먼저 삭제하고 이벤트 삭제하기
         insertMentionNotification(eventCd, "DELETE");
 
-        fileRepository.deleteFileByEventCd(eventCd);
+        fileMapper.deleteFileByEventCd(eventCd);
         eventAttendencesRepository.deleteAttendeesByEventCd(eventCd);
-        return calendarEventRepository.deletePersonalEvent(eventCd);
+        return calendarEventtMapper.deletePersonalEvent(eventCd);
     }
 
     public void uploadFiles(String eventCd, String userId, MultipartFile[] files) {
@@ -192,14 +192,14 @@ public class PersonalCalendarService {
                         .uploadedBy(userId)
                         .build();
 
-                fileRepository.insertFile(insertFileRequest);
+                fileMapper.insertFile(insertFileRequest);
 
             }
         }
     }
 
     public ResponseEntity<byte[]> downloadFile(String fileId) throws IOException {
-        File file = fileRepository.selectFileByFileId(fileId);
+        File file = fileMapper.selectFileByFileId(fileId);
         String key = extractKeyFromUrl(file.getFilePath());
         byte[] bytes = s3Uploader.download(key);
 
@@ -224,7 +224,7 @@ public class PersonalCalendarService {
                 String attendId = info.getUserId();
                 String notiCd="noti_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
                 MentionNotification noti = new MentionNotification(notiCd, eventCd, attendId, notiState,"N" );
-                mentionNotificationRepository.insertMentionNotification(noti);
+                mentionNotificationMapper.insertMentionNotification(noti);
             }
         }
 
