@@ -28,17 +28,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PersonalCalendarService {
 
-    private final CalendarEventtMapper calendarEventtMapper;
+    private final CalendarEventMapper calendarEventMapper;
     private final PlaceMapper placeMapper;
     private final FileMapper fileMapper;
     private final S3Uploader s3Uploader;
-    private final EventAttendencesRepository eventAttendencesRepository;
+    private final EventAttendencesMapper eventAttendencesRepository;
     private final MentionNotificationMapper mentionNotificationMapper;
 
     // 일정 crud
 
     public List<CalendarResponse> getPersonalEvents(String userId, String workspaceCd){
-        return calendarEventtMapper.selectPersonalCalendar(userId, workspaceCd);
+        return calendarEventMapper.selectPersonalCalendar(userId, workspaceCd);
     }
 
     @Transactional
@@ -64,7 +64,7 @@ public class PersonalCalendarService {
         event.setNotifyTime(request.getNotifyTime());
         event.setCreatedDate(LocalDateTime.now());
 
-        int result = calendarEventtMapper.insertPersonalEvent(event);
+        int result = calendarEventMapper.insertPersonalEvent(event);
 
         if (request.getPlaceName() != null && !request.getPlaceName().isBlank() && request.getLat() != null && request.getLng() != null) {
             Place place = new Place();
@@ -95,7 +95,7 @@ public class PersonalCalendarService {
 
     public EventDetailResponse getPersonalEventDetail(String eventCd){
 
-        Event event = calendarEventtMapper.selectPersonalEvent(eventCd);
+        Event event = calendarEventMapper.selectPersonalEvent(eventCd);
 
         if (event == null) {
             return null;
@@ -116,7 +116,7 @@ public class PersonalCalendarService {
 
     @Transactional
     public int updatePersonalEvent(EventUpdateRequest eventUpdateRequest, List<String> attendenceIds, List<String> deletedFileIds, MultipartFile[] insertedFiles){
-        int events = calendarEventtMapper.updatePersonalEvent(eventUpdateRequest);
+        int events = calendarEventMapper.updatePersonalEvent(eventUpdateRequest);
         String eventCd = eventUpdateRequest.getEventCd();
         String userId = eventUpdateRequest.getUserId();
 
@@ -174,7 +174,7 @@ public class PersonalCalendarService {
 
         fileMapper.deleteFileByEventCd(eventCd);
         eventAttendencesRepository.deleteAttendeesByEventCd(eventCd);
-        return calendarEventtMapper.deletePersonalEvent(eventCd);
+        return calendarEventMapper.deletePersonalEvent(eventCd);
     }
 
     public void uploadFiles(String eventCd, String userId, MultipartFile[] files) {

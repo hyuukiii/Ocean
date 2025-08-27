@@ -25,7 +25,7 @@ import java.util.List;
 @Component
 public class EventAlarmMailScheduler {
 
-    private final CalendarEventMapper calendarEventtMapper;
+    private final CalendarEventMapper calendarEventMapper;
     private final WorkspaceMapper workspaceMapper;
     private final EventAttendencesMapper eventAttendencesRepository;
     private final WorkspaceMemberMapper workspaceMemberMapper;
@@ -67,11 +67,11 @@ public class EventAlarmMailScheduler {
     }
 
     public void getAlarmMessage() throws MessagingException {
-        List<String> eventCds = calendarEventtMapper.selectTodayAlarm();
+        List<String> eventCds = calendarEventMapper.selectTodayAlarm();
         if (eventCds != null && !eventCds.isEmpty()) {
             for(String eventCd : eventCds){
                 //이벤트 제목 찾기(EVENTS테이블)
-                MailInfo mailInfo = calendarEventtMapper.selectMailInfo(eventCd);
+                MailInfo mailInfo = calendarEventMapper.selectMailInfo(eventCd);
                 //이벤트 워크스페이스 이름 찾기(WORKSPACE)
                 String workspaceCd = mailInfo.getWorkspaceCd();
                 String workspaceName = workspaceMapper.findWorkspaceNameByWorkspaceCd(workspaceCd);
