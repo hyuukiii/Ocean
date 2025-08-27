@@ -48,19 +48,30 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         try {
-            // 토큰 생성 및 리다이렉트 URL 구성
-            String targetUrl = determineTargetUrl(request, response, authentication);
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            TokenResponse tokenResponse = tokenService.createTokens(userPrincipal.getId());
 
-            log.info("최종 리다이렉트 URL: {}", targetUrl);
+            // 리프레시 토큰을 쿠키로 먼저 설정 (response.addCookie 사용)
+            Cookie refreshCookie = new Cookie("refreshToken", tokenResponse.getRefreshToken());
+            refreshCookie.setHttpOnly(true);
+            refreshCookie.setSecure(true);
+            refreshCookie.setPath("/");
+            refreshCookie.setMaxAge(refreshTokenValidityInMs / 1000);
+            // refreshCookie.setDomain(".oceanspace.click"); // 서브도메인 포함
 
-            // 인증 속성 정리
-            clearAuthenticationAttributes(request);
+            response.addCookie(refreshCookie);
+
+            // 리다이렉트 URL 생성
+            String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl)
+                    .path("/oauth2-redirect.html")
+                    .queryParam("token", tokenResponse.getAccessToken())
+                    .build().toUriString();
 
             // 리다이렉트 실행
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            response.sendRedirect(targetUrl);
 
         } catch (Exception e) {
-            log.error("OAuth2 인증 성공 처리 중 오류", e);
+            log.error("OAuth2 인증 실패", e);
             response.sendRedirect(frontendUrl + "/login?error=authentication_failed");
         }
     }
