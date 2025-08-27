@@ -34,18 +34,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-                                         HttpServletResponse response,
-                                         Authentication authentication) throws IOException, ServletException {
+                                        HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
 
         log.info("=== OAuth2 인증 성공 처리 시작 ===");
         log.info("클라이언트 IP: {}", request.getRemoteAddr());
         log.info("User-Agent: {}", request.getHeader("User-Agent"));
 
         // Response가 이미 커밋되었는지 확인
-            if (response.isCommitted()) {
+        if (response.isCommitted()) {
             log.warn("Response가 이미 커밋되어 리다이렉트할 수 없습니다.");
-                return;
-            }
+            return;
+        }
 
         try {
             // 토큰 생성 및 리다이렉트 URL 구성
@@ -91,23 +91,23 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             tempTokenCookie.setPath("/");
             tempTokenCookie.setMaxAge(300); // 5분으로 연장
             tempTokenCookie.setHttpOnly(false); // JavaScript에서 읽을 수 있도록
-            
+
             // 보안 설정
             String serverName = request.getServerName();
             if (!serverName.equals("localhost") && !serverName.equals("127.0.0.1")) {
                 tempTokenCookie.setSecure(true);
                 // SameSite 속성 설정 - 크로스 도메인 쿠키 허용
-                response.setHeader("Set-Cookie", String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly=%s; Secure=%s; SameSite=None", 
-                    tempTokenCookie.getName(), 
-                    tempTokenCookie.getValue(), 
-                    tempTokenCookie.getPath(), 
-                    tempTokenCookie.getMaxAge(), 
-                    false, 
-                    true));
+                response.setHeader("Set-Cookie", String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly=%s; Secure=%s; SameSite=None",
+                        tempTokenCookie.getName(),
+                        tempTokenCookie.getValue(),
+                        tempTokenCookie.getPath(),
+                        tempTokenCookie.getMaxAge(),
+                        false,
+                        true));
             } else {
                 response.addCookie(tempTokenCookie);
             }
-            
+
             log.info("임시 액세스 토큰 쿠키 설정 완료 (SameSite=None, Secure=true)");
 
             /*
@@ -137,11 +137,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        // SameSite=None, Secure=true 설정을 위해 헤더 직접 설정
-        response.setHeader("Set-Cookie", String.format("refreshToken=%s; Path=/; Max-Age=%d; HttpOnly=true; Secure=true; SameSite=None", 
-            refreshToken, 
-            refreshTokenValidityInMs / 1000));
-            
-        log.info("리프레시 토큰 쿠키 설정 완료 (SameSite=None, Secure=true)");
-        }
+        String cookieHeader = String.format(
+                "refreshToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None; Domain=oceanspace.click",
+                refreshToken,
+                refreshTokenValidityInMs / 1000
+        );
+        response.addHeader("Set-Cookie", cookieHeader);
+        log.info("리프레시 토큰 쿠키 설정 완료");
     }
+}
