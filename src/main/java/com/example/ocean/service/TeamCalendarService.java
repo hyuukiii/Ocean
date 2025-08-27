@@ -28,7 +28,7 @@ import java.util.UUID;
 public class TeamCalendarService {
 
     private final TeamEventMapper teamEventMapper;
-    private final EventAttendencesRepository eventAttendencesRepository;
+    private final EventAttendencesMapper eventAttendencesRepository;
     private final FileMapper fileMapper;
     private final MentionNotificationMapper mentionNotificationMapper;
     private final S3Uploader s3Uploader;
