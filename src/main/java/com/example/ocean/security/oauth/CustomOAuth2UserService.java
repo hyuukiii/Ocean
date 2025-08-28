@@ -12,6 +12,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 
 @Slf4j
 @Service
@@ -19,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
     //private final WorkspaceRepository workspaceRepository;
     //private final WorkspaceMemberRepository workspaceMemberRepository;
 
@@ -39,6 +44,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         User.Provider provider = User.Provider.valueOf(registrationId.toUpperCase());
+        // JPA 캐시 정리 추가
+        entityManager.clear();
 
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(
                 registrationId, oAuth2User.getAttributes()
