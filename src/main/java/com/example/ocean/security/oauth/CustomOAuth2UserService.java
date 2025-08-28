@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -28,7 +29,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     //private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)  // 새 트랜잭션 강제
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         log.info("OAuth2 로그인 시도: {}", userRequest.getClientRegistration().getRegistrationId());
 
@@ -64,6 +65,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return UserPrincipal.create(user, oAuth2User.getAttributes());
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)  // 추가
     private User createUser(OAuth2UserInfo oAuth2UserInfo, User.Provider provider) {
         log.info("=== 새 사용자 생성 시작 ===");
         log.info("OAuth2 ID: {}", oAuth2UserInfo.getId());
@@ -79,17 +81,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        userRepository.flush(); // 즉시 DB에 반영
+        entityManager.flush();  // userRepository.flush() 대신
+        entityManager.clear();  // 영속성 컨텍스트 완전 초기화
 
-        log.info("사용자 저장 완료 - userId: {}, userName: {}",
-                savedUser.getUserId(), savedUser.getUserName());
-
-        // 개인 워크스페이스 자동 생성 (선택사항)
-        //createPersonalWorkspace(savedUser, oAuth2UserInfo);
-
-        // 다시 한번 확인
-        boolean exists = userRepository.existsByUserId(savedUser.getUserId());
-        log.info("사용자 존재 확인: {}", exists);
+        // 실제 DB 확인
+        User dbUser = userRepository.findById(savedUser.getUserId()).orElse(null);
+        log.info("DB 저장 확인: {}", dbUser != null);
 
         return savedUser;
     }
