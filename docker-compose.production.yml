@@ -49,9 +49,6 @@ services:
       KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY}
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ocean_db
-      SPRING_DATASOURCE_USERNAME: ocean_user
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ocean_pass}
       JAVA_OPTS: "-Xmx400m -Xms200m"
     volumes:
       - ./uploads:/app/uploads
