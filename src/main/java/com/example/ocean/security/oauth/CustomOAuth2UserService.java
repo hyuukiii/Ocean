@@ -44,8 +44,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 registrationId, oAuth2User.getAttributes()
         );
 
-        // 소셜 ID와 제공자로 사용자 조회
-        User user = userRepository.findByUserIdAndProvider(oAuth2UserInfo.getId(), provider)
+        // 디버깅 로그 추가
+        String socialId = oAuth2UserInfo.getId();
+        log.info("=== OAuth2 사용자 조회 ===");
+        log.info("Social ID: {}, Provider: {}", socialId, provider);
+
+        // 기존 코드 유지
+        User user = userRepository.findByUserIdAndProvider(socialId, provider)
                 .map(existingUser -> updateUser(existingUser, oAuth2UserInfo))
                 .orElseGet(() -> createUser(oAuth2UserInfo, provider));
 

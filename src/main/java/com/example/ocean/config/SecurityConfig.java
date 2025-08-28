@@ -137,7 +137,7 @@ public class SecurityConfig {
                 )
                 .securityContext(securityContext -> securityContext
                         .securityContextRepository(securityContextRepository())
-                        .requireExplicitSave(true)
+                        .requireExplicitSave(false)
                 );
 
         // JWT 필터 추가
