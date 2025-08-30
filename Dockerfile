@@ -27,6 +27,19 @@ RUN apk add --no-cache curl
 # 빌드된 JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+# 업로드 디렉토리 생성
+RUN mkdir -p /app/uploads/profiles && \
+    mkdir -p /app/uploads/workspace && \
+    mkdir -p /app/uploads/recordings
+
+# 사용자 생성 (보안) - 기존 코드
+RUN addgroup -g 1000 ocean && \
+    adduser -D -u 1000 -G ocean ocean && \
+    chown -R ocean:ocean /app
+
+# 업로드 디렉토리 권한 설정
+RUN chmod -R 755 /app/uploads
+
 # 사용자 생성 (보안)
 RUN addgroup -g 1000 ocean && \
     adduser -D -u 1000 -G ocean ocean && \
