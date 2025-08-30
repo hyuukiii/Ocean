@@ -32,14 +32,11 @@ RUN mkdir -p /app/uploads/profiles && \
     mkdir -p /app/uploads/workspace && \
     mkdir -p /app/uploads/recordings
 
-# 사용자 생성 및 모든 권한 설정 (한 번에!)
+# 사용자 생성 및 모든 권한 설정
 RUN addgroup -g 1000 ocean && \
     adduser -D -u 1000 -G ocean ocean && \
     chown -R ocean:ocean /app && \
     chmod -R 755 /app/uploads
-
-# 업로드 디렉토리 권한 설정
-RUN chmod -R 755 /app/uploads
 
 USER ocean
 
