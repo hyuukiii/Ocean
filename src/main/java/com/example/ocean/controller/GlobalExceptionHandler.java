@@ -47,7 +47,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public Object handleGenericException(Exception e, HttpServletRequest request, Model model) {
-        log.error("일반 오류 발생 - URL: {}, 오류: {}", request.getRequestURL(), e.getMessage(), e);
+        log.error("===== 500 ERROR DETAILS =====");
+        log.error("Request URL: {}", request.getRequestURL());
+        log.error("Request URI: {}", request.getRequestURI());
+        log.error("Query String: {}", request.getQueryString());
+        log.error("HTTP Method: {}", request.getMethod());
+        log.error("Remote Address: {}", request.getRemoteAddr());
+        log.error("User Principal: {}", request.getUserPrincipal());
+        log.error("Error Type: {}", e.getClass().getName());
+        log.error("Error Message: {}", e.getMessage());
+        log.error("Stack Trace:", e);
+        log.error("===== END ERROR DETAILS =====");
 
         String accept = request.getHeader("Accept");
 

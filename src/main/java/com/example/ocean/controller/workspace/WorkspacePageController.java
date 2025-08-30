@@ -159,6 +159,7 @@ public class WorkspacePageController {
             @RequestParam(value = "userImg", required = false) MultipartFile userImgFile) {
 
         try {
+            log.info("===== PROFILE SETUP START (set-profile) =====");
             log.info("프로필 설정 시작 - workspaceCd: {}, userId: {}", workspaceCd, userPrincipal.getId());
 
             String userImgPath = null;  // ⭐ 전체 경로 저장
@@ -212,11 +213,18 @@ public class WorkspacePageController {
 
 
 
+            log.info("===== PROFILE SETUP COMPLETE (set-profile) =====");
             log.info("프로필 설정 완료 - workspaceCd: {}, userId: {}", workspaceCd, userPrincipal.getId());
+            log.info("Returning success response for wsmain redirect");
+            log.info("===== END PROFILE SETUP =====");
             return "success";
 
         } catch (Exception e) {
-            log.error("프로필 설정 중 오류 발생", e);
+            log.error("===== PROFILE SETUP ERROR (set-profile) =====");
+            log.error("프로필 설정 중 오류 발생 - workspaceCd: {}, userId: {}", 
+                    workspaceCd, userPrincipal != null ? userPrincipal.getId() : "null");
+            log.error("Error details:", e);
+            log.error("===== END PROFILE SETUP ERROR =====");
             return "error: " + e.getMessage();
         }
     }
@@ -283,7 +291,9 @@ public class WorkspacePageController {
 
 
 
-            log.info("프로필 설정 완료 - workspaceCd: {}, userId: {}", workspaceCd, userPrincipal.getId());
+            log.info("===== PROFILE SETUP COMPLETE (set-profile) =====");
+            log.info("WorkspaceCd: {}, UserId: {}", workspaceCd, userPrincipal.getId());
+            log.info("Returning success response for wsmain redirect");
             return "success";
 
         } catch (Exception e) {
