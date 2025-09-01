@@ -80,7 +80,7 @@ public class LnbController {
                     workspaceCd, userPrincipal.getId());
             log.info("===== WSMAIN ACCESS SUCCESS - Returning view: /workspace/wsmain =====");
             
-            return "/workspace/wsmain";
+            return "workspace/wsmain";
 
         } catch (Exception e) {
             log.error("===== WSMAIN ERROR =====");

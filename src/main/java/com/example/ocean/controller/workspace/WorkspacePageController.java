@@ -40,28 +40,6 @@ public class WorkspacePageController {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @GetMapping("/wsmain")
-    public String showWorkspaceMain(@RequestParam String workspaceCd,
-                                    @AuthenticationPrincipal UserPrincipal userPrincipal,
-                                    Model model) {
-        if (userPrincipal == null) {
-            return "redirect:/login";
-        }
-
-        // 워크스페이스 정보 조회
-        Workspace workspace = workspaceService.findWorkspaceByCd(workspaceCd);
-        if (workspace == null) {
-            return "redirect:/workspace";
-        }
-
-        // 모델에 필요한 데이터 추가
-        model.addAttribute("workspaceCd", workspaceCd);
-        model.addAttribute("userId", userPrincipal.getId());
-        model.addAttribute("userName", userPrincipal.getName());
-
-        return "workspace/wsmain";
-    }
-
     @GetMapping("/workspace")
     public String workspaceListPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
                                     HttpServletRequest request,
