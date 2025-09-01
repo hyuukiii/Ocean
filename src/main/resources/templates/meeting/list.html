@@ -209,10 +209,9 @@ async function rejoinMeeting(roomId, meetingTitle) {
         // 로딩 표시 (옵션)
         showLoadingIndicator();
 
-        // 미디어 서버 URL
         const mediaServerUrl = window.location.hostname === 'localhost'
-            ? 'https://localhost:3001'
-            : 'https://192.168.0.16:3001';
+                ? 'http://localhost:3001'
+                : 'https://ocean-app.click:3001';
 
         // 1. 워크스페이스의 실제 프로필 정보 가져오기 (기존 API 사용)
         const profileResponse = await apiRequest(`/api/workspaces/${workspaceId}/profile`);

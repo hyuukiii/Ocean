@@ -316,6 +316,10 @@
     const workspaceCd = /*[[${workspaceCd}]]*/ '';
     const currentUserId = /*[[${currentUserId}]]*/ '';
     const mediaServerUrl = /*[[${mediaServerUrl}]]*/ '';
+
+    const actualMediaServerUrl = mediaServerUrl.includes('media-server')
+    ? `${window.location.protocol}//${window.location.hostname}:3001`
+    : mediaServerUrl;
 </script>
 
 <script src="/js/meeting-setup.js"></script>

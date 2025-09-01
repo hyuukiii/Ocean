@@ -451,7 +451,7 @@ class MeetingSetup {
       this.cleanup();
 
       // 회의실로 이동
-      window.location.href = `${mediaServerUrl}/ocean-video-chat-complete.html?${new URLSearchParams({
+      window.location.href = `${actualMediaServerUrl}/ocean-video-chat-complete.html?${new URLSearchParams({
         roomId: result.roomId,
         workspaceId: workspaceCd,
         peerId: currentUserId,
