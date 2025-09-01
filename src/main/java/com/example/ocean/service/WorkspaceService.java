@@ -237,6 +237,7 @@ public class WorkspaceService {
     }
 
     // 사용자 멀티 프로필
+    @Transactional
     public void updateWorkspaceProfile(
             String workspaceCd,
             String userId,
@@ -281,6 +282,7 @@ public class WorkspaceService {
      * 워크스페이스에 새 사용자 프로필 추가
      * 이미지 경로를 포함한 모든 프로필 정보를 삽입
      */
+    @Transactional
     public void insertUserProfileToWorkspace(
             String workspaceCd,
             String userId,

@@ -32,7 +32,13 @@ public class LnbController {
     public String WsMain(@RequestParam(required = false) String workspaceCd,
                          @AuthenticationPrincipal UserPrincipal userPrincipal,
                          Model model) {
-
+        
+        log.info("===== WSMAIN ACCESS START =====");
+        log.info("WorkspaceCd: {}", workspaceCd);
+        log.info("UserPrincipal: {}", userPrincipal);
+        log.info("UserPrincipal ID: {}", userPrincipal != null ? userPrincipal.getId() : "null");
+        log.info("UserPrincipal Name: {}", userPrincipal != null ? userPrincipal.getName() : "null");
+        
         // 인증 확인
         if (userPrincipal == null) {
             log.error("인증되지 않은 사용자 - 로그인 페이지로 리다이렉트");
@@ -72,11 +78,16 @@ public class LnbController {
 
             log.info("워크스페이스 메인 페이지 접근: workspaceCd={}, userId={}",
                     workspaceCd, userPrincipal.getId());
-
+            log.info("===== WSMAIN ACCESS SUCCESS - Returning view: /workspace/wsmain =====");
+            
             return "/workspace/wsmain";
 
         } catch (Exception e) {
-            log.error("워크스페이스 메인 페이지 로드 중 오류", e);
+            log.error("===== WSMAIN ERROR =====");
+            log.error("워크스페이스 메인 페이지 로드 중 오류 - workspaceCd: {}, userId: {}", 
+                    workspaceCd, userPrincipal != null ? userPrincipal.getId() : "null");
+            log.error("Error details:", e);
+            log.error("===== END WSMAIN ERROR =====");
             return "redirect:/workspace";
         }
     }

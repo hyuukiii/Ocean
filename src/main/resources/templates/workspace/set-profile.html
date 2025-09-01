@@ -217,18 +217,37 @@
           }
         }
 
-        // ⭐ 단일 요청으로 모든 데이터 전송
+        // JWT 토큰 가져오기
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          console.error('No access token found');
+          alert('로그인이 필요합니다.');
+          window.location.href = '/login';
+          return;
+        }
+
+        // ⭐ JWT 토큰을 헤더에 포함하여 전송
         const response = await fetch(this.action, {
           method: 'POST',
-          body: formData
+          headers: {
+            'Authorization': 'Bearer ' + accessToken
+          },
+          body: formData,
+          credentials: 'include' // 쿠키 포함
         });
 
         if (response.ok) {
           const result = await response.text();
           console.log('서버 응답:', result);
+          console.log('리다이렉트 URL:', `/wsmain?workspaceCd=${workspaceCd}`);
 
           if (result === 'success') {
-            window.location.href = `/wsmain?workspaceCd=${workspaceCd}`;
+            // ⭐ 트랜잭션 완료를 위한 지연 시간 증가 (500ms)
+            console.log('프로필 설정 성공, 잠시 후 리다이렉트...');
+            setTimeout(() => {
+              console.log('리다이렉트 실행중...');
+              window.location.href = `/wsmain?workspaceCd=${workspaceCd}`;
+            }, 500);
           } else {
             throw new Error('프로필 설정 실패: ' + result);
           }
