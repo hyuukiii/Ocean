@@ -1,6 +1,6 @@
         // 동적으로 SpringBoot 서버 URL 설정 하기
         const SPRING_BOOT_URL = window.location.hostname === "localhost"
-            ? "http://localhost:8080"
+            ? "https://oceanspace.click"
             : `https://${window.location.hostname}`;
 
         // ===== UI 상태 관리 =====
@@ -2131,7 +2131,7 @@
 
                 // ⭐ 상대 경로를 절대 경로로 변환 (이 부분이 추가됨!)
                 if (!imgSrc.startsWith('http')) {
-                    imgSrc = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (imgSrc.startsWith('/') ? imgSrc : '/' + imgSrc);
+                    imgSrc = (window.location.hostname === 'localhost' ? 'https://oceanspace.click' : 'https://' + window.location.hostname) + (imgSrc.startsWith('/') ? imgSrc : '/' + imgSrc);
                     console.log('프로필 이미지를 절대 경로로 변환:', imgSrc);
                 }
 
