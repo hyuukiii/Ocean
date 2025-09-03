@@ -1,7 +1,7 @@
         // 동적으로 SpringBoot 서버 URL 설정 하기
-        const SPRING_BOOT_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:8080'
-            : `http://${window.location.hostname}:8080`;
+        const SPRING_BOOT_URL = window.location.hostname === "localhost"
+            ? "http://localhost:8080"
+            : `https://${window.location.hostname}`;
 
         // ===== UI 상태 관리 =====
         let isVideoOn = true;
@@ -134,7 +134,7 @@
 
             // 상대 경로를 절대 경로로 변환
             if (!userProfileImg.startsWith('http')) {
-                userProfileImg = 'http://localhost:8080' + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
+                userProfileImg = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
             }
 
             // 포트 수정 (필요시)
@@ -199,7 +199,7 @@
             // 프로필 이미지가 http로 시작하지 않으면 절대 경로로 변환
             //if (!userProfileImg.startsWith('http')) {
                 // Spring Boot 서버의 절대 URL로 변환
-                //userProfileImg = 'http://localhost:8080' + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
+                //userProfileImg = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
                 // console.log('프로필 이미지를 절대 경로로 변환:', userProfileImg);
             //}
 
@@ -2131,7 +2131,7 @@
 
                 // ⭐ 상대 경로를 절대 경로로 변환 (이 부분이 추가됨!)
                 if (!imgSrc.startsWith('http')) {
-                    imgSrc = 'http://localhost:8080' + (imgSrc.startsWith('/') ? imgSrc : '/' + imgSrc);
+                    imgSrc = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (imgSrc.startsWith('/') ? imgSrc : '/' + imgSrc);
                     console.log('프로필 이미지를 절대 경로로 변환:', imgSrc);
                 }
 
