@@ -134,7 +134,7 @@
 
             // 상대 경로를 절대 경로로 변환
             if (!userProfileImg.startsWith('http')) {
-                userProfileImg = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
+                userProfileImg = (window.location.hostname === 'localhost' ? 'https://oceanspace.click' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
             }
 
             // 포트 수정 (필요시)
@@ -240,14 +240,14 @@
         window.enterPressedDuringComposition = false;
 
         // 토큰 확인 및 사용자 정보 재설정
-//         (function checkAuth() {
-//             const token = localStorage.getItem('accessToken');
-//             if (!token) {
-//                 console.error('인증 토큰이 없습니다. 로그인이 필요합니다.');
-//                 // 로그인 페이지로 리다이렉트할 수도 있음
-//                 // window.location.href = '/login';
-//             }
-//         })();
+// //         (function checkAuth() {
+// //             const token = localStorage.getItem('accessToken');
+// //             if (!token) {
+// //                 console.error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+// //                 // 로그인 페이지로 리다이렉트할 수도 있음
+// //                 // window.location.href = '/login';
+// //             }
+// //         })();
 
 
         // 재접속 처리를 위해 joinRoom 함수 호출 부분 수정
