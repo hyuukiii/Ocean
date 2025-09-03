@@ -94,7 +94,7 @@
         };
 
         // 토큰 파싱은 나중에 (필요하면)
-        const tokenInfo = getUserInfoFromToken() || {};
+        const tokenInfo = (typeof getUserInfoFromToken !== "undefined" ? getUserInfoFromToken() : {}) || {};
         if (!userInfo.userName) userInfo.userName = tokenInfo.userName;
         if (!userInfo.userId) userInfo.userId = tokenInfo.userId;
         if (!userInfo.userProfileImg) userInfo.userProfileImg = tokenInfo.userProfileImg;
@@ -240,14 +240,14 @@
         window.enterPressedDuringComposition = false;
 
         // 토큰 확인 및 사용자 정보 재설정
-        (function checkAuth() {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                console.error('인증 토큰이 없습니다. 로그인이 필요합니다.');
-                // 로그인 페이지로 리다이렉트할 수도 있음
-                // window.location.href = '/login';
-            }
-        })();
+//         (function checkAuth() {
+//             const token = localStorage.getItem('accessToken');
+//             if (!token) {
+//                 console.error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+//                 // 로그인 페이지로 리다이렉트할 수도 있음
+//                 // window.location.href = '/login';
+//             }
+//         })();
 
 
         // 재접속 처리를 위해 joinRoom 함수 호출 부분 수정
@@ -748,7 +748,7 @@
                     actualUserId = localStorage.getItem('userId');
                 }
                 if (!actualUserId) {
-                    const tokenUserInfo = getUserInfoFromToken();
+                    const tokenUserInfo = (typeof getUserInfoFromToken !== "undefined" ? getUserInfoFromToken() : {});
                     actualUserId = tokenUserInfo?.userId;
                     if (actualUserId) {
                         localStorage.setItem('userId', actualUserId);
@@ -2301,7 +2301,7 @@
                     actualUserId = localStorage.getItem('userId');
                 }
                 if (!actualUserId) {
-                    const tokenUserInfo = getUserInfoFromToken();
+                    const tokenUserInfo = (typeof getUserInfoFromToken !== "undefined" ? getUserInfoFromToken() : {});
                     actualUserId = tokenUserInfo?.userId;
                     if (actualUserId) {
                         localStorage.setItem('userId', actualUserId);
