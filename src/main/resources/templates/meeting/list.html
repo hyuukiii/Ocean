@@ -211,7 +211,7 @@ async function rejoinMeeting(roomId, meetingTitle) {
 
         const mediaServerUrl = window.location.hostname === 'localhost'
                 ? 'http://localhost:3001'
-                : 'https://ocean-app.click:3001';
+                : 'https://oceanspace.click:3001';
 
         // 1. 워크스페이스의 실제 프로필 정보 가져오기 (기존 API 사용)
         const profileResponse = await apiRequest(`/api/workspaces/${workspaceId}/profile`);
@@ -272,10 +272,10 @@ async function rejoinMeeting(roomId, meetingTitle) {
             hostId: hostId || ''
         });
 
-        console.log('=== 최종 URL 파라미터 ===');
-        console.log('displayName:', params.get('displayName'));
-        console.log('userProfileImg:', params.get('userProfileImg'));
-        console.log('전체 URL:', `${mediaServerUrl}/ocean-video-chat-complete.html?${params.toString()}`);
+        //console.log('=== 최종 URL 파라미터 ===');
+        //console.log('displayName:', params.get('displayName'));
+        //console.log('userProfileImg:', params.get('userProfileImg'));
+        //console.log('전체 URL:', `${mediaServerUrl}/ocean-video-chat-complete.html?${params.toString()}`);
 
         // 4. 회의 페이지로 이동
         window.location.href = `${mediaServerUrl}/ocean-video-chat-complete.html?${params.toString()}`;

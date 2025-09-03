@@ -67,7 +67,7 @@ services:
       context: ./ocean-media-server
       dockerfile: Dockerfile
     volumes:
-      - ./ocean-media-server/certs:/app/certs
+        - ./ocean-media-server/certs:/app/certs
     container_name: ocean-media
     restart: unless-stopped
     ports:
