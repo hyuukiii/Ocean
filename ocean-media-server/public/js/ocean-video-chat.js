@@ -285,7 +285,7 @@
             return new Promise((resolve, reject) => {
                 const serverUrl = window.location.hostname === 'localhost'
                     ? 'https://localhost:3001'
-                    : 'https://192.168.100.16:3001';
+                    : 'https://' + window.location.hostname + ':3001';
 
                 socket = io(serverUrl, {
                     transports: ['websocket'],
