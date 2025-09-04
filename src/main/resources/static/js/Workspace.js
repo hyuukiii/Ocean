@@ -169,7 +169,7 @@ function extractWorkspaceCdFromUrl() {
                 }
             });
 
-    function updateAuthUI() {
+    async function updateAuthUI() {
         const accessToken = localStorage.getItem('accessToken');
         const loginBtn = document.querySelector('.login-btn');
         const userInfo = document.querySelector('.user-info');
@@ -178,17 +178,8 @@ function extractWorkspaceCdFromUrl() {
             loginBtn.style.display = 'none';
             userInfo.style.display = 'flex';
 
-            // OAuth2 로그인 후 임시 사용자 정보 표시
-            const tempUserName = localStorage.getItem('userName');
-            const tempUserImg = localStorage.getItem('userImg');
-
-            if (tempUserName || tempUserImg) {
-                document.querySelector('.user-avatar').src = tempUserImg || '/images/default-avatar.png';
-                document.querySelector('.user-name').textContent = tempUserName || '사용자';
-            } else {
-                // API 호출
-                fetchUserInfo();
-            }
+            // 항상 최신 정보를 API에서 가져오기
+            await fetchUserInfo();
         } else {
             loginBtn.style.display = 'block';
             userInfo.style.display = 'none';
