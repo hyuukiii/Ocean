@@ -160,7 +160,9 @@ public class MeetingSetupController {
                     .success(true)
                     .roomId(roomId)
                     .joinUrl(joinUrl)
-                    .displayName(user.getName())
+                    .displayName(member != null && member.getUserNickname() != null
+                            ? member.getUserNickname()
+                            : user.getName())
                     .userProfileImg(member != null ? member.getUserImg() : null)  // 프로필 이미지 추가
                     .build();
 
