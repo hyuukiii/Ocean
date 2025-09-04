@@ -455,7 +455,7 @@ class MeetingSetup {
         roomId: result.roomId,
         workspaceId: workspaceCd,
         peerId: currentUserId,
-        displayName: result.displayName || '사용자',
+        displayName: result.displayName || localStorage.getItem('userName') || '사용자',
         meetingType: 'sketch',
         autoRecord: requestData.autoRecord,
         muteOnJoin: requestData.muteOnJoin,
