@@ -43,8 +43,8 @@ let router;
 
 async function createWorker() {
   worker = await mediasoup.createWorker({
-    rtcMinPort: 10000,
-    rtcMaxPort: 10100,
+    rtcMinPort: 40000,
+    rtcMaxPort: 40100,
   });
 
   console.log('mediasoup Worker created');
