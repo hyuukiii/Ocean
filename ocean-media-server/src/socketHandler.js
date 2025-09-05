@@ -1066,7 +1066,7 @@ async function createWebRtcTransport(router) {
     listenIps: [
       {
         ip: '0.0.0.0',
-        announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || '127.0.0.1'  // 로컬 테스트용
+        announcedIp: '13.209.3.209'
       }
     ],
     enableUdp: true,

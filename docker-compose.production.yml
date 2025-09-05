@@ -72,6 +72,7 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
+      - "40000-49999:40000-49999/udp"
     environment:
       NODE_ENV: production
     networks:
