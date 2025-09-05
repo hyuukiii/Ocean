@@ -199,7 +199,7 @@
             // 프로필 이미지가 http로 시작하지 않으면 절대 경로로 변환
             //if (!userProfileImg.startsWith('http')) {
                 // Spring Boot 서버의 절대 URL로 변환
-                //userProfileImg = (window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
+                //userProfileImg = (window.location.hostname === 'localhost' ? 'https://oceanspace.click' : 'https://' + window.location.hostname) + (userProfileImg.startsWith('/') ? userProfileImg : '/' + userProfileImg);
                 // console.log('프로필 이미지를 절대 경로로 변환:', userProfileImg);
             //}
 
