@@ -73,6 +73,7 @@ services:
     ports:
       - "3001:3001"
       - "40000-49999:40000-49999/udp"
+      - "40000-49999:40000-49999/tcp"
     environment:
       NODE_ENV: production
     networks:
