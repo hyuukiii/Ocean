@@ -385,77 +385,100 @@
             height: 'auto',
             initialDate: new Date(),
 
-            dateClick: async function (info) {
-            closeDetailModal();
-            closeUpdateModal();
+    dateClick: async function (info) {
 
-            // 1. 모달 표시
-            document.getElementById('createEventModal').style.display = 'flex';
+    closeDetailModal();
+    closeUpdateModal();
 
-            // 2. 폼 초기화
-            document.getElementById('eventForm').reset();
-            document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
-            document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
-            selectedFiles = [];
-            document.getElementById('insertedFiles').innerHTML = '';
-            document.getElementById('workspaceMembers').innerHTML = '';
+    // 1. 모달 표시
+    document.getElementById('createEventModal').style.display = 'flex';
 
-            // 3. 지도 초기화는 기존 initMap 함수 사용
-            setTimeout(function() {
-                // initMap이 정의되어 있고 kakao가 로드되었는지 확인
-                if (typeof initMap === 'function' && typeof kakao !== 'undefined' && kakao.maps) {
-                    initMap(
-                        'map', 'location', 'searchBtn', 'placesList',
-                        { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
-                    );
+    // 2. 폼 초기화
+    document.getElementById('eventForm').reset();
+    document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
+    document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
+    selectedFiles = [];
+    document.getElementById('insertedFiles').innerHTML = '';
+    document.getElementById('workspaceMembers').innerHTML = '';
 
-                // 지도 레이아웃 재조정
-                setTimeout(function() {
-                    if (map && typeof map.relayout === 'function') {
-                        map.relayout();
-                    }
-                }, 100);
-            } else {
-                console.error('카카오 맵 API가 로드되지 않았거나 initMap 함수가 없습니다');
-            }
-        }, 100);
+    // 3. 카카오 맵 초기화 - 더 긴 대기 시간
+    setTimeout(function() {
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            console.log('카카오 맵 사용 가능');
 
-        // 4. 워크스페이스 멤버 로드 (기존 코드 유지)
-        fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
-            .then(res => {
-                if (!res.ok) throw new Error("멤버정보 조회 실패");
-                return res.json();
-            })
-            .then(data => {
-                const container = document.getElementById('workspaceMembers');
-                if (container) {
-                    data.forEach(member => {
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.name = 'attendenceIds';
-                        checkbox.id = 'userId' + member.userId;
-                        checkbox.value = member.userId;
+            // initMap 직접 호출 대신 인라인으로 실행
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                try {
+                    const mapOption = {
+                        center: new kakao.maps.LatLng(37.566826, 126.9786567),
+                        level: 3
+                    };
 
-                        const label = document.createElement('label');
-                        label.htmlFor = checkbox.id;
-                        label.textContent = member.userNickname;
-
-                        if (member.userId === currentUserId) {
-                            checkbox.checked = true;
-                            checkbox.style.display = 'none';
-                            label.style.display = 'none';
-                        }
-
-                        container.appendChild(checkbox);
-                        container.appendChild(label);
-                        container.appendChild(document.createElement('br'));
+                    window.map = new kakao.maps.Map(mapContainer, mapOption);
+                    window.marker = new kakao.maps.Marker({
+                        position: window.map.getCenter()
                     });
+                    window.marker.setMap(window.map);
+
+                    // 지도 클릭 이벤트
+                    kakao.maps.event.addListener(window.map, 'click', function(mouseEvent) {
+                        window.marker.setPosition(mouseEvent.latLng);
+                        document.getElementById('placeLat').value = mouseEvent.latLng.getLat();
+                        document.getElementById('placeLng').value = mouseEvent.latLng.getLng();
+                    });
+
+                    console.log('지도 초기화 성공!');
+
+                    // 지도 리사이즈
+                    setTimeout(function() {
+                        window.map.relayout();
+                    }, 300);
+
+                } catch(e) {
+                    console.error('지도 초기화 오류:', e);
                 }
-            })
-            .catch(error => {
-                console.error('멤버 로드 실패:', error);
-            });
-    },
+            }
+        } else {
+            console.error('카카오 맵 API를 사용할 수 없습니다');
+            // 지도 컨테이너 숨기기
+            const mapEl = document.getElementById('map');
+            if (mapEl) {
+                mapEl.style.display = 'none';
+            }
+        }
+    }, 500);  // 500ms 대기
+
+    // 4. 워크스페이스 멤버 로드
+    fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('workspaceMembers');
+            if (container) {
+                data.forEach(member => {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'attendenceIds';
+                    checkbox.id = 'userId' + member.userId;
+                    checkbox.value = member.userId;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.textContent = member.userNickname;
+
+                    if (member.userId === currentUserId) {
+                        checkbox.checked = true;
+                        checkbox.style.display = 'none';
+                        label.style.display = 'none';
+                    }
+
+                    container.appendChild(checkbox);
+                    container.appendChild(label);
+                    container.appendChild(document.createElement('br'));
+                });
+            }
+        });
+},
             // ⭐ events 함수 수정
             events: function(fetchInfo, successCallback, failureCallback) {
                 // 동적 workspaceCd 사용
@@ -1358,19 +1381,15 @@ function saveEvent() {
     <script>
         // 카카오 맵 로드 확인
         window.addEventListener('load', function() {
-            if (typeof kakao !== 'undefined' && kakao.maps) {
-                console.log('카카오 맵 API 로드 완료!');
-            } else {
-                console.error('카카오 맵 API 로드 실패');
-                // 재시도
-                const script = document.createElement('script');
-                script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services';
-                script.onload = function() {
-                    console.log('카카오 맵 API 재로드 성공!');
-                };
-                document.body.appendChild(script);
-            }
+            setTimeout(function() {
+                if (typeof kakao !== 'undefined' && kakao.maps) {
+                    console.log('카카오 맵 API 로드 완료!');
+                } else {
+                    console.error('카카오 맵 API 로드 실패 - 페이지 새로고침이 필요할 수 있습니다.');
+                    // 재시도 제거 - 중복 로드 방지
+                }
+            }, 1000);  // 1초 대기 후 확인
         });
     </script>
-</body>
+  </body>
 </html>
