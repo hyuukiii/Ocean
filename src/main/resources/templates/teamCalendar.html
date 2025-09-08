@@ -386,21 +386,55 @@
             initialDate: new Date(),
 
             dateClick: async function (info) {
-                closeDetailModal();
-                closeUpdateModal();
+            closeDetailModal();
+            closeUpdateModal();
 
-                document.getElementById('eventForm').reset();
-                document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
-                document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
-                selectedFiles = [];
-                document.getElementById('insertedFiles').innerHTML = '';
-                document.getElementById('workspaceMembers').innerHTML = '';
+            // 1. 먼저 모달을 표시해야 합니다
+            document.getElementById('createEventModal').style.display = 'flex';  // ⭐ 이 줄 추가
 
+            // 2. 그 다음에 폼 요소들을 초기화
+            document.getElementById('eventForm').reset();
+            document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
+            document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
+            selectedFiles = [];
+            document.getElementById('insertedFiles').innerHTML = '';
+            document.getElementById('workspaceMembers').innerHTML = '';
+
+            // 3. initMap 함수가 정의되어 있는지 확인 필요
+            // 만약 initMap이 정의되지 않았다면 이 부분도 주석처리하거나 함수를 정의해야 합니다
+            if (typeof initMap === 'function') {
                 initMap(
                     'map', 'location', 'searchBtn', 'placesList',
                     { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
                 );
+            }
 
+            // 4. 워크스페이스 멤버 로드 (필요한 경우)
+            try {
+                const response = await fetch(`/api/calendar/team/users?workspaceCd=${workspaceCd}`);
+                if (response.ok) {
+                    const users = await response.json();
+                    const membersContainer = document.getElementById('workspaceMembers');
+                    membersContainer.innerHTML = '';
+
+                    users.forEach(user => {
+                        const checkboxDiv = document.createElement('div');
+                        checkboxDiv.className = 'member-checkbox';
+                        checkboxDiv.innerHTML = `
+                            <input type="checkbox"
+                                   id="member-${user.userId}"
+                                   name="attendenceIds"
+                                   value="${user.userId}"
+                                   ${user.userId === currentUserId ? 'checked disabled' : ''}>
+                            <label for="member-${user.userId}">${user.userNickName || user.userId}</label>
+                        `;
+                        membersContainer.appendChild(checkboxDiv);
+                    });
+                }
+            } catch (error) {
+                console.error('워크스페이스 멤버 로드 실패:', error);
+            }
+        }
                 document.getElementById('createEventModal').style.display = 'flex';
 
                 setTimeout(function() {

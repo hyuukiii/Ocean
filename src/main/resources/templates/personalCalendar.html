@@ -388,17 +388,25 @@
                 closeDetailModal();
                 closeUpdateModal();
 
-                document.getElementById('eventForm').reset();
-                document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
-                document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
-                selectedFiles = [];
-                document.getElementById('insertedFiles').innerHTML = '';
-                document.getElementById('workspaceMembers').innerHTML = '';
+            // 1. 먼저 모달을 표시해야 합니다
+            document.getElementById('createEventModal').style.display = 'flex';  // ⭐ 이 줄 추가
 
-                initMap(
-                    'map', 'location', 'searchBtn', 'placesList',
-                    { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
-                );
+            // 2. 그 다음에 폼 요소들을 초기화
+            document.getElementById('eventForm').reset();
+            document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
+            document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
+            selectedFiles = [];
+            document.getElementById('insertedFiles').innerHTML = '';
+            document.getElementById('workspaceMembers').innerHTML = '';
+
+            // 3. initMap 함수가 정의되어 있는지 확인 필요
+            // 만약 initMap이 정의되지 않았다면 이 부분도 주석처리하거나 함수를 정의
+            if (typeof initMap === 'function') {
+            initMap(
+            'map', 'location', 'searchBtn', 'placesList',
+            { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
+           );
+        }
 
                 document.getElementById('createEventModal').style.display = 'flex';
 
