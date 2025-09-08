@@ -16,335 +16,335 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services&autoload=false"></script>
 </head>
 
-<body>
-<div class="app-container">
-    <nav>
-        <div th:replace="~{fragments/lnb :: lnbFragment}"></div>
-    </nav>
+  <body>
+    <div class="app-container">
+        <nav>
+            <div th:replace="~{fragments/lnb :: lnbFragment}"></div>
+        </nav>
 
-    <div class="main-content">
-        <div class="calendar-header">
-            <div class="nav-arrows">
-                <button id="prevMonthBtn" class="icon-arrow-left"></button>
-                <span id="currentMonthText" class="current-month">6 JUN 2025</span>
-                <button id="nextMonthBtn" class="icon-arrow-right"></button>
+        <div class="main-content">
+            <div class="calendar-header">
+                <div class="nav-arrows">
+                    <button id="prevMonthBtn" class="icon-arrow-left"></button>
+                    <span id="currentMonthText" class="current-month">6 JUN 2025</span>
+                    <button id="nextMonthBtn" class="icon-arrow-right"></button>
+                </div>
             </div>
+            <div id='calendar'></div>
         </div>
-        <div id='calendar'></div>
+
+        <div id="rnbContainer" th:data-workspace-cd="${workspaceCd}"></div>
+        <div id="profileModalContainer"></div>
+        <div id="inviteModalContainer"></div>
+
     </div>
 
-    <div id="rnbContainer" th:data-workspace-cd="${workspaceCd}"></div>
-    <div id="profileModalContainer"></div>
-    <div id="inviteModalContainer"></div>
-
-</div>
-
-<div id="createEventModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>팀 일정 추가</h3>
-            <button type="button" class="modal-close-button" onclick="closeCreateEventModal()">&times;</button>
-        </div>
-        <form id="eventForm" onsubmit="event.preventDefault(); saveEvent();">
-            <div class="form-group flex-container">
-                <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required
-                       oninvalid="this.setCustomValidity('제목은 필수 입력 사항입니다.')"
-                       oninput="this.setCustomValidity('')">
-                <input type="color" id="color" name="color" value="#0066CC">
+    <div id="createEventModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>팀 일정 추가</h3>
+                <button type="button" class="modal-close-button" onclick="closeCreateEventModal()">&times;</button>
             </div>
-
-            <div class="form-group">
-                <label class="icon-clock">일시</label>
-                <div class="datetime-group">
-                    <input type="datetime-local" id="startDatetime" name="startDatetime" required>
-                    <span>&mdash;</span>
-                    <input type="datetime-local" id="endDatetime" name="endDatetime" required>
-                </div>
-                <div class="checkbox-container">
-                    <label for="allDay">종일</label>
-                    <input type="checkbox" id="allDay" name="allDay">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="icon-user-detail">참가자 선택</label>
-                <div class="checkbox-container" id="workspaceMembers"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="description" class="icon-description">설명 추가</label>
-                <textarea id="description" name="description"  placeholder="자세한 설명을 입력하세요."></textarea>
-            </div>
-
-
-            <div class="form-group">
-                <div class="file-input-container">
-                    <span class="icon icon-attach"></span>
-                    <span>첨부파일 추가</span>
-                    <input type="file" id="fileUpload" name="files" multiple>
-                </div>
-                <ul id="insertedFiles" style="list-style: none; padding: 0; margin-top: 10px;"></ul>
-            </div>
-
-            <div class="form-group">
-                <label class="icon-bell">알림 시간</label>
-                <select id="notification" name="notification" required>
-                    <option value="0">알림 없음</option>
-                    <option value="1440">전날 오전 9시</option>
-                    <option value="540">당일 오전 9시</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="location" class="icon-location">위치 추가</label>
-                <div class="search-wrapper">
-                    <input type="text" id="location" name="location" placeholder="장소명으로 검색하세요">
-                    <button type="button" id="searchBtn">검색</button>
-                </div>
-                <div id="map" style="width:100%;height:200px;margin-top:10px;"></div>
-                <ul id="placesList"></ul>
-
-                <input type="hidden" id="placeName" name="placeName">
-                <input type="hidden" id="placeAddress" name="placeAddress">
-                <input type="hidden" id="placeId" name="placeId">
-                <input type="hidden" id="placeLat" name="placeLat">
-                <input type="hidden" id="placeLng" name="placeLng">
-            </div>
-
-
-            <div class="form-group">
-                <label for="priority" class="icon-priority">중요도</label>
-                <select id="priority" name="priority" required>
-                    <option value="LOW">낮음</option>
-                    <option value="NORMAL" selected>보통</option>
-                    <option value="HIGH">높음</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="isShared">공유 여부</label>
-                <select id="isShared" name="isShared">
-                    <option value="1" selected>공유</option>
-                    <option value="0">비공유</option>
-                </select>
-            </div>
-
-
-            <div class="submit-button-wrapper">
-                <button type="submit">등록하기</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="eventDetailModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="header-actions">
-            <button type="button" class="edit-button" title="수정" style="display:none;" onclick="openUpdateModal()">
-                <span class="icon icon-edit"></span>
-            </button>
-            <button type="button" class="delete-button" title="삭제" style="display:none;" onclick="deleteEvent()">
-                <span class="icon icon-delete"></span>
-            </button>
-            <button type="button" class="modal-close-button" onclick="closeDetailModal()">
-                <span class="icon icon-close"></span>
-            </button>
-        </div>
-
-        <div class="title-section">
-            <div class="color-dot" th:style="'background-color:' + ${event?.color}"></div>
-            <div class="text-content">
-                <div class="main-title" id="detailTitle" th:text="${event?.title}">제목 없음</div>
-                <div class="sub-text">
-                        <span
-                                th:if="${event?.startDatetime != null and event?.endDatetime != null and #temporals.format(event.startDatetime, 'yyyyMMdd') == #temporals.format(event.endDatetime, 'yyyyMMdd') and #temporals.format(event.startDatetime, 'HHmm') == '0000' and #temporals.format(event.endDatetime, 'HHmm') == '2359'}">
-                            <span th:text="${#temporals.format(event.startDatetime, 'M월 d일 (E)')} + ' 종일'"></span>
-                        </span>
-                    <span
-                            th:unless="${event?.startDatetime == null or event?.endDatetime == null or (#temporals.format(event.startDatetime, 'yyyyMMdd') == #temporals.format(event.endDatetime, 'yyyyMMdd') and #temporals.format(event.startDatetime, 'HHmm') == '0000' and #temporals.format(event.endDatetime, 'HHmm') == '2359')}">
-                            <span
-                                    th:text="${event?.startDatetime != null ? #temporals.format(event.startDatetime, 'M월 d일 (E) a h:mm') : '시작일 없음'}"></span>
-                            <span> - </span>
-                            <span
-                                    th:text="${event?.endDatetime != null ? #temporals.format(event.endDatetime, 'M월 d일 (E) a h:mm') : '종료일 없음'}"></span>
-                        </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-user-detail"></span>
-            <div class="value-wrapper"> <label>작성자</label>
-                <div class="value" id="detailAuthor"></div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-user-detail"></span>
-            <div class="value-wrapper"> <label>참가자</label>
-                <div class="value" id="detailWorkspaceMembers"></div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-location-detail"></span>
-            <div class="value-wrapper"> <label>위치</label>
-                <div class="value" id="detailLocation"></div>
-            </div>
-        </div>
-
-        <div id="detail-map" style="width:100%; height:200px; margin-top:10px; display:none;"></div>
-
-        <div class="info-item description">
-            <div class="value-wrapper">
-                <span class="icon icon-description-detail"><label>설명</label></span>
-                <div class="value" id="detailDescriptionDisplay"></div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-bell-detail"></span>
-            <div class="value-wrapper"> <label>알림</label>
-                <div class="value" id="detailNotification"></div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <div class="value-wrapper">
-                <span class="icon icon-attachment-detail"><label>첨부파일</label></span>
-                <ul id="detailFiles" class="attachments-list"></ul>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-priority"></span>
-            <div class="value-wrapper"> <label>중요도</label>
-                <div class="value" id="detailPriority"></div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <span class="icon icon-user-detail"></span>
-            <div class="value-wrapper"> <label>공유 여부</label>
-                <div class="value" id="detailShared"></div>
-            </div>
-        </div>
-
-
-        <div class="modal-footer">
-            <button type="button" onclick="closeDetailModal()">닫기</button>
-        </div>
-    </div>
-</div>
-
-<div id="updateEventModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>일정 수정</h3>
-            <button type="button" class="modal-close-button" onclick="closeUpdateModal()">
-                <span class="icon icon-close"></span>
-            </button>
-        </div>
-        <form id="updateEventForm">
-            <input type="hidden" id="update-eventCd" name="eventCd" />
-
-            <div class="form-group">
-                <label for="update-title" class="icon-description">제목</label>
-                <div class="flex-container">
-                    <input type="text" id="update-title" name="title" placeholder="제목" required
+            <form id="eventForm" onsubmit="event.preventDefault(); saveEvent();">
+                <div class="form-group flex-container">
+                    <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required
                            oninvalid="this.setCustomValidity('제목은 필수 입력 사항입니다.')"
                            oninput="this.setCustomValidity('')">
-                    <input type="color" id="update-color" name="color" value="#0066CC">
+                    <input type="color" id="color" name="color" value="#0066CC">
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-clock">일시</label>
+                    <div class="datetime-group">
+                        <input type="datetime-local" id="startDatetime" name="startDatetime" required>
+                        <span>&mdash;</span>
+                        <input type="datetime-local" id="endDatetime" name="endDatetime" required>
+                    </div>
+                    <div class="checkbox-container">
+                        <label for="allDay">종일</label>
+                        <input type="checkbox" id="allDay" name="allDay">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-user-detail">참가자 선택</label>
+                    <div class="checkbox-container" id="workspaceMembers"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="icon-description">설명 추가</label>
+                    <textarea id="description" name="description"  placeholder="자세한 설명을 입력하세요."></textarea>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="file-input-container">
+                        <span class="icon icon-attach"></span>
+                        <span>첨부파일 추가</span>
+                        <input type="file" id="fileUpload" name="files" multiple>
+                    </div>
+                    <ul id="insertedFiles" style="list-style: none; padding: 0; margin-top: 10px;"></ul>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-bell">알림 시간</label>
+                    <select id="notification" name="notification" required>
+                        <option value="0">알림 없음</option>
+                        <option value="1440">전날 오전 9시</option>
+                        <option value="540">당일 오전 9시</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location" class="icon-location">위치 추가</label>
+                    <div class="search-wrapper">
+                        <input type="text" id="location" name="location" placeholder="장소명으로 검색하세요">
+                        <button type="button" id="searchBtn">검색</button>
+                    </div>
+                    <div id="map" style="width:100%;height:200px;margin-top:10px;"></div>
+                    <ul id="placesList"></ul>
+
+                    <input type="hidden" id="placeName" name="placeName">
+                    <input type="hidden" id="placeAddress" name="placeAddress">
+                    <input type="hidden" id="placeId" name="placeId">
+                    <input type="hidden" id="placeLat" name="placeLat">
+                    <input type="hidden" id="placeLng" name="placeLng">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="priority" class="icon-priority">중요도</label>
+                    <select id="priority" name="priority" required>
+                        <option value="LOW">낮음</option>
+                        <option value="NORMAL" selected>보통</option>
+                        <option value="HIGH">높음</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="isShared">공유 여부</label>
+                    <select id="isShared" name="isShared">
+                        <option value="1" selected>공유</option>
+                        <option value="0">비공유</option>
+                    </select>
+                </div>
+
+
+                <div class="submit-button-wrapper">
+                    <button type="submit">등록하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="eventDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="header-actions">
+                <button type="button" class="edit-button" title="수정" style="display:none;" onclick="openUpdateModal()">
+                    <span class="icon icon-edit"></span>
+                </button>
+                <button type="button" class="delete-button" title="삭제" style="display:none;" onclick="deleteEvent()">
+                    <span class="icon icon-delete"></span>
+                </button>
+                <button type="button" class="modal-close-button" onclick="closeDetailModal()">
+                    <span class="icon icon-close"></span>
+                </button>
+            </div>
+
+            <div class="title-section">
+                <div class="color-dot" th:style="'background-color:' + ${event?.color}"></div>
+                <div class="text-content">
+                    <div class="main-title" id="detailTitle" th:text="${event?.title}">제목 없음</div>
+                    <div class="sub-text">
+                            <span
+                                    th:if="${event?.startDatetime != null and event?.endDatetime != null and #temporals.format(event.startDatetime, 'yyyyMMdd') == #temporals.format(event.endDatetime, 'yyyyMMdd') and #temporals.format(event.startDatetime, 'HHmm') == '0000' and #temporals.format(event.endDatetime, 'HHmm') == '2359'}">
+                                <span th:text="${#temporals.format(event.startDatetime, 'M월 d일 (E)')} + ' 종일'"></span>
+                            </span>
+                        <span
+                                th:unless="${event?.startDatetime == null or event?.endDatetime == null or (#temporals.format(event.startDatetime, 'yyyyMMdd') == #temporals.format(event.endDatetime, 'yyyyMMdd') and #temporals.format(event.startDatetime, 'HHmm') == '0000' and #temporals.format(event.endDatetime, 'HHmm') == '2359')}">
+                                <span
+                                        th:text="${event?.startDatetime != null ? #temporals.format(event.startDatetime, 'M월 d일 (E) a h:mm') : '시작일 없음'}"></span>
+                                <span> - </span>
+                                <span
+                                        th:text="${event?.endDatetime != null ? #temporals.format(event.endDatetime, 'M월 d일 (E) a h:mm') : '종료일 없음'}"></span>
+                            </span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="icon-clock">시작 일시</label>
-                <input type="datetime-local" id="update-startDatetime" name="startDatetime" required>
-            </div>
-
-            <div class="form-group">
-                <label class="icon-clock">종료 일시</label>
-                <input type="datetime-local" id="update-endDatetime" name="endDatetime" required>
-            </div>
-
-            <div class="form-group">
-                <label class="icon-user-detail">참가자 선택</label>
-                <div class="checkbox-container" id="update-workspaceMembers"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="update-description" class="icon-description">설명</label>
-                <textarea id="update-description" name="description" rows="4"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="icon-attach">기존 파일</label>
-                <ul id="updateFiles" class="current-files-list"></ul>
-                <label class="icon-attach file-attach-label">새 파일 첨부</label> <div id="update-new-files-container">
-            </div>
-            </div>
-
-            <div class="form-group">
-                <label for="update-notification" class="icon-bell">알림</label>
-                <select id="update-notification" name="notification">
-                    <option value="1440">전날 오전 9시</option>
-                    <option value="540">당일 오전 9시</option>
-                    <option value="0">알림 없음</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="update-location" class="icon-location">위치</label>
-                <div class="search-wrapper">
-                    <input type="text" id="update-location" name="location" placeholder="장소명으로 검색하세요">
-                    <button type="button" id="update-searchBtn">검색</button>
+            <div class="info-item">
+                <span class="icon icon-user-detail"></span>
+                <div class="value-wrapper"> <label>작성자</label>
+                    <div class="value" id="detailAuthor"></div>
                 </div>
-                <div id="update-map" style="width:100%;height:200px;margin-top:10px;"></div>
-                <ul id="update-placesList"></ul>
-
-                <input type="hidden" id="update-placeName" name="placeName">
-                <input type="hidden" id="update-placeAddress" name="placeAddress">
-                <input type="hidden" id="update-placeId" name="placeId">
-                <input type="hidden" id="update-placeLat" name="placeLat">
-                <input type="hidden" id="update-placeLng" name="placeLng">
             </div>
 
-            <div class="form-group">
-                <label for="update-priority" class="icon-priority">우선순위</label>
-                <select id="update-priority" name="priority">
-                    <option value="LOW">낮음</option>
-                    <option value="NORMAL">보통</option>
-                    <option value="HIGH">높음</option>
-                </select>
+            <div class="info-item">
+                <span class="icon icon-user-detail"></span>
+                <div class="value-wrapper"> <label>참가자</label>
+                    <div class="value" id="detailWorkspaceMembers"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="update-progressStatus">진행 상태</label>
-                <select id="update-progressStatus" name="progressStatus">
-                    <option value="TODO">예정</option>
-                    <option value="IN_PROGRESS">진행중</option>
-                    <option value="DONE">완료</option>
-                </select>
+            <div class="info-item">
+                <span class="icon icon-location-detail"></span>
+                <div class="value-wrapper"> <label>위치</label>
+                    <div class="value" id="detailLocation"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="update-isShared">공유 여부</label>
-                <select id="update-isShared" name="isShared">
-                    <option value="1">공유</option>
-                    <option value="0">비공유</option>
-                </select>
+            <div id="detail-map" style="width:100%; height:200px; margin-top:10px; display:none;"></div>
+
+            <div class="info-item description">
+                <div class="value-wrapper">
+                    <span class="icon icon-description-detail"><label>설명</label></span>
+                    <div class="value" id="detailDescriptionDisplay"></div>
+                </div>
             </div>
+
+            <div class="info-item">
+                <span class="icon icon-bell-detail"></span>
+                <div class="value-wrapper"> <label>알림</label>
+                    <div class="value" id="detailNotification"></div>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="value-wrapper">
+                    <span class="icon icon-attachment-detail"><label>첨부파일</label></span>
+                    <ul id="detailFiles" class="attachments-list"></ul>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <span class="icon icon-priority"></span>
+                <div class="value-wrapper"> <label>중요도</label>
+                    <div class="value" id="detailPriority"></div>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <span class="icon icon-user-detail"></span>
+                <div class="value-wrapper"> <label>공유 여부</label>
+                    <div class="value" id="detailShared"></div>
+                </div>
+            </div>
+
 
             <div class="modal-footer">
-                <button type="button" onclick="submitUpdateEvent()">수정하기</button>
-                <button type="button" class="cancel-button" onclick="closeUpdateModal()">취소</button>
+                <button type="button" onclick="closeDetailModal()">닫기</button>
             </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<script th:src="@{/js/Token.js}" defer></script>
+    <div id="updateEventModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>일정 수정</h3>
+                <button type="button" class="modal-close-button" onclick="closeUpdateModal()">
+                    <span class="icon icon-close"></span>
+                </button>
+            </div>
+            <form id="updateEventForm">
+                <input type="hidden" id="update-eventCd" name="eventCd" />
+
+                <div class="form-group">
+                    <label for="update-title" class="icon-description">제목</label>
+                    <div class="flex-container">
+                        <input type="text" id="update-title" name="title" placeholder="제목" required
+                               oninvalid="this.setCustomValidity('제목은 필수 입력 사항입니다.')"
+                               oninput="this.setCustomValidity('')">
+                        <input type="color" id="update-color" name="color" value="#0066CC">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-clock">시작 일시</label>
+                    <input type="datetime-local" id="update-startDatetime" name="startDatetime" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-clock">종료 일시</label>
+                    <input type="datetime-local" id="update-endDatetime" name="endDatetime" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-user-detail">참가자 선택</label>
+                    <div class="checkbox-container" id="update-workspaceMembers"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-description" class="icon-description">설명</label>
+                    <textarea id="update-description" name="description" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="icon-attach">기존 파일</label>
+                    <ul id="updateFiles" class="current-files-list"></ul>
+                    <label class="icon-attach file-attach-label">새 파일 첨부</label> <div id="update-new-files-container">
+                </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-notification" class="icon-bell">알림</label>
+                    <select id="update-notification" name="notification">
+                        <option value="1440">전날 오전 9시</option>
+                        <option value="540">당일 오전 9시</option>
+                        <option value="0">알림 없음</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-location" class="icon-location">위치</label>
+                    <div class="search-wrapper">
+                        <input type="text" id="update-location" name="location" placeholder="장소명으로 검색하세요">
+                        <button type="button" id="update-searchBtn">검색</button>
+                    </div>
+                    <div id="update-map" style="width:100%;height:200px;margin-top:10px;"></div>
+                    <ul id="update-placesList"></ul>
+
+                    <input type="hidden" id="update-placeName" name="placeName">
+                    <input type="hidden" id="update-placeAddress" name="placeAddress">
+                    <input type="hidden" id="update-placeId" name="placeId">
+                    <input type="hidden" id="update-placeLat" name="placeLat">
+                    <input type="hidden" id="update-placeLng" name="placeLng">
+                </div>
+
+                <div class="form-group">
+                    <label for="update-priority" class="icon-priority">우선순위</label>
+                    <select id="update-priority" name="priority">
+                        <option value="LOW">낮음</option>
+                        <option value="NORMAL">보통</option>
+                        <option value="HIGH">높음</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-progressStatus">진행 상태</label>
+                    <select id="update-progressStatus" name="progressStatus">
+                        <option value="TODO">예정</option>
+                        <option value="IN_PROGRESS">진행중</option>
+                        <option value="DONE">완료</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-isShared">공유 여부</label>
+                    <select id="update-isShared" name="isShared">
+                        <option value="1">공유</option>
+                        <option value="0">비공유</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="submitUpdateEvent()">수정하기</button>
+                    <button type="button" class="cancel-button" onclick="closeUpdateModal()">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/js/Token.js}" defer></script>
 <script th:src="@{/js/wsmain.js}" defer></script>
 <script th:src="@{/js/rnb-fetch.js}" defer></script>
 <script th:src="@{/js/invite-modal.js}" defer></script>
@@ -400,112 +400,61 @@
             document.getElementById('insertedFiles').innerHTML = '';
             document.getElementById('workspaceMembers').innerHTML = '';
 
-            // 3. 카카오 맵 초기화
+            // 3. 지도 초기화는 기존 initMap 함수 사용
             setTimeout(function() {
-                // 카카오 맵 API가 로드되었는지 확인
-                if (typeof kakao !== 'undefined' && kakao.maps) {
-                    // 카카오 맵 로드 함수 사용
-                    kakao.maps.load(function() {
-                        const mapContainer = document.getElementById('map');
-                        if (mapContainer) {
-                            // 지도 초기화
-                            const mapOption = {
-                                center: new kakao.maps.LatLng(37.566826, 126.9786567),
-                                level: 3
-                            };
+                // initMap이 정의되어 있고 kakao가 로드되었는지 확인
+                if (typeof initMap === 'function' && typeof kakao !== 'undefined' && kakao.maps) {
+                    initMap(
+                        'map', 'location', 'searchBtn', 'placesList',
+                        { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
+                    );
 
-                        window.map = new kakao.maps.Map(mapContainer, mapOption);
-                        window.marker = new kakao.maps.Marker({
-                            position: window.map.getCenter()
-                        });
-                        window.marker.setMap(window.map);
-                        window.ps = new kakao.maps.services.Places();
-
-                        // initMap의 나머지 기능들
-                        const geocoder = new kakao.maps.services.Geocoder();
-
-                    kakao.maps.event.addListener(window.map, 'click', function(mouseEvent) {
-                        window.marker.setPosition(mouseEvent.latLng);
-
-                        geocoder.coord2Address(mouseEvent.latLng.getLng(), mouseEvent.latLng.getLat(), function(result, status) {
-                            if (status === kakao.maps.services.Status.OK) {
-                                const address = result[0]?.road_address?.address_name || result[0]?.address?.address_name;
-                                document.getElementById('location').value = address;
-                                document.getElementById('placeName').value = address;
-                                document.getElementById('placeAddress').value = address;
-                                document.getElementById('placeLat').value = mouseEvent.latLng.getLat();
-                                document.getElementById('placeLng').value = mouseEvent.latLng.getLng();
-                                document.getElementById('placeId').value = '';
-                            }
-                        });
-                    });
-
-                    // 검색 버튼 이벤트
-                    const searchBtn = document.getElementById('searchBtn');
-                    if (searchBtn) {
-                        searchBtn.onclick = function() {
-                            const keyword = document.getElementById('location').value;
-                            if (keyword && window.ps) {
-                                window.ps.keywordSearch(keyword, function(data, status, pagination) {
-                                    if (status === kakao.maps.services.Status.OK) {
-                                        displayPlaces(data, 'placesList',
-                                            { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' });
-                                    }
-                                });
-                            }
-                        };
+                // 지도 레이아웃 재조정
+                setTimeout(function() {
+                    if (map && typeof map.relayout === 'function') {
+                        map.relayout();
                     }
-
-                    // 지도 레이아웃 재조정
-                    setTimeout(function() {
-                        window.map.relayout();
-                    }, 100);
-
-                    console.log('지도 초기화 완료');
-                } else {
-                    console.error('map 컨테이너를 찾을 수 없습니다');
-                }
-            });
-        } else {
-            console.error('카카오 맵 API가 아직 로드되지 않았습니다');
-        }
-    }, 300);  // 모달이 완전히 표시될 시간
-
-    // 4. 워크스페이스 멤버 로드 (기존 코드 유지)
-    fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
-        .then(res => {
-            if (!res.ok) throw new Error("멤버정보 조회 실패");
-            return res.json();
-        })
-        .then(data => {
-            const container = document.getElementById('workspaceMembers');
-            if (container) {
-                data.forEach(member => {
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.name = 'attendenceIds';
-                    checkbox.id = 'userId' + member.userId;
-                    checkbox.value = member.userId;
-
-                    const label = document.createElement('label');
-                    label.htmlFor = checkbox.id;
-                    label.textContent = member.userNickname;
-
-                    if (member.userId === currentUserId) {
-                        checkbox.checked = true;
-                        checkbox.style.display = 'none';
-                        label.style.display = 'none';
-                    }
-
-                    container.appendChild(checkbox);
-                    container.appendChild(label);
-                    container.appendChild(document.createElement('br'));
-                });
+                }, 100);
+            } else {
+                console.error('카카오 맵 API가 로드되지 않았거나 initMap 함수가 없습니다');
             }
-        })
-        .catch(error => {
-            console.error('멤버 로드 실패:', error);
-        });
+        }, 100);
+
+        // 4. 워크스페이스 멤버 로드 (기존 코드 유지)
+        fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
+            .then(res => {
+                if (!res.ok) throw new Error("멤버정보 조회 실패");
+                return res.json();
+            })
+            .then(data => {
+                const container = document.getElementById('workspaceMembers');
+                if (container) {
+                    data.forEach(member => {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.name = 'attendenceIds';
+                        checkbox.id = 'userId' + member.userId;
+                        checkbox.value = member.userId;
+
+                        const label = document.createElement('label');
+                        label.htmlFor = checkbox.id;
+                        label.textContent = member.userNickname;
+
+                        if (member.userId === currentUserId) {
+                            checkbox.checked = true;
+                            checkbox.style.display = 'none';
+                            label.style.display = 'none';
+                        }
+
+                        container.appendChild(checkbox);
+                        container.appendChild(label);
+                        container.appendChild(document.createElement('br'));
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('멤버 로드 실패:', error);
+            });
     },
             // ⭐ events 함수 수정
             events: function(fetchInfo, successCallback, failureCallback) {
