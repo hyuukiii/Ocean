@@ -13,7 +13,7 @@
 
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services&autoload=false"></script>
 </head>
 
 <body>
@@ -390,75 +390,96 @@
             closeUpdateModal();
 
             // 1. 모달 표시
-            const modal = document.getElementById('createEventModal');
-            if (!modal) {
-                console.error('createEventModal을 찾을 수 없습니다');
-                return;
-            }
-            modal.style.display = 'flex';
+            document.getElementById('createEventModal').style.display = 'flex';
 
             // 2. 폼 초기화
-            const form = document.getElementById('eventForm');
-            if (form) {
-                form.reset();
-            }
-
-            // 요소가 존재하는지 확인하고 설정
-            const startDatetime = document.getElementById('startDatetime');
-            const endDatetime = document.getElementById('endDatetime');
-            const insertedFiles = document.getElementById('insertedFiles');
-            const workspaceMembers = document.getElementById('workspaceMembers');
-
-            if (startDatetime) startDatetime.value = info.dateStr + 'T09:00';
-            if (endDatetime) endDatetime.value = info.dateStr + 'T18:00';
-            if (insertedFiles) insertedFiles.innerHTML = '';
-            if (workspaceMembers) workspaceMembers.innerHTML = '';
-
+            document.getElementById('eventForm').reset();
+            document.getElementById('startDatetime').value = info.dateStr + 'T09:00';
+            document.getElementById('endDatetime').value = info.dateStr + 'T18:00';
             selectedFiles = [];
+            document.getElementById('insertedFiles').innerHTML = '';
+            document.getElementById('workspaceMembers').innerHTML = '';
 
-            // 3. 카카오 맵 초기화 (API 로드 확인)
+            // 3. 카카오 맵 초기화
             setTimeout(function() {
-                // 카카오 맵 API 로드 상태 확인
+                // 카카오 맵 API가 로드되었는지 확인
                 if (typeof kakao !== 'undefined' && kakao.maps) {
-                    console.log('카카오 맵 API 로드됨');
+                    // 카카오 맵 로드 함수 사용
+                    kakao.maps.load(function() {
+                        const mapContainer = document.getElementById('map');
+                        if (mapContainer) {
+                            // 지도 초기화
+                            const mapOption = {
+                                center: new kakao.maps.LatLng(37.566826, 126.9786567),
+                                level: 3
+                            };
 
-                    // map 컨테이너가 있는지 확인
-                    const mapContainer = document.getElementById('map');
-                    if (mapContainer) {
-                        initMap(
-                            'map', 'location', 'searchBtn', 'placesList',
-                            { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' }
-                        );
+                        window.map = new kakao.maps.Map(mapContainer, mapOption);
+                        window.marker = new kakao.maps.Marker({
+                            position: window.map.getCenter()
+                        });
+                        window.marker.setMap(window.map);
+                        window.ps = new kakao.maps.services.Places();
 
-                        // 지도 레이아웃 재조정
-                        setTimeout(function() {
-                            if (window.map && typeof window.map.relayout === 'function') {
-                                window.map.relayout();
+                        // initMap의 나머지 기능들
+                        const geocoder = new kakao.maps.services.Geocoder();
+
+                    kakao.maps.event.addListener(window.map, 'click', function(mouseEvent) {
+                        window.marker.setPosition(mouseEvent.latLng);
+
+                        geocoder.coord2Address(mouseEvent.latLng.getLng(), mouseEvent.latLng.getLat(), function(result, status) {
+                            if (status === kakao.maps.services.Status.OK) {
+                                const address = result[0]?.road_address?.address_name || result[0]?.address?.address_name;
+                                document.getElementById('location').value = address;
+                                document.getElementById('placeName').value = address;
+                                document.getElementById('placeAddress').value = address;
+                                document.getElementById('placeLat').value = mouseEvent.latLng.getLat();
+                                document.getElementById('placeLng').value = mouseEvent.latLng.getLng();
+                                document.getElementById('placeId').value = '';
                             }
-                        }, 200);
-                    } else {
-                        console.error('map 컨테이너를 찾을 수 없습니다');
+                        });
+                    });
+
+                    // 검색 버튼 이벤트
+                    const searchBtn = document.getElementById('searchBtn');
+                    if (searchBtn) {
+                        searchBtn.onclick = function() {
+                            const keyword = document.getElementById('location').value;
+                            if (keyword && window.ps) {
+                                window.ps.keywordSearch(keyword, function(data, status, pagination) {
+                                    if (status === kakao.maps.services.Status.OK) {
+                                        displayPlaces(data, 'placesList',
+                                            { name: 'placeName', address: 'placeAddress', id: 'placeId', lat: 'placeLat', lng: 'placeLng' });
+                                    }
+                                });
+                            }
+                        };
                     }
+
+                    // 지도 레이아웃 재조정
+                    setTimeout(function() {
+                        window.map.relayout();
+                    }, 100);
+
+                    console.log('지도 초기화 완료');
                 } else {
-                    console.error('카카오 맵 API가 로드되지 않았습니다');
-                    // API 재로드 시도
-                    const script = document.createElement('script');
-                    script.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services';
-                    document.head.appendChild(script);
+                    console.error('map 컨테이너를 찾을 수 없습니다');
                 }
-            }, 200);
+            });
+        } else {
+            console.error('카카오 맵 API가 아직 로드되지 않았습니다');
+        }
+    }, 300);  // 모달이 완전히 표시될 시간
 
-    // 4. 워크스페이스 멤버 로드
-    if (workspaceMembers) {
-        fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
-            .then(res => {
-                if (!res.ok) throw new Error("멤버정보 조회 실패");
-                return res.json();
-            })
-            .then(data => {
-                const container = document.getElementById('workspaceMembers');
-                if (!container) return;
-
+    // 4. 워크스페이스 멤버 로드 (기존 코드 유지)
+    fetch(`/api/getMembers?workspaceCd=${workspaceCd}`)
+        .then(res => {
+            if (!res.ok) throw new Error("멤버정보 조회 실패");
+            return res.json();
+        })
+        .then(data => {
+            const container = document.getElementById('workspaceMembers');
+            if (container) {
                 data.forEach(member => {
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
@@ -468,7 +489,7 @@
 
                     const label = document.createElement('label');
                     label.htmlFor = checkbox.id;
-                    label.textContent = member.userNickname || '';
+                    label.textContent = member.userNickname;
 
                     if (member.userId === currentUserId) {
                         checkbox.checked = true;
@@ -480,11 +501,11 @@
                     container.appendChild(label);
                     container.appendChild(document.createElement('br'));
                 });
-            })
-            .catch(error => {
-                console.error('멤버 로드 실패:', error);
-            });
-        }
+            }
+        })
+        .catch(error => {
+            console.error('멤버 로드 실패:', error);
+        });
     },
             // ⭐ events 함수 수정
             events: function(fetchInfo, successCallback, failureCallback) {
