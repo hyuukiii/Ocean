@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>팀 캘린더</title>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link th:href="@{/css/lnb.css}" rel='stylesheet' />
     <link th:href="@{/css/calendar.css}" rel='stylesheet' />
     <link rel="stylesheet" th:href="@{/css/rnb.css}" />
@@ -13,7 +14,6 @@
 
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
 </head>
 
   <body>
@@ -1353,6 +1353,24 @@ function saveEvent() {
     }
     /*]]>*/
 </script>
+    <!-- 카카오 맵 API를 맨 마지막에 로드 -->
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services"></script>
+    <script>
+        // 카카오 맵 로드 확인
+        window.addEventListener('load', function() {
+            if (typeof kakao !== 'undefined' && kakao.maps) {
+                console.log('카카오 맵 API 로드 완료!');
+            } else {
+                console.error('카카오 맵 API 로드 실패');
+                // 재시도
+                const script = document.createElement('script');
+                script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a9ca55e1cb213f15176c2b99a62db20&libraries=services';
+                script.onload = function() {
+                    console.log('카카오 맵 API 재로드 성공!');
+                };
+                document.body.appendChild(script);
+            }
+        });
+    </script>
 </body>
-
 </html>
